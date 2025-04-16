@@ -331,12 +331,14 @@ export function AboutSection() {
                     </div>
                     <div className="text-primary/90 font-medium mb-2">Northrop Grumman</div>
                     <p className="text-muted-foreground">
-                    During my software engineering internship, I gained real-world 
-                    experience working in a collaborative, agile environment, adapting to scrum processes, 
-                    participating in code reviews, and building user-friendly web applications from scratch. 
-                    I implemented robust security protocols to protect sensitive data, wrote clean, dynamic 
-                    code across multiple languages, and contributed to embedded system development through thorough 
-                    testing and diagnosis.
+                    During my software engineering internship, I gained valuable real-world experience.
+                    I practiced agile team processes and collaborated effectively within a team 
+                    environment. I participated in code reviews, completed tasks, and attended training 
+                    opportunities to enhance my technical and team skills. I also contributed to building 
+                    user-friendly web applications from scratch and emerged in improving existing tools, 
+                    which helped the average developer run their sessions more efficiently. Throughout my internship,
+                    I learned to write clean and dynamic code, leveraging expertise across multiple programming languages to meet 
+                    project requirements.
                     </p>
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">JavaScript</Badge>
@@ -365,7 +367,7 @@ export function AboutSection() {
                     </div>
                     <div className="text-primary/90 font-medium mb-2">GrandSinghMusic</div>
                     <p className="text-muted-foreground">
-                    In my role overseeing promotion planning, I manage our social media
+                    In my role overseeing promotion planning, I managed our social media
                      presence and booking inquiries, growing our following from 2,000 to 8,000
                       organically in just a few months while fostering a strong online community. 
                       I also handle administrative tasks like managing client queries, processing deposits, 
