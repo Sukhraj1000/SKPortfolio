@@ -2,12 +2,12 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Code, FileText, User, Terminal, GanttChartSquare, Calendar, Monitor, Database, Wrench } from "lucide-react";
-import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { ScrollingText } from "@/components/ui/scrolling-text";
+import { CVAccessDialog } from "@/components/CVAccessDialog";
 
 // Code animation component for background effect
 const CodeAnimation = () => {
@@ -272,17 +272,15 @@ export function AboutSection() {
                     languages—JavaScript, Python, C++, and Rust—while diving deep into blockchain development.
                   </p>
                   <p>
-                    Outside of coding, I enjoy making keeping healthy in the gym, exploring new tech trends, and occasionally watching football. 
+                    Outside of coding, I enjoy keeping healthy in the gym, exploring new tech trends, and occasionally watching football. 
                     I&apos;m always up for a challenge, whether it&apos;s debugging or picking up a new skill through hands-on projects.
                   </p>
 
                   <div className="pt-6">
-                    <Button className="hover-lift px-6 glow-effect" asChild>
-                      <a href="/Sukhrajport_CV.pdf" target="_blank" rel="noopener noreferrer">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Download Resume
-                      </a>
-                    </Button>
+                    <CVAccessDialog 
+                      buttonClassName="hover-lift px-6 glow-effect" 
+                      buttonText="Download Resume"
+                    />
                   </div>
                 </CardContent>
               </Card>
