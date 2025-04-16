@@ -11,8 +11,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { MenuIcon, FileText, Code, Terminal, Laptop } from "lucide-react";
+import { MenuIcon, Code, Terminal, Laptop } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { CVAccessDialog, CVAccessDialogMobile } from "./CVAccessDialog";
 
 const navLinks = [
   { href: "/#", label: "Home", icon: <Terminal className="h-3.5 w-3.5" /> },
@@ -157,18 +158,9 @@ export function Navbar() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
+              className="hidden md:block"
             >
-              <Link
-                href="/Sukhrajport_CV.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden md:block"
-              >
-                <Button variant="outline" size="sm" className="h-8 text-xs rounded-full border-white/10 glass-morphism hover:border-primary/50 hover:bg-primary/10 transition-all shadow-sm group">
-                  <FileText className="mr-1.5 h-3.5 w-3.5 group-hover:text-primary transition-colors" />
-                  Resume
-                </Button>
-              </Link>
+              <CVAccessDialog />
             </motion.div>
             
             {/* Mobile menu trigger */}
@@ -217,11 +209,7 @@ export function Navbar() {
                     </nav>
                     
                     <div className="mt-auto p-4 border-t border-white/5">
-                      <Button variant="outline" className="w-full justify-center rounded-lg glass-morphism" asChild>
-                        <Link href="/Sukhrajport_CV.pdf" target="_blank" rel="noopener noreferrer">
-                          <FileText className="mr-2 h-4 w-4" /> Resume
-                        </Link>
-                      </Button>
+                      <CVAccessDialogMobile />
                     </div>
                   </div>
                 </SheetContent>

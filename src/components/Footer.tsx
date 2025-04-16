@@ -1,12 +1,26 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Github, Linkedin, Mail, X, Terminal, Code, ExternalLink, Cpu } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getObfuscatedEmail } from "@/lib/utils";
+import { CVAccessDialog } from "@/components/CVAccessDialog";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  
+  // Set the email on the client side to avoid having it in the HTML source
+  useEffect(() => {
+    setEmail(getObfuscatedEmail());
+  }, []);
+  
+  // Handle email click to avoid direct mailto: link in HTML
+  const handleEmailClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    window.location.href = `mailto:${email}`;
+  };
   
   return (
     <footer className="relative mt-20 overflow-hidden">
@@ -44,13 +58,15 @@ export function Footer() {
                 { icon: <Github className="h-5 w-5" />, url: "https://github.com/Sukhraj1000", label: "GitHub", color: "hover:text-primary" },
                 { icon: <Linkedin className="h-5 w-5" />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn", color: "hover:text-blue-500" },
                 { icon: <X className="h-5 w-5" />, url: "https://x.com/SKalon52254", label: "X", color: "hover:text-sky-500" },
-                { icon: <Mail className="h-5 w-5" />, url: "mailto:SukhrajKalon@gmail.com", label: "Email", color: "hover:text-accent" },
+                // Use a click handler instead of direct mailto link for the email
+                { icon: <Mail className="h-5 w-5" />, url: "#", label: "Email", color: "hover:text-accent", onClick: handleEmailClick },
               ].map((social, index) => (
                 <motion.a
                   key={social.label}
                   href={social.url}
-                  target="_blank"
+                  target={social.onClick ? "_self" : "_blank"}
                   rel="noopener noreferrer"
+                  onClick={social.onClick}
                   className={`p-3 rounded-full glass-morphism text-foreground ${social.color} hover-lift transition-all`}
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
@@ -117,21 +133,21 @@ export function Footer() {
                     <span className="text-sm text-muted-foreground/80">United Kingdom</span>
                   </li>
                   <li className="text-muted-foreground">
-                    <a 
-                      href="mailto:sukhrajkalon@gmail.com" 
+                    <button 
+                      onClick={handleEmailClick}
                       className="hover:text-primary transition-colors group flex items-center gap-2"
                     >
                       <Mail className="h-4 w-4 text-primary/50 group-hover:text-primary transition-colors" />
-                      <span className="animated-underline inline-block">SukhrajKalon@gmail.com</span>
-                    </a>
+                      <span className="animated-underline inline-block">
+                        {email || "Email Address"}
+                      </span>
+                    </button>
                   </li>
                   <li className="text-muted-foreground mt-4">
-                    <Button className="glass-morphism hover:border-primary/50 text-sm px-4" size="sm" asChild>
-                      <a href="Sukhrajport_CV.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                        <span>View Resume</span>
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </Button>
+                    <CVAccessDialog 
+                      buttonClassName="glass-morphism hover:border-primary/50 text-sm px-4"
+                      buttonText="View Resume"
+                    />
                   </li>
                 </ul>
               </motion.div>

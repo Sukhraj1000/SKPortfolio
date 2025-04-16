@@ -1,17 +1,46 @@
 # Enable rewriting
 RewriteEngine On
 
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Disable directory browsing
+Options -Indexes
+
+# PDF access protection - only allow access with token or valid referrer
+RewriteCond %{REQUEST_URI} \.pdf$ [NC]
+RewriteCond %{QUERY_STRING} !token= [NC]
+RewriteCond %{HTTP_REFERER} !^https?://%{HTTP_HOST}/.*$ [NC]
+RewriteRule .* / [R=302,L]
+
 # Handle requests for non-existent files
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ /index.html [L,QSA]
 
-# Set security headers
+# Set comprehensive security headers
 <IfModule mod_headers.c>
+  # Prevent MIME type sniffing
   Header set X-Content-Type-Options "nosniff"
+  
+  # Enable XSS Protection
   Header set X-XSS-Protection "1; mode=block"
+  
+  # Prevent clickjacking attacks
   Header set X-Frame-Options "SAMEORIGIN"
+  
+  # Control referrer information
   Header set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # Enable HTTP Strict Transport Security (HSTS)
+  Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  
+  # Set Content Security Policy
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://images.unsplash.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self';"
+  
+  # Permissions policy
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
 # Set custom 404 page
@@ -32,4 +61,10 @@ ErrorDocument 404 /404.html
   ExpiresByType image/svg+xml "access plus 1 year"
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
-</IfModule> 
+</IfModule>
+
+# Prevent access to sensitive files
+<FilesMatch "(\.env|\.git|\.htaccess|package.json|package-lock.json)$">
+  Order deny,allow
+  Deny from all
+</FilesMatch> 

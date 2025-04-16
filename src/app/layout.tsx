@@ -58,18 +58,11 @@ export default function RootLayout({
           </main>
         </ThemeProvider>
         
-        {/* Script for interactive cursor gradient effect */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          document.addEventListener('mousemove', (e) => {
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            
-            const bg = document.getElementById('gradient-bg');
-            if (bg) {
-              bg.style.background = 'radial-gradient(circle at ' + x*100 + '% ' + y*100 + '%, rgba(125, 39, 255, 0.08), transparent 40%)';
-            }
-          });
-        `}} />
+        {/* Use a safe script import instead of dangerouslySetInnerHTML */}
+        <script src="/js/cursor-effect.js" async defer></script>
+        
+        {/* CSP reporting script */}
+        <script src="/js/csp-report.js" async defer></script>
       </body>
     </html>
   );
