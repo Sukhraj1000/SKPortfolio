@@ -1,0 +1,157 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Github, Heart, Linkedin, Mail, X, Terminal, Code, ExternalLink, Cpu } from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+
+export function Footer() {
+  const currentYear = new Date().getFullYear();
+  
+  return (
+    <footer className="relative mt-20 overflow-hidden">
+      {/* Decorative background */}
+      <div className="absolute inset-0 -z-10 gradient-animation opacity-10" />
+      
+      {/* Angled divider */}
+      <div className="absolute top-0 left-0 right-0 h-16 overflow-hidden -z-10">
+        <div className="absolute inset-0 bg-background transform -skew-y-2" />
+      </div>
+      
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-10"></div>
+      
+      <div className="container py-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="md:col-span-2"
+          >
+            <Link href="/" className="font-bold text-2xl text-primary flex items-center gap-2">
+              <Terminal className="h-6 w-6" />
+              <span className="gradient-text font-mono tracking-tight">SK PORTFOLIO</span>
+            </Link>
+            
+            <p className="mt-4 text-muted-foreground max-w-md">
+              Creating exceptional programs with passion and precision. Always learning, always growing, and pushing the boundaries of what's possible.
+            </p>
+            
+            <div className="flex items-center gap-4 mt-8">
+              {[
+                { icon: <Github className="h-5 w-5" />, url: "https://github.com/Sukhraj1000", label: "GitHub", color: "hover:text-primary" },
+                { icon: <Linkedin className="h-5 w-5" />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn", color: "hover:text-blue-500" },
+                { icon: <X className="h-5 w-5" />, url: "https://x.com/SKalon52254", label: "X", color: "hover:text-sky-500" },
+                { icon: <Mail className="h-5 w-5" />, url: "mailto:SukhrajKalon@gmail.com", label: "Email", color: "hover:text-accent" },
+              ].map((social, index) => (
+                <motion.a
+                  key={social.label}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`p-3 rounded-full glass-morphism text-foreground ${social.color} hover-lift transition-all`}
+                  initial={{ opacity: 0, scale: 0 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ 
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20,
+                    delay: 0.1 * index 
+                  }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -5 }}
+                >
+                  {social.icon}
+                  <span className="sr-only">{social.label}</span>
+                </motion.a>
+              ))}
+            </div>
+          </motion.div>
+          
+          <div className="md:col-span-2 md:flex md:justify-end">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="font-semibold mb-6 text-lg flex items-center gap-2">
+                  <Code className="h-4 w-4 text-primary" />
+                  <span>Navigation</span>
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    { href: "#home", label: "Home", icon: <Terminal className="h-4 w-4" /> },
+                    { href: "#about", label: "About", icon: <Cpu className="h-4 w-4" /> },
+                    { href: "#projects", label: "Projects", icon: <Code className="h-4 w-4" /> },
+                  ].map((link) => (
+                    <li key={link.href}>
+                      <Link 
+                        href={link.href} 
+                        className="text-muted-foreground hover:text-primary transition-colors group flex items-center gap-2"
+                      >
+                        <span className="text-primary/50 group-hover:text-primary transition-colors">{link.icon}</span>
+                        <span className="animated-underline inline-block">{link.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="font-semibold mb-6 text-lg flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4 text-primary" />
+                  <span>Contact</span>
+                </h3>
+                <ul className="space-y-4">
+                  <li className="text-muted-foreground">
+                    <span className="block font-medium">West Midlands, UK</span>
+                    <span className="text-sm text-muted-foreground/80">United Kingdom</span>
+                  </li>
+                  <li className="text-muted-foreground">
+                    <a 
+                      href="mailto:sukhrajkalon@gmail.com" 
+                      className="hover:text-primary transition-colors group flex items-center gap-2"
+                    >
+                      <Mail className="h-4 w-4 text-primary/50 group-hover:text-primary transition-colors" />
+                      <span className="animated-underline inline-block">SukhrajKalon@gmail.com</span>
+                    </a>
+                  </li>
+                  <li className="text-muted-foreground mt-4">
+                    <Button className="glass-morphism hover:border-primary/50 text-sm px-4" size="sm" asChild>
+                      <a href="Sukhrajport_CV.pdf" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                        <span>View Resume</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  </li>
+                </ul>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          viewport={{ once: true }}
+          className="mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center"
+        >
+          <p className="text-sm text-muted-foreground">
+            &copy; {currentYear} <span className="text-primary font-mono">DEV</span>. All rights reserved.
+          </p>
+          
+        </motion.div>
+      </div>
+    </footer>
+  );
+} 
