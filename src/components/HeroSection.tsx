@@ -1,12 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowDownCircle, Github, Linkedin, X, Code, Terminal, ExternalLink } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowDownCircle, Github, Linkedin, X, Code, Terminal } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRef, useState, useEffect, useCallback } from "react";
-import { TiltCard } from "@/components/ui/tilt-card";
 
 // Terminal text effect component with improved animation and callback when complete
 const TerminalText = ({ text, onComplete }: { text: string; onComplete: () => void }) => {
@@ -85,7 +84,6 @@ const MatrixRain = () => {
 
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [typewriterComplete, setTypewriterComplete] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
   
   // Set hero visible after initial delay
@@ -99,7 +97,7 @@ export function HeroSection() {
   
   // Handler for when typewriter animation completes
   const handleTypewriterComplete = useCallback(() => {
-    setTypewriterComplete(true);
+    // This is a placeholder function that does nothing but satisfies the interface
   }, []);
   
   // Create scroll-based animations
@@ -196,7 +194,7 @@ export function HeroSection() {
             className="mb-2 text-sm font-medium px-6 py-2 rounded-full bg-primary/10 text-primary backdrop-blur-sm border border-primary/20 flex items-center gap-2"
           >
             <Terminal className="h-4 w-4" />
-            <span className="font-mono">Hello, I'm Sukhraj Kalon an</span>
+            <span className="font-mono">Hello, I&apos;m Sukhraj Kalon an</span>
           </motion.div>
           
           <motion.div
