@@ -13,7 +13,7 @@ export default function Home() {
           quantity={75}
           staticity={30}
           speed={0.5}
-          color="#8A2BE2"
+          particleColor="#8A2BE2"
         />
       </div>
       

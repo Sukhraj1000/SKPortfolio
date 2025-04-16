@@ -1,15 +1,12 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Code, Github, Globe, Terminal, ExternalLink, LayoutGrid, Award, Cpu } from "lucide-react";
-import Image from "next/image";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { Github, Code, Cpu, LayoutGrid } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
+import Image from "next/image";
+import { useRef } from "react";
 import { useInView } from "framer-motion";
-import { cn } from "@/lib/utils";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 
@@ -110,8 +107,6 @@ const projects = [
 
 // Project card with advanced animation
 const ProjectCard = ({ project, index, isInView }: { project: typeof projects[0], index: number, isInView: boolean }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -172,11 +167,9 @@ const ProjectCard = ({ project, index, isInView }: { project: typeof projects[0]
 };
 
 export function ProjectsSection() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const projectsContainerRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.1 });
-  const [hoveredProject, setHoveredProject] = useState<number | null>(null);
-  const [activePulse, setActivePulse] = useState<number | null>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   
   // Create scroll-based animations
   const { scrollYProgress } = useScroll({
@@ -262,7 +255,7 @@ function initialize() {
     <section
       id="projects"
       ref={sectionRef}
-      className="py-32 relative overflow-hidden"
+      className="py-32 md:py-40 relative overflow-hidden"
     >
       {/* Binary particles in background */}
       <BinaryParticles />
@@ -351,10 +344,10 @@ function initialize() {
           <TerminalWindow title="terminal">
             <div className="text-sm md:text-base">
               <span className="text-primary mr-2">&gt;</span>
-              <span className="text-muted-foreground">Want to see more of my high-level projects? (I'm still learning :D)</span>
+              <span className="text-muted-foreground">Want to see more of my high-level projects? (I&apos;m still learning :D)</span>
               <br />
               <span className="text-primary mr-2">&gt;</span>
-              <span className="text-muted-foreground">Check out my GitHub repository for what I've been up to</span>
+              <span className="text-muted-foreground">Check out my GitHub repository for what I&apos;ve been up to</span>
               <motion.span 
                 className="inline-block w-2 h-5 bg-primary ml-1"
                 animate={{ opacity: [1, 0, 1] }}

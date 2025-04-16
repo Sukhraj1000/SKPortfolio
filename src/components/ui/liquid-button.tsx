@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, HTMLMotionProps } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface LiquidButtonProps {
@@ -38,7 +38,6 @@ export function LiquidButton({
   animate = true,
   asChild = false,
   onClick,
-  ...props
 }: LiquidButtonProps) {
   // Determine classes based on variant and size
   const variantClasses = {

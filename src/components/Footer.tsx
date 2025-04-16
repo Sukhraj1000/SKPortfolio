@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Github, Heart, Linkedin, Mail, X, Terminal, Code, ExternalLink, Cpu } from "lucide-react";
+import { Github, Linkedin, Mail, X, Terminal, Code, ExternalLink, Cpu } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -36,7 +36,7 @@ export function Footer() {
             </Link>
             
             <p className="mt-4 text-muted-foreground max-w-md">
-              Creating exceptional programs with passion and precision. Always learning, always growing, and pushing the boundaries of what's possible.
+              Creating exceptional programs with passion and precision. Always learning, always growing, and pushing the boundaries of what&apos;s possible.
             </p>
             
             <div className="flex items-center gap-4 mt-8">

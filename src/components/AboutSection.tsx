@@ -8,7 +8,6 @@ import { Badge } from "./ui/badge";
 import { useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import { ScrollingText } from "@/components/ui/scrolling-text";
-import { TiltCard } from "@/components/ui/tilt-card";
 
 // Code animation component for background effect
 const CodeAnimation = () => {
@@ -97,15 +96,6 @@ const BinaryParticles = () => {
     </div>
   );
 };
-
-// Add this function before the AboutSection export
-function SkillItem({ skill }: { skill: string }) {
-  return (
-    <div className="px-5 py-2 mx-3 rounded-full bg-primary/10 border border-primary/20 text-primary backdrop-blur-sm font-medium">
-      {skill}
-    </div>
-  );
-}
 
 export function AboutSection() {
   const sectionRef = useRef(null);
@@ -198,7 +188,7 @@ export function AboutSection() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-muted-foreground max-w-2xl text-lg"
           >
-            I'm a passionate developer with a strong foundation in both design and development,
+            I&apos;m a passionate developer with a strong foundation in both design and development,
             creating meaningful projects that solve real problems.
           </motion.p>
         </div>
@@ -264,26 +254,26 @@ export function AboutSection() {
                     </div>
                     <div className="mt-8 font-mono text-sm">
                       <div className="text-muted-foreground"><span className="text-primary">const</span> <span className="text-accent">developer</span> = {'{'}</div>
-                      <div className="ml-4"><span className="text-muted-foreground">name:</span> <span className="text-green-400">'Sukhraj Kalon'</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">passion:</span> <span className="text-green-400">'Building efficient and scalable software'</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">background:</span> <span className="text-green-400">'Strong design and development'</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-green-400">'Solve real problems with powerful solutions'</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">name:</span> <span className="text-green-400">&apos;Sukhraj Kalon&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">passion:</span> <span className="text-green-400">&apos;Building efficient and scalable software&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">background:</span> <span className="text-green-400">&apos;Strong design and development&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-green-400">&apos;Solve real problems with powerful solutions&apos;</span>,</div>
                       <div>{'};'}</div>
                     </div>
                   </div>
                   
                   <p>
-                    I'm a Software Developer passionate about leveraging emerging technologies like blockchain, AI, and smart contracts 
+                    I&apos;m a Software Developer passionate about leveraging emerging technologies like blockchain, AI, and smart contracts 
                     to build innovative, scalable, and secure solutions. I enjoy creating systems that are both technically sound and 
                     practically impactful.
                   </p>
                   <p>
-                    My journey started with a fascination for problem-solving and automation. Over time, I've worked across multiple 
+                    My journey started with a fascination for problem-solving and automation. Over time, I&apos;ve worked across multiple 
                     languages—JavaScript, Python, C++, and Rust—while diving deep into blockchain development.
                   </p>
                   <p>
                     Outside of coding, I enjoy making keeping healthy in the gym, exploring new tech trends, and occasionally watching football. 
-                    I'm always up for a challenge, whether it's debugging or picking up a new skill through hands-on projects.
+                    I&apos;m always up for a challenge, whether it&apos;s debugging or picking up a new skill through hands-on projects.
                   </p>
 
                   <div className="pt-6">
@@ -320,7 +310,7 @@ export function AboutSection() {
                     </div>
                     <div className="text-primary/90 font-medium mb-2">Infield Sports UK Ltd</div>
                     <p className="text-muted-foreground">
-                      I've refined my expertise in electrical systems and data transmission 
+                      I&apos;ve refined my expertise in electrical systems and data transmission 
                       through hands-on experience with LED advertisement boards, particularly 
                       in dynamic environments like football, rugby, and other major sports events, 
                       which has deepened my understanding of hardware complexities and real-time operations.
