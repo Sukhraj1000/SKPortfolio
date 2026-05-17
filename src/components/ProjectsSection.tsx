@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Github, Code, Cpu, LayoutGrid } from "lucide-react";
+import { Github, Code, Cpu, LayoutGrid, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRef } from "react";
@@ -85,22 +85,42 @@ const TerminalWindow = ({ title, children }: { title: string, children: React.Re
 const projects = [
   {
     id: 1,
-    title: "Solana Smart Contract Generator",
-    description: "A platform that allows developers to easily generate, deploy, and manage Solana smart contracts through an intuitive interface. Making it one of the first existing platforms to do so.",
-    image: "/solana.png",
-    tags: ["React", "FastAPI", "JavaScript", "Solana", "Web3.js", "Rust"],
-    githubUrl: "https://github.com/Sukhraj1000/SmartContractGen",
-    feature: "No-code contract generation with customisable forms",
-    icon: <Cpu className="h-5 w-5" />
+    title: "Tymaura",
+    description: "A broader event-planning web platform with vendor workflows, authentication, guest RSVP journeys, messaging, and admin readiness controls. Built across frontend, backend, deployment, database workflows, and production QA.",
+    image: "/tymaura-logo-card.svg",
+    tags: ["React", "TypeScript", "Next.js", "Convex", "Clerk", "Vercel", "Stripe"],
+    websiteUrl: "https://tymaura.app",
+    feature: "Production-focused vendor, guest, messaging, and admin workflows",
+    icon: <LayoutGrid className="h-5 w-5" />
   },
   {
     id: 2,
+    title: "Skaltek",
+    description: "A freelance software engineering and digital-agent business building high-performance websites, AI automation, and practical lead-generation systems for local UK businesses, with a focus on measurable operational improvements rather than generic agency work.",
+    image: "/skaltek-logo-card.png",
+    tags: ["Web Development", "AI Automation", "Lead Generation", "Local SEO", "Operations", "QA"],
+    websiteUrl: "https://skaltek.co.uk",
+    feature: "Websites, automation, and client-acquisition systems for UK businesses",
+    icon: <Cpu className="h-5 w-5" />
+  },
+  {
+    id: 3,
+    title: "Solana Smart Contract AI Generator",
+    description: "Final-year project graded 82%: a platform to generate, compile, test, and analyse Solana smart contracts using AI, with a FastAPI backend, Claude API integration, React frontend, Rust, Anchor, and Solana Devnet testing.",
+    image: "/solana.png",
+    tags: ["React", "FastAPI", "Claude API", "Solana", "Anchor", "Rust"],
+    githubUrl: "https://github.com/Sukhraj1000/SmartContractGen",
+    feature: "AI-assisted Solana smart contract generation and testing",
+    icon: <Cpu className="h-5 w-5" />
+  },
+  {
+    id: 4,
     title: "Crypto Portfolio Mobile App",
-    description: "A cross-platform mobile application for tracking cryptocurrency investments, with real-time price updates, portfolio analytics, and market insights. Providing a demo account for users to track their portfolio.",
+    description: "Independent project graded 80%: a .NET MAUI mobile app for tracking crypto holdings, live price changes, buy/sell activity, real-time portfolio valuation, and transaction management via the CoinGecko API.",
     image: "/cryptoapp.png",
-    tags: [".Net Maui", "C#", "CoinGecko API", "Chart.js"],
+    tags: [".NET MAUI", "C#", "CoinGecko API", "Mobile", "Data Visualisation"],
     githubUrl: "https://github.com/Sukhraj1000/CryptoMobileAppPorfolio",
-    feature: "Real-time portfolio performance treated as a demo account",
+    feature: "Real-time portfolio valuation and transaction management",
     icon: <LayoutGrid className="h-5 w-5" />
   },
 ];
@@ -145,16 +165,20 @@ const ProjectCard = ({ project, index, isInView }: { project: typeof projects[0]
             </div>
             
             <div className="flex space-x-3 mt-auto">
-              {project.githubUrl && (
+              {(project.websiteUrl || project.githubUrl) && (
                 <LiquidButton variant="default" size="sm" asChild>
                   <a 
-                    href={project.githubUrl} 
+                    href={project.websiteUrl || project.githubUrl} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5"
                   >
-                    <Github className="h-3.5 w-3.5" />
-                    View on GitHub
+                    {project.websiteUrl ? (
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    ) : (
+                      <Github className="h-3.5 w-3.5" />
+                    )}
+                    {project.websiteUrl ? "View Website" : "View on GitHub"}
                   </a>
                 </LiquidButton>
               )}
@@ -312,14 +336,14 @@ function initialize() {
             animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Here are a few highlighted projects that showcase my expertise in blockchain and crypto development
+            A few current and recent builds spanning full-stack products, AI automation, cloud-backed workflows, and applied blockchain development
           </motion.p>
         </motion.div>
 
         {/* Projects grid with enhanced cards */}
         <motion.div 
           ref={projectsContainerRef}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 xl:gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-10"
           initial={{ opacity: 0, y: 40 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -344,7 +368,7 @@ function initialize() {
           <TerminalWindow title="terminal">
             <div className="text-sm md:text-base">
               <span className="text-primary mr-2">&gt;</span>
-              <span className="text-muted-foreground">Want to see more of my high-level projects? (I&apos;m still learning :D)</span>
+              <span className="text-muted-foreground">Want to see more of what I&apos;m building?</span>
               <br />
               <span className="text-primary mr-2">&gt;</span>
               <span className="text-muted-foreground">Check out my GitHub repository for what I&apos;ve been up to</span>
