@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface LiquidButtonProps {
@@ -14,7 +15,7 @@ interface LiquidButtonProps {
   onClick?: () => void;
 }
 
-const blobVariants = {
+const blobVariants: Variants = {
   rest: {
     scale: 0,
     opacity: 0,

@@ -194,7 +194,7 @@ export function HeroSection() {
             className="mb-2 text-sm font-medium px-6 py-2 rounded-full bg-primary/10 text-primary backdrop-blur-sm border border-primary/20 flex items-center gap-2"
           >
             <Terminal className="h-4 w-4" />
-            <span className="font-mono">Hello, I&apos;m Sukhraj Kalon an</span>
+            <span className="font-mono">Hello, I&apos;m Sukhraj Kalon, a</span>
           </motion.div>
           
           <motion.div
@@ -205,7 +205,7 @@ export function HeroSection() {
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="gradient-text">
-                Early-Software Developer
+                Software Engineer
               </span>
               <motion.span 
                 className="inline-block w-3 h-14 bg-primary ml-2"
@@ -224,7 +224,7 @@ export function HeroSection() {
             <div className="glass-morphism px-4 py-3 rounded-lg">
               {heroVisible && (
                 <TerminalText 
-                  text="My goal? To solve real-world problems and help businesses thrive through clean code and smart design." 
+                  text="I build secure full-stack products, cloud-backed services, AI automation workflows, and practical systems that turn messy real-world problems into reliable software." 
                   onComplete={handleTypewriterComplete}
                 />
               )}

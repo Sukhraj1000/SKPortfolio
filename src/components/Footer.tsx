@@ -50,7 +50,7 @@ export function Footer() {
             </Link>
             
             <p className="mt-4 text-muted-foreground max-w-md">
-              Creating exceptional programs with passion and precision. Always learning, always growing, and pushing the boundaries of what&apos;s possible.
+              Software Engineer focused on secure full-stack development, cloud services, AI-assisted automation, and product systems that are practical, reliable, and maintainable.
             </p>
             
             <div className="flex items-center gap-4 mt-8">
@@ -146,7 +146,7 @@ export function Footer() {
                   <li className="text-muted-foreground mt-4">
                     <CVAccessDialog 
                       buttonClassName="glass-morphism hover:border-primary/50 text-sm px-4"
-                      buttonText="View Resume"
+                      buttonText="Request CV"
                     />
                   </li>
                 </ul>
@@ -163,7 +163,7 @@ export function Footer() {
           className="mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center"
         >
           <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} <span className="text-primary font-mono">DEV</span>. All rights reserved.
+            &copy; {currentYear} <span className="text-primary font-mono">Sukhraj Kalon</span>. All rights reserved.
           </p>
           
         </motion.div>

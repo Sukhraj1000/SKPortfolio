@@ -188,8 +188,8 @@ export function AboutSection() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-muted-foreground max-w-2xl text-lg"
           >
-            I&apos;m a passionate developer with a strong foundation in both design and development,
-            creating meaningful projects that solve real problems.
+            I&apos;m a Software Engineer and First-Class Computer Science graduate building across full-stack web,
+            cloud services, AI automation, data workflows, and secure engineering environments.
           </motion.p>
         </div>
 
@@ -255,21 +255,21 @@ export function AboutSection() {
                     <div className="mt-8 font-mono text-sm">
                       <div className="text-muted-foreground"><span className="text-primary">const</span> <span className="text-accent">developer</span> = {'{'}</div>
                       <div className="ml-4"><span className="text-muted-foreground">name:</span> <span className="text-green-400">&apos;Sukhraj Kalon&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">passion:</span> <span className="text-green-400">&apos;Building efficient and scalable software&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">background:</span> <span className="text-green-400">&apos;Strong design and development&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-green-400">&apos;Solve real problems with powerful solutions&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">role:</span> <span className="text-green-400">&apos;Software Engineer&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">focus:</span> <span className="text-green-400">&apos;Full-stack, cloud, AI automation and secure systems&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-green-400">&apos;Build reliable software that solves practical problems&apos;</span>,</div>
                       <div>{'};'}</div>
                     </div>
                   </div>
                   
                   <p>
-                    I&apos;m a Software Developer passionate about leveraging emerging technologies like blockchain, AI, and smart contracts 
-                    to build innovative, scalable, and secure solutions. I enjoy creating systems that are both technically sound and 
-                    practically impactful.
+                    I&apos;m a Software Engineer and First-Class Computer Science graduate with hands-on experience across secure full-stack development,
+                    cloud services, data automation, AI-assisted systems, and blockchain applications. I enjoy building systems that are technically sound,
+                    maintainable, and useful in real operational settings.
                   </p>
                   <p>
-                    My journey started with a fascination for problem-solving and automation. Over time, I&apos;ve worked across multiple 
-                    languages—JavaScript, Python, C++, and Rust—while diving deep into blockchain development.
+                    My recent work spans TypeScript, Python, React, FastAPI, AWS, PostgreSQL, Vercel, Cloudflare, LLM APIs, browser automation,
+                    and production-facing product workflows. I&apos;ve worked in regulated engineering teams and also build independent products end-to-end.
                   </p>
                   <p>
                     Outside of coding, I enjoy keeping healthy in the gym, exploring new tech trends, and occasionally watching football. 
@@ -279,7 +279,7 @@ export function AboutSection() {
                   <div className="pt-6">
                     <CVAccessDialog 
                       buttonClassName="hover-lift px-6 glow-effect" 
-                      buttonText="Download Resume"
+                      buttonText="Request CV"
                     />
                   </div>
                 </CardContent>
@@ -300,22 +300,24 @@ export function AboutSection() {
                   <div className="relative pl-8 pb-6 border-l border-primary/20">
                     <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-primary"></div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold">LED Technician (Part-Time)</h3>
+                      <h3 className="text-xl font-bold">Software Engineer</h3>
                       <div className="text-sm text-muted-foreground font-mono inline-flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>2022 - Present</span>
+                        <span>Sep 2025 - Present</span>
                       </div>
                     </div>
-                    <div className="text-primary/90 font-medium mb-2">Infield Sports UK Ltd</div>
+                    <div className="text-primary/90 font-medium mb-2">Northrop Grumman</div>
                     <p className="text-muted-foreground">
-                      I&apos;ve refined my expertise in electrical systems and data transmission 
-                      through hands-on experience with LED advertisement boards, particularly 
-                      in dynamic environments like football, rugby, and other major sports events, 
-                      which has deepened my understanding of hardware complexities and real-time operations.
+                      Working across full-stack development, testing, cloud services, and secure software delivery in a regulated engineering environment.
+                      Building and testing scalable applications with TypeScript, Python, AWS, Infrastructure as Code, and PostgreSQL while contributing to
+                      reliability, maintainability, code review, and Agile delivery practices.
                     </p>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Data Transmission</Badge>
-                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Electrical Systems</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">TypeScript</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Python</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">AWS</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">PostgreSQL</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Secure Delivery</Badge>
                     </div>
                   </div>
 
@@ -326,19 +328,14 @@ export function AboutSection() {
                       <h3 className="text-xl font-bold">Software Engineer Intern</h3>
                       <div className="text-sm text-muted-foreground font-mono inline-flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>2023 - 2024</span>
+                        <span>Sep 2023 - Sep 2024</span>
                       </div>
                     </div>
                     <div className="text-primary/90 font-medium mb-2">Northrop Grumman</div>
                     <p className="text-muted-foreground">
-                    During my software engineering internship, I gained valuable real-world experience.
-                    I practiced agile team processes and collaborated effectively within a team 
-                    environment. I participated in code reviews, completed tasks, and attended training 
-                    opportunities to enhance my technical and team skills. I also contributed to building 
-                    user-friendly web applications from scratch and emerged in improving existing tools, 
-                    which helped the average developer run their sessions more efficiently. Throughout my internship,
-                    I learned to write clean and dynamic code, leveraging expertise across multiple programming languages to meet 
-                    project requirements.
+                    Worked in an Agile/Scrum software engineering team, contributing to delivery tasks, ceremonies, code reviews, and technical training.
+                    Built user-friendly web applications from scratch, wrote clean code across multiple languages, and contributed to secure software practices
+                    while working with sensitive data in a regulated engineering environment.
                     </p>
                     <div className="flex flex-wrap gap-2 mt-3">
                       <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">JavaScript</Badge>
@@ -359,25 +356,21 @@ export function AboutSection() {
                   <div className="relative pl-8 pb-0">
                     <div className="absolute left-0 top-0 -translate-x-1/2 w-4 h-4 rounded-full bg-primary/60"></div>
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold">Media Assistant</h3>
+                      <h3 className="text-xl font-bold">Administration & Data Analysis</h3>
                       <div className="text-sm text-muted-foreground font-mono inline-flex items-center gap-1.5">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>2018 - 2024</span>
+                        <span>Jul 2025 - Present</span>
                       </div>
                     </div>
-                    <div className="text-primary/90 font-medium mb-2">GrandSinghMusic</div>
+                    <div className="text-primary/90 font-medium mb-2">Endeavour Restaurants Ltd</div>
                     <p className="text-muted-foreground">
-                    In my role overseeing promotion planning, I managed our social media
-                     presence and booking inquiries, growing our following from 2,000 to 8,000
-                      organically in just a few months while fostering a strong online community. 
-                      I also handle administrative tasks like managing client queries, processing deposits, 
-                      and sending payment reminders, alongside coordinating photography and videography 
-                      setups to ensure smooth and professional operations for every event.
+                      Developed Excel-based automation tools for reporting, sales projections, and performance analysis. Configured and troubleshot IT infrastructure
+                      including Cloudflare domain management, DNS records, and SSL enforcement, while improving spreadsheet structure and data accuracy.
                     </p>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Consulting</Badge>
-                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Customer Service</Badge>
-                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Social Media</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Excel Automation</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">Cloudflare</Badge>
+                      <Badge variant="outline" className="bg-primary/10 text-xs border-primary/20">DNS / SSL</Badge>
                     </div>
                   </div>
                 </CardContent>
@@ -404,10 +397,10 @@ export function AboutSection() {
                       <div className="space-y-4">
                         {[
                           { skill: "Python", level: 95 },
-                          { skill: "JavaScript", level: 90 },
-                          { skill: "C++", level: 85 },
+                          { skill: "TypeScript / JavaScript", level: 90 },
+                          { skill: "SQL", level: 85 },
                           { skill: "Java", level: 80 },
-                          { skill: "C#", level: 75 },
+                          { skill: "C# / .NET", level: 75 },
                         ].map((item, i) => (
                           <div key={i} className="space-y-1">
                             <div className="flex justify-between text-sm">
@@ -436,11 +429,11 @@ export function AboutSection() {
                       </h3>
                       <div className="space-y-4">
                         {[
-                          { skill: "React", level: 90 },
-                          { skill: "Machine Learning", level: 85 },
-                          { skill: "Neural Networks", level: 80 },
-                          { skill: "SQL", level: 85 },
-                          { skill: "AWS", level: 80 },
+                          { skill: "React / Next.js", level: 90 },
+                          { skill: "FastAPI / REST APIs", level: 85 },
+                          { skill: "AWS / Cloud Services", level: 80 },
+                          { skill: "AI Automation / LLM APIs", level: 85 },
+                          { skill: "PostgreSQL", level: 80 },
                         ].map((item, i) => (
                           <div key={i} className="space-y-1">
                             <div className="flex justify-between text-sm">
@@ -470,11 +463,10 @@ export function AboutSection() {
                     </h3>
                     <div className="flex flex-wrap gap-3">
                       {[
-                        "Windows", "Mac", "Linux", "Ubuntu", "Amazon Web Services", "Raspberry Pi",  
-                        "Jenkins", "Docker", "Postman", "Vercel", "Solidity", "Web3.js", 
-                        "CSS", ".NET", "Spring Boot", "Flask", "R Language", "Matlab", 
-                        "Assembly code", "Bash", "Excel (ICDL Certification)", "Word", "PowerPoint", 
-                        "Outlook", "Teams", "Project Management", "Smart Contracts"
+                        "GitHub workflows", "Docker", "Vercel", "Cloudflare", "DNS management", "SSL configuration", "Infrastructure as Code",
+                        "Jenkins", "CI/CD", "Linux", "Ubuntu", "Postman", "Excel automation", "Reporting dashboards",
+                        "LLM API integration", "Browser automation", "Workflow automation", "YOLOv8", "Computer vision",
+                        "Solana", "Anchor", "Rust", "Solidity", "Web3.js", "Raspberry Pi", "Project management"
                       ].map((tool, i) => (
                         <motion.div 
                           key={i}
@@ -535,6 +527,11 @@ export function AboutSection() {
               { name: "Bash", category: "tool" },
               { name: "Solidity", category: "blockchain" },
               { name: "Web3.js", category: "blockchain" },
+              { name: "FastAPI", category: "backend" },
+              { name: "Vercel", category: "cloud" },
+              { name: "Cloudflare", category: "cloud" },
+              { name: "LLM APIs", category: "technology" },
+              { name: "Automation", category: "technology" },
               { name: "Smart Contracts", category: "blockchain" }
             ].map((skill, index) => {
               // Define color based on category

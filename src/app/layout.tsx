@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Portfolio | Sukhraj Kalon",
-  description: "A unique and creative portfolio showcasing my work and skills",
-  keywords: ["portfolio", "developer", "designer", "creative", "web", "nextjs"],
+  title: "Sukhraj Kalon | Software Engineer",
+  description: "Software Engineer portfolio for Sukhraj Kalon, covering full-stack development, AI automation, cloud services, secure engineering, and product builds.",
+  keywords: ["Sukhraj Kalon", "software engineer", "full-stack", "React", "TypeScript", "Python", "AWS", "AI automation", "portfolio"],
   icons: [
     {
       rel: 'icon',
