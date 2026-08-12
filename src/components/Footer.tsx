@@ -23,7 +23,7 @@ export function Footer() {
   };
   
   return (
-    <footer className="relative mt-20 overflow-hidden">
+    <footer id="contact" className="relative mt-20 scroll-mt-20 overflow-hidden">
       {/* Decorative background */}
       <div className="absolute inset-0 -z-10 gradient-animation opacity-10" />
       

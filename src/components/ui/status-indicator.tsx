@@ -7,7 +7,7 @@ const toneClasses: Record<StatusTone, string> = {
   idle: "text-ink-muted",
   active: "text-signal-green",
   info: "text-signal-cyan",
-  warning: "text-signal-orange",
+  warning: "text-sun",
 };
 
 interface StatusIndicatorProps extends React.ComponentProps<"span"> {
