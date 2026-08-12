@@ -1,6 +1,12 @@
 export type SocialNetwork = "github" | "linkedin" | "x";
 export type ProjectLinkKind = "live" | "source";
 export type CapabilityLevel = "primary" | "supporting";
+export type StoryChapterId =
+  | "briefing"
+  | "build"
+  | "progress"
+  | "method"
+  | "next";
 
 export interface SocialLink {
   id: SocialNetwork;
@@ -55,6 +61,16 @@ export interface CapabilityGroup {
   items: readonly CapabilityItem[];
 }
 
+export interface StoryChapter {
+  id: StoryChapterId;
+  index: string;
+  portfolioLabel: string;
+  gameLabel: string;
+  title: string;
+  summary: string;
+  href: string;
+}
+
 export const portfolioProfile = {
   name: "Sukhraj Kalon",
   initials: "SK",
@@ -63,6 +79,8 @@ export const portfolioProfile = {
   location: "West Midlands, UK",
   education: "First-Class Computer Science graduate",
   headline: "Building secure products, cloud services, and intelligent automation.",
+  journey:
+    "From learning how systems work to building dependable products in secure, real-world environments.",
   summary:
     "Software Engineer working across full-stack development, cloud services, data automation, AI-assisted systems, and secure engineering environments.",
   proofPoints: [
@@ -78,6 +96,59 @@ export const portfolioNavigation = [
   { id: "about", label: "Experience", href: "/#about" },
   { id: "contact", label: "Contact", href: "/#contact" },
 ] as const;
+
+export const storyChapters: readonly StoryChapter[] = [
+  {
+    id: "briefing",
+    index: "01",
+    portfolioLabel: "Origin",
+    gameLabel: "Briefing Room",
+    title: "Start with the person behind the systems.",
+    summary:
+      "Who Sukhraj is, where he is now, and why practical engineering problems hold his attention.",
+    href: "/#home",
+  },
+  {
+    id: "build",
+    index: "02",
+    portfolioLabel: "Selected Work",
+    gameLabel: "Mission Archive",
+    title: "Learning by building things that have to work.",
+    summary:
+      "Products, platforms, and experiments that show increasing ownership from idea through delivery.",
+    href: "/#projects",
+  },
+  {
+    id: "progress",
+    index: "03",
+    portfolioLabel: "Experience",
+    gameLabel: "Field Log",
+    title: "A path from study into secure engineering.",
+    summary:
+      "The education, internship, professional roles, and operational work that shaped the engineer behind the portfolio.",
+    href: "/#about",
+  },
+  {
+    id: "method",
+    index: "04",
+    portfolioLabel: "Capabilities",
+    gameLabel: "Loadout Bay",
+    title: "Tools matter most in how they are applied.",
+    summary:
+      "Capabilities grouped around solving product, data, cloud, automation, and delivery problems.",
+    href: "/#about",
+  },
+  {
+    id: "next",
+    index: "05",
+    portfolioLabel: "Contact",
+    gameLabel: "Comms Tower",
+    title: "The next chapter starts with a useful problem.",
+    summary:
+      "A direct route for recruiters, engineering teams, and collaborators to continue the conversation.",
+    href: "/#contact",
+  },
+];
 
 export const socialLinks: readonly SocialLink[] = [
   {

@@ -1,11 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type FrameTone = "neutral" | "orange" | "green" | "cyan";
+type FrameTone = "neutral" | "primary" | "green" | "cyan";
 
 const toneClasses: Record<FrameTone, string> = {
-  neutral: "[--frame-signal:var(--steel-500)]",
-  orange: "[--frame-signal:var(--signal-orange)]",
+  neutral: "[--frame-signal:var(--steel)]",
+  primary: "[--frame-signal:var(--primary)]",
   green: "[--frame-signal:var(--signal-green)]",
   cyan: "[--frame-signal:var(--signal-cyan)]",
 };

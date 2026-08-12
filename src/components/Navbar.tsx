@@ -14,11 +14,12 @@ import {
 import { MenuIcon, Code, Terminal, Laptop } from "lucide-react";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { CVAccessDialog, CVAccessDialogMobile } from "./CVAccessDialog";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navLinks = [
   { href: "/#", label: "Home", icon: <Terminal className="h-3.5 w-3.5" /> },
-  { href: "/#about", label: "About", icon: <Laptop className="h-3.5 w-3.5" /> },
   { href: "/#projects", label: "Projects", icon: <Code className="h-3.5 w-3.5" /> },
+  { href: "/#about", label: "About", icon: <Laptop className="h-3.5 w-3.5" /> },
 ];
 
 export function Navbar() {
@@ -131,6 +132,8 @@ export function Navbar() {
           
           {/* Right actions */}
           <div className="absolute right-4 flex items-center space-x-3">
+            <ThemeToggle />
+
             <AnimatePresence>
               {isScrolled && (
                 <motion.div

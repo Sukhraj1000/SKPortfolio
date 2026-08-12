@@ -40,14 +40,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" data-theme="iron-signal">
+    <html lang="en" data-theme="iron-signal" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
+          disableTransitionOnChange
         >
           <Navbar />
           <main>{children}</main>

@@ -1,11 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type SystemTone = "neutral" | "orange" | "green" | "cyan";
+type SystemTone = "neutral" | "primary" | "green" | "cyan";
 
 const toneClasses: Record<SystemTone, string> = {
   neutral: "text-ink-muted",
-  orange: "text-signal-orange",
+  primary: "text-primary",
   green: "text-signal-green",
   cyan: "text-signal-cyan",
 };
@@ -17,7 +17,7 @@ interface SystemLabelProps extends React.ComponentProps<"span"> {
 
 export function SystemLabel({
   className,
-  tone = "orange",
+  tone = "primary",
   marker = true,
   children,
   ...props
