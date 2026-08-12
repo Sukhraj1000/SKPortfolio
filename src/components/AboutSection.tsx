@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Code, FileText, User, Terminal, GanttChartSquare, Calendar, Monitor, Database, Wrench } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -9,94 +9,6 @@ import { useRef, useState, useEffect } from "react";
 import { ScrollingText } from "@/components/ui/scrolling-text";
 import { CVAccessDialog } from "@/components/CVAccessDialog";
 
-// Code animation component for background effect
-const CodeAnimation = () => {
-  // Random code snippets
-  const codeSnippets = [
-    "const { data } = await axios.get('/api')",              // JS
-    "useEffect(() => { fetchData(); }, [])",                 // React
-    "def preprocess(data): return data.lower()",             // Python
-    "std::vector<int> nums = {1, 2, 3};",                     // C++
-    "contract Escrow { address public payer; }",             // Solidity
-    "let provider = anchor.AnchorProvider.env();",           // Solana / Anchor (Rust)
-    "fetch('/endpoint').then(res => res.json())",            // JS Fetch
-    "if __name__ == '__main__': app.run()",                  // Python Flask
-    "class Solution { public: int add(int a, int b); }",     // C++
-    "const [wallet, setWallet] = useState(null)",            // React / Web3
-    "msg.sender.transfer(amount);",                          // Solidity
-    "pub fn process(ctx: Context<...>, amount: u64) -> Result<()>", // Rust / Solana
-    "console.log('Connected to blockchain')",                // JS / Web3
-    "pip install -r requirements.txt",                       // Python
-    "cargo build-bpf",                                       // Rust / Solana
-  ];
-  
-  return (
-    <div className="absolute inset-0 overflow-hidden opacity-10 pointer-events-none z-0">
-      <div className="absolute w-full h-full">
-        {codeSnippets.map((snippet, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-primary text-opacity-20 font-mono text-sm whitespace-nowrap"
-            initial={{ 
-              x: Math.random() > 0.5 ? "100%" : "-100%", 
-              y: Math.floor(Math.random() * 100) + "%",
-              opacity: 0 
-            }}
-            animate={{ 
-              x: Math.random() > 0.5 ? "-100%" : "100%", 
-              opacity: [0, 0.7, 0], 
-            }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: Math.random() * 25 + 20,
-              delay: Math.random() * 10,
-              ease: "linear" 
-            }}
-            style={{
-              top: `${Math.random() * 90}%`,
-            }}
-          >
-            {snippet}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Binary particles animation
-const BinaryParticles = () => {
-  const particles = Array(20).fill(0).map((_, i) => i);
-  
-  return (
-    <div className="absolute inset-0 pointer-events-none z-0">
-      {particles.map((i) => (
-        <motion.div
-          key={i}
-          className="absolute text-primary text-opacity-50 font-mono text-xs"
-          initial={{ 
-            x: `${Math.random() * 100}%`, 
-            y: -20,
-            opacity: 0 
-          }}
-          animate={{ 
-            y: "120%",
-            opacity: [0, 1, 0]
-          }}
-          transition={{ 
-            repeat: Infinity, 
-            duration: Math.random() * 15 + 10,
-            delay: Math.random() * 5,
-            ease: "linear" 
-          }}
-        >
-          {Math.random() > 0.5 ? "1" : "0"}
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
 export function AboutSection() {
   const sectionRef = useRef(null);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -104,14 +16,6 @@ export function AboutSection() {
   const [isTabsSticky, setIsTabsSticky] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
   
-  // Create scroll-based animations
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-  
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.05]);
-
   // Handle sticky tabs
   useEffect(() => {
     const handleScroll = () => {
@@ -131,31 +35,7 @@ export function AboutSection() {
       ref={sectionRef}
       className="py-32 md:py-40 relative overflow-hidden"
     >
-      {/* Code and binary animations */}
-      <CodeAnimation />
-      <BinaryParticles />
-      
-      {/* Animated background */}
-      <motion.div 
-        className="absolute inset-0 gradient-animation -z-10"
-        style={{ opacity: bgOpacity }}
-      />
-      
-      {/* Circle decorations */}
-      <div className="absolute top-20 left-10 w-32 h-32 border-2 border-primary/20 rounded-full -z-10 hidden md:block">
-        <motion.div 
-          className="absolute inset-2 border-t-2 border-primary rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
-      <div className="absolute bottom-20 right-10 w-40 h-40 border-2 border-accent/20 rounded-full -z-10 hidden md:block">
-        <motion.div 
-          className="absolute inset-2 border-t-2 border-accent rounded-full"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-        />
-      </div>
+      <div className="site-grid pointer-events-none absolute inset-0 -z-10 opacity-20" />
       
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -203,7 +83,7 @@ export function AboutSection() {
             transition={{ duration: 0.7, delay: 0.4 }}
             className="w-full max-w-md"
           >
-            <div className="w-full grid grid-cols-3 bg-black/20 rounded-xl border border-white/10 overflow-hidden p-1">
+            <div className="grid w-full grid-cols-3 overflow-hidden border border-border bg-surface p-1">
               {[
                 { value: "personal", label: "Personal", icon: <User className="h-4 w-4" /> },
                 { value: "experience", label: "Experience", icon: <FileText className="h-4 w-4" /> },
@@ -215,7 +95,7 @@ export function AboutSection() {
                   className={`flex items-center justify-center gap-2 py-2 rounded-md transition-all duration-300 text-sm font-medium ${
                     activeTab === tab.value 
                       ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-white/5"
+                      : "hover:bg-foreground/5"
                   }`}
                 >
                   {tab.icon}
@@ -246,18 +126,18 @@ export function AboutSection() {
                   <div className="p-4 border border-primary/10 rounded-lg glass-morphism relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-8 bg-primary/10 flex items-center px-4">
                       <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500 opacity-80"></div>
-                        <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-80"></div>
-                        <div className="w-3 h-3 rounded-full bg-green-500 opacity-80"></div>
+                        <div className="h-3 w-3 bg-signal-red opacity-80" />
+                        <div className="h-3 w-3 bg-primary opacity-80" />
+                        <div className="h-3 w-3 bg-signal-green opacity-80" />
                       </div>
                       <div className="ml-4 text-xs text-primary-foreground/70 font-mono">about.tsx</div>
                     </div>
                     <div className="mt-8 font-mono text-sm">
                       <div className="text-muted-foreground"><span className="text-primary">const</span> <span className="text-accent">developer</span> = {'{'}</div>
-                      <div className="ml-4"><span className="text-muted-foreground">name:</span> <span className="text-green-400">&apos;Sukhraj Kalon&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">role:</span> <span className="text-green-400">&apos;Software Engineer&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">focus:</span> <span className="text-green-400">&apos;Full-stack, cloud, AI automation and secure systems&apos;</span>,</div>
-                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-green-400">&apos;Build reliable software that solves practical problems&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">name:</span> <span className="text-signal-green">&apos;Sukhraj Kalon&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">role:</span> <span className="text-signal-green">&apos;Software Engineer&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">focus:</span> <span className="text-signal-green">&apos;Full-stack, cloud, AI automation and secure systems&apos;</span>,</div>
+                      <div className="ml-4"><span className="text-muted-foreground">mission:</span> <span className="text-signal-green">&apos;Build reliable software that solves practical problems&apos;</span>,</div>
                       <div>{'};'}</div>
                     </div>
                   </div>
@@ -536,15 +416,15 @@ export function AboutSection() {
             ].map((skill, index) => {
               // Define color based on category
               const categoryColors = {
-                language: "from-blue-500/20 to-blue-700/20 border-blue-500/30 text-blue-400",
-                frontend: "from-purple-500/20 to-purple-700/20 border-purple-500/30 text-purple-400",
-                backend: "from-green-500/20 to-green-700/20 border-green-500/30 text-green-400",
-                database: "from-yellow-500/20 to-yellow-700/20 border-yellow-500/30 text-yellow-400",
-                tool: "from-orange-500/20 to-orange-700/20 border-orange-500/30 text-orange-400",
-                devops: "from-pink-500/20 to-pink-700/20 border-pink-500/30 text-pink-400",
-                cloud: "from-cyan-500/20 to-cyan-700/20 border-cyan-500/30 text-cyan-400",
-                technology: "from-indigo-500/20 to-indigo-700/20 border-indigo-500/30 text-indigo-400",
-                blockchain: "from-red-500/20 to-red-700/20 border-red-500/30 text-red-400"
+                language: "bg-signal-cyan/10 border-signal-cyan/30 text-signal-cyan",
+                frontend: "bg-primary/10 border-primary/30 text-primary",
+                backend: "bg-signal-green/10 border-signal-green/30 text-signal-green",
+                database: "bg-primary/10 border-primary/30 text-primary",
+                tool: "bg-primary/10 border-primary/30 text-primary",
+                devops: "bg-steel/10 border-steel/30 text-ink-muted",
+                cloud: "bg-signal-cyan/10 border-signal-cyan/30 text-signal-cyan",
+                technology: "bg-signal-green/10 border-signal-green/30 text-signal-green",
+                blockchain: "bg-signal-red/10 border-signal-red/30 text-signal-red"
               };
               
               const colorClass = categoryColors[skill.category as keyof typeof categoryColors];
@@ -552,7 +432,7 @@ export function AboutSection() {
               return (
                 <motion.div
                   key={index}
-                  className={`bg-gradient-to-br ${colorClass} backdrop-blur-md border rounded-xl mx-2 p-4 h-20 w-36 flex-shrink-0 flex flex-col items-center justify-center text-center hover:scale-110 transition-all duration-300`}
+                  className={`${colorClass} mx-2 flex h-20 w-36 flex-shrink-0 flex-col items-center justify-center border p-4 text-center transition-transform duration-300 hover:scale-105`}
                   whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
                 >
                   <div className="font-medium">{skill.name}</div>
@@ -565,4 +445,4 @@ export function AboutSection() {
       </motion.div>
     </section>
   );
-} 
+}

@@ -32,19 +32,19 @@ function PrivateCVRequestContent() {
 
   return (
     <div className="space-y-4 py-2">
-      <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-gray-200">
+      <div className="border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
         I don&apos;t publish my full CV as an open download. If you&apos;re a recruiter, hiring manager, or collaborator, please request it directly and I&apos;ll share the right version privately.
       </div>
 
       <div className="grid gap-3">
-        <Button className="w-full bg-primary hover:bg-primary/90 text-white" asChild>
+        <Button className="w-full" asChild>
           <a href={email ? `mailto:${email}?subject=${subject}&body=${body}` : "#"}>
             <Mail className="mr-2 h-4 w-4" />
             Request CV by Email
           </a>
         </Button>
 
-        <Button variant="outline" className="w-full border-white/10 glass-morphism hover:border-primary/50 hover:bg-primary/10" asChild>
+        <Button variant="outline" className="w-full hover:bg-primary/10" asChild>
           <a href="https://www.linkedin.com/in/sukhraj-kalon-037031252/" target="_blank" rel="noopener noreferrer">
             <Linkedin className="mr-2 h-4 w-4" />
             Contact on LinkedIn
@@ -63,7 +63,7 @@ export function CVAccessDialog({ buttonClassName, buttonText = "Request CV" }: C
           variant="outline"
           size="sm"
           className={cn(
-            "h-8 text-xs rounded-full border-white/10 glass-morphism hover:border-primary/50 hover:bg-primary/10 transition-all shadow-sm group",
+            "h-9 text-xs hover:bg-primary/10 group",
             buttonClassName
           )}
         >
@@ -71,10 +71,10 @@ export function CVAccessDialog({ buttonClassName, buttonText = "Request CV" }: C
           {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm bg-black/95 border border-primary/20 shadow-xl">
+      <DialogContent className="max-w-sm border border-border-strong bg-surface-raised shadow-[6px_6px_0_var(--shadow-strong)]">
         <DialogHeader>
-          <DialogTitle className="text-white">Request CV Privately</DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogTitle className="text-foreground">Request CV Privately</DialogTitle>
+          <DialogDescription className="text-ink-muted">
             My full CV is no longer available as a public download.
           </DialogDescription>
         </DialogHeader>
@@ -96,17 +96,17 @@ export function CVAccessDialogMobile({ buttonClassName, buttonText = "Request CV
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-center rounded-lg glass-morphism",
+            "w-full justify-center",
             buttonClassName
           )}
         >
           <FileText className="mr-2 h-4 w-4" /> {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm bg-black/95 border border-primary/20 shadow-xl">
+      <DialogContent className="max-w-sm border border-border-strong bg-surface-raised shadow-[6px_6px_0_var(--shadow-strong)]">
         <DialogHeader>
-          <DialogTitle className="text-white">Request CV Privately</DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogTitle className="text-foreground">Request CV Privately</DialogTitle>
+          <DialogDescription className="text-ink-muted">
             My full CV is no longer available as a public download.
           </DialogDescription>
         </DialogHeader>

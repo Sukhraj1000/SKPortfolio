@@ -61,7 +61,7 @@ export function Navbar() {
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300",
         isScrolled 
-          ? "bg-background/60 shadow-md shadow-black/5 backdrop-blur-xl border-b border-white/5" 
+          ? "border-b border-border bg-background/90 shadow-md shadow-[var(--shadow-soft)] backdrop-blur-xl"
           : "bg-transparent"
       )}
       initial={{ y: -100, opacity: 0 }}
@@ -106,8 +106,8 @@ export function Navbar() {
                 className={cn(
                   "px-5 py-1.5 text-sm font-medium rounded-full transition-all mx-1 flex items-center gap-1.5 group",
                   activeLink === link.href
-                    ? "text-white bg-gradient-to-r from-primary to-primary/80 shadow-md shadow-primary/20"
-                    : "text-foreground/90 hover:text-white hover:bg-primary/20"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-foreground/90 hover:bg-primary/20 hover:text-foreground"
                 )}
                 onClick={() => setActiveLink(link.href)}
               >
@@ -172,7 +172,7 @@ export function Navbar() {
             >
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full glass-morphism border border-white/10">
+                  <Button variant="ghost" size="icon" className="h-9 w-9 border-border bg-surface">
                     <MenuIcon className="h-4 w-4" />
                   </Button>
                 </SheetTrigger>
@@ -181,7 +181,7 @@ export function Navbar() {
                   className="w-72 p-0 border-none bg-background/95 backdrop-blur-xl"
                 >
                   <div className="flex flex-col h-full">
-                    <div className="p-4 border-b border-white/5 mb-2">
+                    <div className="mb-2 border-b border-border p-4">
                       <SheetHeader className="text-left">
                         <SheetTitle className="text-xl flex items-center">
                           <Terminal className="mr-2 h-5 w-5 text-primary" />
@@ -208,7 +208,7 @@ export function Navbar() {
                       ))}
                     </nav>
                     
-                    <div className="mt-auto p-4 border-t border-white/5">
+                    <div className="mt-auto border-t border-border p-4">
                       <CVAccessDialogMobile />
                     </div>
                   </div>
@@ -220,4 +220,4 @@ export function Navbar() {
       </div>
     </motion.header>
   );
-} 
+}
