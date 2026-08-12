@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en" data-theme="day">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IRON//SIGNAL asset preview</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #e8ebe6;
+        --surface: #f6f7f3;
+        --surface-raised: #dfe4df;
+        --foreground: #1b2428;
+        --muted: #536168;
+        --border: #738078;
+        --primary: #315f78;
+        --accent: #5e765f;
+        --shadow: #75817b;
+        --grid: rgba(27, 36, 40, 0.07);
+      }
+
+      :root[data-theme="night"] {
+        color-scheme: dark;
+        --background: #142028;
+        --surface: #1c2a33;
+        --surface-raised: #243640;
+        --foreground: #edf2ef;
+        --muted: #b4c0c0;
+        --border: #75878d;
+        --primary: #78b8cf;
+        --accent: #91aa83;
+        --shadow: #0b1419;
+        --grid: rgba(237, 242, 239, 0.065);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--background);
+      }
+
+      body {
+        min-width: 320px;
+        margin: 0;
+        background-color: var(--background);
+        background-image:
+          linear-gradient(var(--grid) 1px, transparent 1px),
+          linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        background-size: 32px 32px;
+        color: var(--foreground);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      button {
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        background: var(--surface);
+        color: var(--foreground);
+        font: inherit;
+      }
+
+      button:hover {
+        background: var(--surface-raised);
+      }
+
+      button:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 3px;
+      }
+
+      .shell {
+        width: min(100% - 2rem, 78rem);
+        margin-inline: auto;
+        padding-block: 2rem 4rem;
+      }
+
+      .masthead {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1.5rem;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 1.25rem;
+      }
+
+      .eyebrow,
+      .meta {
+        color: var(--muted);
+        font-size: 0.75rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 16ch;
+        margin-bottom: 0.5rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: clamp(2rem, 6vw, 4.5rem);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+      }
+
+      h2 {
+        margin-bottom: 0.35rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        letter-spacing: -0.03em;
+      }
+
+      .lede {
+        max-width: 68ch;
+        margin-bottom: 0;
+        color: var(--muted);
+        line-height: 1.65;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .controls button {
+        min-height: 2.75rem;
+        padding: 0.65rem 0.9rem;
+        white-space: nowrap;
+      }
+
+      section {
+        padding-top: 3.5rem;
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .character-grid,
+      .world-grid {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .character-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+
+      .world-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      }
+
+      .card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 2px;
+        background: var(--surface);
+        box-shadow: 4px 4px 0 var(--shadow);
+      }
+
+      .card::before {
+        position: absolute;
+        inset: 0 auto auto 0;
+        width: 10px;
+        height: 10px;
+        border-top: 2px solid var(--primary);
+        border-left: 2px solid var(--primary);
+        content: "";
+      }
+
+      .sprite-stage,
+      .world-stage {
+        display: grid;
+        min-height: 160px;
+        place-items: center;
+        background-color: var(--surface-raised);
+        background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+        background-size: 6px 6px;
+      }
+
+      .sprite {
+        width: 96px;
+        height: 128px;
+        background-image: url("/game/assets/sk-character-sheet.png");
+        background-position: 0 0;
+        background-repeat: no-repeat;
+        background-size: 384px 512px;
+        image-rendering: pixelated;
+      }
+
+      .world-sprite {
+        width: 128px;
+        height: 128px;
+        background-image: url("/game/assets/industrial-world-atlas.png");
+        background-repeat: no-repeat;
+        background-size: 640px 640px;
+        image-rendering: pixelated;
+      }
+
+      .card-copy {
+        min-height: 4.75rem;
+        padding: 0.85rem;
+        border-top: 1px solid var(--border);
+      }
+
+      .card-copy strong {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        font-size: 0.95rem;
+      }
+
+      .card-copy span {
+        color: var(--muted);
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .status {
+        min-height: 1.5em;
+        margin-top: 1rem;
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 680px) {
+        .masthead,
+        .section-heading {
+          align-items: stretch;
+          flex-direction: column;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <p class="eyebrow">IRON//SIGNAL · Asset station 03</p>
+          <h1>Game asset preview</h1>
+          <p class="lede">
+            Independent review surface for the SK character, industrial world kit,
+            and Day/Night contrast. Physics and level behavior are intentionally absent.
+          </p>
+        </div>
+        <div class="controls" aria-label="Preview controls">
+          <button id="motion-toggle" type="button">Pause animation</button>
+          <button id="theme-toggle" type="button" aria-label="Switch preview to Night theme">
+            Preview Night
+          </button>
+        </div>
+      </header>
+
+      <section aria-labelledby="character-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Character atlas · 48 × 64 frames</p>
+            <h2 id="character-title">SK movement and system states</h2>
+          </div>
+          <span class="meta">4 × 4 · nearest neighbour</span>
+        </div>
+        <div id="character-grid" class="character-grid"></div>
+        <p id="motion-status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section aria-labelledby="world-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">World atlas · 128 × 128 cells</p>
+            <h2 id="world-title">Industrial world and HUD kit</h2>
+          </div>
+          <span class="meta">5 × 5 · transparent PNG</span>
+        </div>
+        <div id="world-grid" class="world-grid"></div>
+      </section>
+    </main>
+
+    <script>
+      const characterAnimations = [
+        { id: "idle", label: "Idle", frames: [0, 1], fps: 2 },
+        { id: "run-right", label: "Run right", frames: [2, 3], fps: 8 },
+        { id: "run-left", label: "Run left", frames: [4, 5], fps: 8 },
+        { id: "jump", label: "Jump", frames: [6], fps: 1 },
+        { id: "fall", label: "Fall", frames: [7], fps: 1 },
+        { id: "land", label: "Land", frames: [8], fps: 1 },
+        { id: "interact", label: "Terminal interact", frames: [9, 10], fps: 3 },
+        { id: "glitch", label: "System glitch", frames: [11], fps: 1 },
+        { id: "drop-in", label: "Header drop-in", frames: [12, 13, 14, 15], fps: 6 }
+      ];
+
+      const worldAssets = [
+        ["industrial-floor", "Industrial floor", "tile"],
+        ["platform-edge", "Platform edge", "tile"],
+        ["riveted-wall", "Riveted wall", "tile"],
+        ["header-hatch", "Header hatch", "spawn"],
+        ["landing-marker", "Landing marker", "spawn"],
+        ["project-terminal", "Project terminal", "checkpoint"],
+        ["field-log-console", "Field Log console", "checkpoint"],
+        ["loadout-station", "Loadout station", "checkpoint"],
+        ["communications-uplink", "Communications uplink", "checkpoint"],
+        ["checkpoint-beacon", "Checkpoint beacon", "checkpoint"],
+        ["signal-core-origin", "Origin signal core", "collectible"],
+        ["signal-core-build", "Build signal core", "collectible"],
+        ["signal-core-progress", "Progress signal core", "collectible"],
+        ["signal-core-method", "Method signal core", "collectible"],
+        ["exit-marker", "Exit marker", "navigation"],
+        ["firewall-hazard", "Firewall hazard", "hazard"],
+        ["corrupt-block", "Corrupt block", "hazard"],
+        ["cracked-corrupt-block", "Cracked corrupt block", "hazard"],
+        ["hud-signal", "Signal status", "HUD"],
+        ["hud-cores", "Core counter", "HUD"],
+        ["hud-score", "Score data", "HUD"],
+        ["hud-sound-on", "Sound on", "HUD"],
+        ["hud-sound-off", "Sound off", "HUD"],
+        ["hud-pause", "Pause", "HUD"],
+        ["hud-exit", "Exit Game mode", "HUD"]
+      ];
+
+      const characterGrid = document.querySelector("#character-grid");
+      const worldGrid = document.querySelector("#world-grid");
+      const motionToggle = document.querySelector("#motion-toggle");
+      const themeToggle = document.querySelector("#theme-toggle");
+      const motionStatus = document.querySelector("#motion-status");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let playing = !reducedMotion.matches;
+      let lastFrameTime = 0;
+      let animationFrameId = null;
+
+      function characterCard(animation) {
+        const article = document.createElement("article");
+        article.className = "card";
+        article.innerHTML = `
+          <div class="sprite-stage">
+            <div class="sprite" data-animation="${animation.id}" aria-hidden="true"></div>
+          </div>
+          <div class="card-copy">
+            <strong>${animation.label}</strong>
+            <span>${animation.frames.length} frame${animation.frames.length === 1 ? "" : "s"} · ${animation.fps} FPS</span>
+          </div>
+        `;
+        article.setAttribute("aria-label", `${animation.label} character-state preview`);
+        return article;
+      }
+
+      function worldCard(asset, index) {
+        const [id, label, category] = asset;
+        const column = index % 5;
+        const row = Math.floor(index / 5);
+        const article = document.createElement("article");
+        article.className = "card";
+        article.innerHTML = `
+          <div class="world-stage">
+            <div
+              class="world-sprite"
+              style="background-position: -${column * 128}px -${row * 128}px"
+              aria-hidden="true"
+            ></div>
+          </div>
+          <div class="card-copy">
+            <strong>${label}</strong>
+            <span>${category} · ${id}</span>
+          </div>
+        `;
+        article.setAttribute("aria-label", `${label}, ${category} asset preview`);
+        return article;
+      }
+
+      characterAnimations.forEach((animation) => {
+        characterGrid.append(characterCard(animation));
+      });
+
+      worldAssets.forEach((asset, index) => {
+        worldGrid.append(worldCard(asset, index));
+      });
+
+      function paintFrame(element, frame) {
+        const column = frame % 4;
+        const row = Math.floor(frame / 4);
+        element.style.backgroundPosition = `-${column * 96}px -${row * 128}px`;
+      }
+
+      function renderAnimations(time) {
+        document.querySelectorAll(".sprite").forEach((element) => {
+          const animation = characterAnimations.find(
+            (entry) => entry.id === element.dataset.animation
+          );
+          const frameIndex = playing
+            ? Math.floor((time / 1000) * animation.fps) % animation.frames.length
+            : 0;
+          paintFrame(element, animation.frames[frameIndex]);
+        });
+      }
+
+      function animate(time) {
+        if (!playing) {
+          animationFrameId = null;
+          return;
+        }
+
+        if (time - lastFrameTime >= 50) {
+          renderAnimations(time);
+          lastFrameTime = time;
+        }
+        animationFrameId = requestAnimationFrame(animate);
+      }
+
+      function startAnimation() {
+        if (playing && animationFrameId === null) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      }
+
+      function updateMotionControl() {
+        motionToggle.textContent = playing ? "Pause animation" : "Play animation";
+        motionToggle.setAttribute("aria-pressed", String(!playing));
+        motionStatus.textContent = reducedMotion.matches
+          ? "Reduced-motion preference detected. Animation starts paused."
+          : playing
+            ? "Character animation preview is playing."
+            : "Character animation preview is paused.";
+        renderAnimations(performance.now());
+        startAnimation();
+      }
+
+      motionToggle.addEventListener("click", () => {
+        playing = !playing;
+        updateMotionControl();
+      });
+
+      themeToggle.addEventListener("click", () => {
+        const nextTheme = document.documentElement.dataset.theme === "day" ? "night" : "day";
+        document.documentElement.dataset.theme = nextTheme;
+        const destination = nextTheme === "day" ? "Night" : "Day";
+        themeToggle.textContent = `Preview ${destination}`;
+        themeToggle.setAttribute("aria-label", `Switch preview to ${destination} theme`);
+      });
+
+      reducedMotion.addEventListener("change", (event) => {
+        if (event.matches) playing = false;
+        updateMotionControl();
+      });
+
+      updateMotionControl();
+    </script>
+  </body>
+</html>
