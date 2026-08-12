@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Github, Code, Cpu, LayoutGrid, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,68 +10,20 @@ import { useInView } from "framer-motion";
 import { TiltCard } from "@/components/ui/tilt-card";
 import { LiquidButton } from "@/components/ui/liquid-button";
 
-// CodeBlock component for programmer theme
-const CodeBlock = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <motion.div
-      className="absolute -z-10 opacity-10 blur-sm pointer-events-none font-mono text-xs sm:text-sm overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 0.1 }}
-      transition={{ duration: 1 }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-// Binary particles effect
-const BinaryParticles = () => {
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden">
-      {Array.from({ length: 20 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-primary/30 font-mono text-xs select-none"
-          initial={{ 
-            x: Math.random() * 100 + "%", 
-            y: -20, 
-            opacity: 0 
-          }}
-          animate={{ 
-            y: "120%", 
-            opacity: [0, 0.5, 0],
-          }}
-          transition={{ 
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            delay: Math.random() * 5,
-            ease: "linear"
-          }}
-          style={{
-            left: `${Math.random() * 100}%`,
-          }}
-        >
-          {Math.random() > 0.5 ? "1" : "0"}
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
 // Terminal window component
 const TerminalWindow = ({ title, children }: { title: string, children: React.ReactNode }) => {
   return (
     <motion.div 
-      className="border border-primary/20 rounded-lg overflow-hidden w-full bg-black/5 dark:bg-black/20 backdrop-blur-sm"
+      className="w-full overflow-hidden border border-primary/20 bg-surface/90 backdrop-blur-sm"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       <div className="bg-secondary/30 p-2 flex items-center border-b border-primary/10">
         <div className="flex space-x-1.5 mr-2">
-          <div className="w-3 h-3 rounded-full bg-red-500/70"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500/70"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500/70"></div>
+          <div className="h-3 w-3 bg-signal-red/70" />
+          <div className="h-3 w-3 bg-primary/70" />
+          <div className="h-3 w-3 bg-signal-green/70" />
         </div>
         <div className="text-xs font-medium text-center w-full">{title}</div>
       </div>
@@ -195,112 +147,13 @@ export function ProjectsSection() {
   const projectsContainerRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
   
-  // Create scroll-based animations
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-  
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.2]);
-  
-  // Generate code snippets based on project technologies
-  const getCodeSnippet = (project: typeof projects[0]) => {
-    const tag = project.tags[0]?.toLowerCase() || '';
-    
-    if (tag.includes('react')) {
-      return `
-import React, { useState } from 'react';
-
-function App() {
-  const [data, setData] = useState([]);
-  
-  useEffect(() => {
-    fetch('/api/data')
-      .then(res => res.json())
-      .then(data => setData(data));
-  }, []);
-
-  return (
-    <div className="app">
-      {data.map(item => (
-        <div key={item.id}>{item.name}</div>
-      ))}
-    </div>
-  );
-}
-      `;
-    }
-    
-    if (tag.includes('vue')) {
-      return `
-<template>
-  <div class="app">
-    <div v-for="item in items" :key="item.id">
-      {{ item.name }}
-    </div>
-  </div>
-</template>
-
-<script>
-export default {
-  data() {
-    return {
-      items: []
-    }
-  },
-  mounted() {
-    fetch('/api/data')
-      .then(res => res.json())
-      .then(data => this.items = data)
-  }
-}
-</script>
-      `;
-    }
-    
-    return `
-function initialize() {
-  console.log("Loading ${project.title}...");
-  
-  const config = {
-    target: "#app",
-    data: {
-      title: "${project.title}",
-      description: "${project.description}"
-    }
-  };
-  
-  return config;
-}
-    `;
-  };
-
   return (
     <section
       id="projects"
       ref={sectionRef}
       className="py-32 md:py-40 relative overflow-hidden"
     >
-      {/* Binary particles in background */}
-      <BinaryParticles />
-      
-      {/* Animated gradient background */}
-      <motion.div 
-        className="absolute inset-0 gradient-animation -z-10"
-        style={{ opacity: bgOpacity }}
-      />
-      
-      {/* Code snippets in background */}
-      <div className="absolute inset-0 overflow-hidden -z-10">
-        {projects.map((project, i) => (
-          <CodeBlock key={i}>
-            {getCodeSnippet(project)}
-          </CodeBlock>
-        ))}
-      </div>
-      
-      {/* Grid lines */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-10"></div>
+      <div className="site-grid pointer-events-none absolute inset-0 -z-10 opacity-20" />
       
       <div className="container mx-auto px-4">
         <motion.div
@@ -400,4 +253,4 @@ function initialize() {
       </div>
     </section>
   );
-} 
+}

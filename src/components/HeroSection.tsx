@@ -49,39 +49,6 @@ const TerminalText = ({ text, onComplete }: { text: string; onComplete: () => vo
   );
 };
 
-// Enhanced binary matrix rain effect
-const MatrixRain = () => {
-  return (
-    <div className="absolute inset-0 -z-10 overflow-hidden opacity-5 pointer-events-none">
-      {Array.from({ length: 20 }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-primary font-mono text-sm whitespace-nowrap"
-          initial={{ 
-            y: -100, 
-            x: `${Math.random() * 100}%`,
-            opacity: 0 
-          }}
-          animate={{ 
-            y: "120%", 
-            opacity: [0, 0.5, 0],
-          }}
-          transition={{ 
-            duration: Math.random() * 10 + 15,
-            repeat: Infinity,
-            delay: Math.random() * 5,
-            ease: "linear"
-          }}
-        >
-          {Array.from({ length: 20 }).map(() => 
-            Math.random() > 0.5 ? "1" : "0"
-          ).join("")}
-        </motion.div>
-      ))}
-    </div>
-  );
-};
-
 export function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [heroVisible, setHeroVisible] = useState(false);
@@ -116,67 +83,7 @@ export function HeroSection() {
       ref={sectionRef}
       className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden"
     >
-      {/* Subtle animated background elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <motion.div 
-          className="absolute top-1/3 left-1/3 w-72 h-72 rounded-full bg-primary/5 blur-3xl"
-          animate={{
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-        
-        <motion.div 
-          className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-accent/5 blur-3xl"
-          animate={{
-            x: [0, -40, 0],
-            y: [0, 30, 0],
-            scale: [1, 1.05, 1],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        />
-      </div>
-
-      {/* Enhanced grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-
-      {/* Animated circle decorations */}
-      <motion.div 
-        className="absolute top-1/4 right-1/4 w-64 h-64 border border-primary/10 rounded-full -z-10 hidden md:block"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-      >
-        <motion.div 
-          className="absolute inset-2 border-t border-primary/30 rounded-full"
-          animate={{ rotate: -360 }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        />
-      </motion.div>
-
-      <motion.div 
-        className="absolute bottom-1/4 left-1/4 w-40 h-40 border border-accent/10 rounded-full -z-10 hidden md:block"
-        animate={{ rotate: -360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      >
-        <motion.div 
-          className="absolute inset-3 border-t border-accent/30 rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        />
-      </motion.div>
-
-      {/* Matrix rain effect */}
-      <MatrixRain />
+      <div className="site-grid pointer-events-none absolute inset-0 opacity-35" />
 
       <div className="container flex flex-row items-center justify-between z-10 max-w-6xl px-4">
         {/* Text content - fades in from left */}
@@ -347,4 +254,4 @@ export function HeroSection() {
       </motion.div>
     </section>
   );
-} 
+}

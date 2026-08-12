@@ -33,7 +33,7 @@ export function Footer() {
       </div>
       
       {/* Grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none -z-10"></div>
+      <div className="site-grid pointer-events-none absolute inset-0 -z-10 opacity-20" />
       
       <div className="container py-20">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
@@ -56,7 +56,7 @@ export function Footer() {
             <div className="flex items-center gap-4 mt-8">
               {[
                 { icon: <Github className="h-5 w-5" />, url: "https://github.com/Sukhraj1000", label: "GitHub", color: "hover:text-primary" },
-                { icon: <Linkedin className="h-5 w-5" />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn", color: "hover:text-blue-500" },
+                { icon: <Linkedin className="h-5 w-5" />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn", color: "hover:text-signal-cyan" },
                 { icon: <X className="h-5 w-5" />, url: "https://x.com/SKalon52254", label: "X", color: "hover:text-sky-500" },
                 // Use a click handler instead of direct mailto link for the email
                 { icon: <Mail className="h-5 w-5" />, url: "#", label: "Email", color: "hover:text-accent", onClick: handleEmailClick },
@@ -160,7 +160,7 @@ export function Footer() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.5 }}
           viewport={{ once: true }}
-          className="mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center"
+          className="mt-20 flex flex-col items-center justify-between border-t border-border pt-8 sm:flex-row"
         >
           <p className="text-sm text-muted-foreground">
             &copy; {currentYear} <span className="text-primary font-mono">Sukhraj Kalon</span>. All rights reserved.
@@ -170,4 +170,4 @@ export function Footer() {
       </div>
     </footer>
   );
-} 
+}

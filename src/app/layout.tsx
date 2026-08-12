@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sukhraj Kalon | Software Engineer",
-  description: "Software Engineer portfolio for Sukhraj Kalon, covering full-stack development, AI automation, cloud services, secure engineering, and product builds.",
+  title: "Sukhraj Kalon | Software Engineer & Product Builder",
+  description: "Sukhraj Kalon builds secure software, AI-assisted products, cloud systems, and full-stack experiences.",
   keywords: ["Sukhraj Kalon", "software engineer", "full-stack", "React", "TypeScript", "Python", "AWS", "AI automation", "portfolio"],
   icons: [
     {
@@ -40,28 +40,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth dark">
+    <html lang="en" className="dark" data-theme="iron-signal">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen relative`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          enableSystem={false}
         >
-          {/* Dynamic background gradient that follows cursor */}
-          <div className="pointer-events-none fixed inset-0 z-[-1] bg-gradient-to-tr from-background to-background via-purple-500/5 opacity-50 blur-[100px] transition-opacity duration-1000" id="gradient-bg"></div>
-          
           <Navbar />
-          <main className="mx-auto max-w-7xl">
-            {children}
-          </main>
+          <main>{children}</main>
         </ThemeProvider>
-        
-        {/* Use a safe script import instead of dangerouslySetInnerHTML */}
-        <script src="/js/cursor-effect.js" async defer></script>
-        
-        {/* CSP reporting script */}
         <script src="/js/csp-report.js" async defer></script>
       </body>
     </html>
