@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "coordinateOrigin": "top-left",
+  "rendering": "pixelated",
+  "palette": {
+    "charcoal": "#1B2428",
+    "steel": "#66747A",
+    "lightConcrete": "#E8EBE6",
+    "cobalt": "#315F78",
+    "cyan": "#78B8CF",
+    "moss": "#5E765F",
+    "solarYellow": "#C79B2E",
+    "signalRed": "#A94743"
+  },
+  "atlases": {
+    "character": {
+      "src": "/game/assets/sk-character-sheet.png",
+      "sourceFile": "assets/game/source/sk-character-sheet-source.png",
+      "dimensions": { "width": 192, "height": 256 },
+      "grid": { "columns": 4, "rows": 4 },
+      "frame": { "width": 48, "height": 64 },
+      "intendedUse": "SK player-character animation before physics or collision bounds are applied",
+      "animations": {
+        "idle": {
+          "frames": [0, 1],
+          "fps": 2,
+          "loop": true,
+          "intendedUse": "Default grounded state"
+        },
+        "runRight": {
+          "frames": [2, 3],
+          "fps": 8,
+          "loop": true,
+          "intendedUse": "Horizontal movement facing right"
+        },
+        "runLeft": {
+          "frames": [4, 5],
+          "fps": 8,
+          "loop": true,
+          "intendedUse": "Horizontal movement facing left"
+        },
+        "jump": {
+          "frames": [6],
+          "fps": 1,
+          "loop": false,
+          "intendedUse": "Ascending airborne state"
+        },
+        "fall": {
+          "frames": [7],
+          "fps": 1,
+          "loop": false,
+          "intendedUse": "Descending airborne state"
+        },
+        "land": {
+          "frames": [8],
+          "fps": 1,
+          "loop": false,
+          "intendedUse": "Brief grounded landing state"
+        },
+        "interact": {
+          "frames": [9, 10],
+          "fps": 3,
+          "loop": true,
+          "intendedUse": "Terminal or checkpoint interaction"
+        },
+        "glitch": {
+          "frames": [11],
+          "fps": 1,
+          "loop": false,
+          "intendedUse": "Brief damage or system-corruption feedback"
+        },
+        "dropIn": {
+          "frames": [12, 13, 14, 15],
+          "fps": 6,
+          "loop": false,
+          "intendedUse": "Header-hatch spawn sequence"
+        }
+      }
+    },
+    "world": {
+      "src": "/game/assets/industrial-world-atlas.png",
+      "sourceFile": "assets/game/source/industrial-world-atlas-source.png",
+      "dimensions": { "width": 640, "height": 640 },
+      "grid": { "columns": 5, "rows": 5 },
+      "frame": { "width": 128, "height": 128 },
+      "intendedUse": "Industrial world props, checkpoints, hazards, collectibles, and HUD controls",
+      "assets": [
+        {
+          "id": "industrial-floor",
+          "index": 0,
+          "category": "tile",
+          "frame": { "x": 0, "y": 0, "width": 128, "height": 128 },
+          "intendedUse": "Repeatable ground or platform body"
+        },
+        {
+          "id": "platform-edge",
+          "index": 1,
+          "category": "tile",
+          "frame": { "x": 128, "y": 0, "width": 128, "height": 128 },
+          "intendedUse": "Raised ledge and platform edge"
+        },
+        {
+          "id": "riveted-wall",
+          "index": 2,
+          "category": "tile",
+          "frame": { "x": 256, "y": 0, "width": 128, "height": 128 },
+          "intendedUse": "Industrial wall or solid collision block"
+        },
+        {
+          "id": "header-hatch",
+          "index": 3,
+          "category": "spawn",
+          "frame": { "x": 384, "y": 0, "width": 128, "height": 128 },
+          "intendedUse": "Game-mode drop-in origin in the header"
+        },
+        {
+          "id": "landing-marker",
+          "index": 4,
+          "category": "spawn",
+          "frame": { "x": 512, "y": 0, "width": 128, "height": 128 },
+          "intendedUse": "Visible spawn landing target"
+        },
+        {
+          "id": "project-terminal",
+          "index": 5,
+          "category": "checkpoint",
+          "frame": { "x": 0, "y": 128, "width": 128, "height": 128 },
+          "intendedUse": "Mission Archive project checkpoint"
+        },
+        {
+          "id": "field-log-console",
+          "index": 6,
+          "category": "checkpoint",
+          "frame": { "x": 128, "y": 128, "width": 128, "height": 128 },
+          "intendedUse": "Field Log experience checkpoint"
+        },
+        {
+          "id": "loadout-station",
+          "index": 7,
+          "category": "checkpoint",
+          "frame": { "x": 256, "y": 128, "width": 128, "height": 128 },
+          "intendedUse": "Loadout capabilities checkpoint"
+        },
+        {
+          "id": "communications-uplink",
+          "index": 8,
+          "category": "checkpoint",
+          "frame": { "x": 384, "y": 128, "width": 128, "height": 128 },
+          "intendedUse": "Contact objective and final uplink"
+        },
+        {
+          "id": "checkpoint-beacon",
+          "index": 9,
+          "category": "checkpoint",
+          "frame": { "x": 512, "y": 128, "width": 128, "height": 128 },
+          "intendedUse": "Progress save or respawn point"
+        },
+        {
+          "id": "signal-core-origin",
+          "index": 10,
+          "category": "collectible",
+          "frame": { "x": 0, "y": 256, "width": 128, "height": 128 },
+          "intendedUse": "Briefing or Origin chapter signal core"
+        },
+        {
+          "id": "signal-core-build",
+          "index": 11,
+          "category": "collectible",
+          "frame": { "x": 128, "y": 256, "width": 128, "height": 128 },
+          "intendedUse": "Mission Archive or Selected Work signal core"
+        },
+        {
+          "id": "signal-core-progress",
+          "index": 12,
+          "category": "collectible",
+          "frame": { "x": 256, "y": 256, "width": 128, "height": 128 },
+          "intendedUse": "Field Log or Experience signal core"
+        },
+        {
+          "id": "signal-core-method",
+          "index": 13,
+          "category": "collectible",
+          "frame": { "x": 384, "y": 256, "width": 128, "height": 128 },
+          "intendedUse": "Loadout or Capabilities signal core"
+        },
+        {
+          "id": "exit-marker",
+          "index": 14,
+          "category": "navigation",
+          "frame": { "x": 512, "y": 256, "width": 128, "height": 128 },
+          "intendedUse": "Level exit or return-to-portfolio direction"
+        },
+        {
+          "id": "firewall-hazard",
+          "index": 15,
+          "category": "hazard",
+          "frame": { "x": 0, "y": 384, "width": 128, "height": 128 },
+          "intendedUse": "Animated electrical firewall collision"
+        },
+        {
+          "id": "corrupt-block",
+          "index": 16,
+          "category": "hazard",
+          "frame": { "x": 128, "y": 384, "width": 128, "height": 128 },
+          "intendedUse": "Unstable corrupt collision block"
+        },
+        {
+          "id": "cracked-corrupt-block",
+          "index": 17,
+          "category": "hazard",
+          "frame": { "x": 256, "y": 384, "width": 128, "height": 128 },
+          "intendedUse": "Damaged or breakable corrupt block state"
+        },
+        {
+          "id": "hud-signal",
+          "index": 18,
+          "category": "hud",
+          "frame": { "x": 384, "y": 384, "width": 128, "height": 128 },
+          "intendedUse": "Health or signal-strength HUD indicator"
+        },
+        {
+          "id": "hud-cores",
+          "index": 19,
+          "category": "hud",
+          "frame": { "x": 512, "y": 384, "width": 128, "height": 128 },
+          "intendedUse": "Collected signal-core HUD indicator"
+        },
+        {
+          "id": "hud-score",
+          "index": 20,
+          "category": "hud",
+          "frame": { "x": 0, "y": 512, "width": 128, "height": 128 },
+          "intendedUse": "Score or recovered-data HUD indicator"
+        },
+        {
+          "id": "hud-sound-on",
+          "index": 21,
+          "category": "hud",
+          "frame": { "x": 128, "y": 512, "width": 128, "height": 128 },
+          "intendedUse": "Sound-enabled control state"
+        },
+        {
+          "id": "hud-sound-off",
+          "index": 22,
+          "category": "hud",
+          "frame": { "x": 256, "y": 512, "width": 128, "height": 128 },
+          "intendedUse": "Sound-muted control state"
+        },
+        {
+          "id": "hud-pause",
+          "index": 23,
+          "category": "hud",
+          "frame": { "x": 384, "y": 512, "width": 128, "height": 128 },
+          "intendedUse": "Pause control"
+        },
+        {
+          "id": "hud-exit",
+          "index": 24,
+          "category": "hud",
+          "frame": { "x": 512, "y": 512, "width": 128, "height": 128 },
+          "intendedUse": "Exit Game mode control"
+        }
+      ]
+    }
+  }
+}
