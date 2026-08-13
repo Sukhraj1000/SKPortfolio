@@ -1,173 +1,194 @@
 "use client";
 
-import { Github, Linkedin, Mail, X, Terminal, Code, ExternalLink, Cpu } from "lucide-react";
-import { motion } from "framer-motion";
+import * as React from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getObfuscatedEmail } from "@/lib/utils";
+import {
+  ArrowUpRight,
+  Github,
+  Linkedin,
+  Mail,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CVAccessDialog } from "@/components/CVAccessDialog";
+import { PixelFrame } from "@/components/ui/pixel-frame";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { StatusIndicator } from "@/components/ui/status-indicator";
+import { SystemLabel } from "@/components/ui/system-label";
+import {
+  contactDetails,
+  portfolioProfile,
+  socialLinks,
+  storyChapters,
+} from "@/data/portfolio";
+import { getObfuscatedEmail } from "@/lib/utils";
+
+const commsChapter = storyChapters[4];
+
+const socialIcons = {
+  github: Github,
+  linkedin: Linkedin,
+  x: ArrowUpRight,
+} as const;
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const [email, setEmail] = useState("");
-  
-  // Set the email on the client side to avoid having it in the HTML source
-  useEffect(() => {
+  const [email, setEmail] = React.useState("");
+
+  React.useEffect(() => {
     setEmail(getObfuscatedEmail());
   }, []);
-  
-  // Handle email click to avoid direct mailto: link in HTML
-  const handleEmailClick = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    window.location.href = `mailto:${email}`;
-  };
-  
+
+  const subject = encodeURIComponent("Portfolio conversation from sukhrajkalon.info");
+  const body = encodeURIComponent(
+    "Hi Sukhraj,\n\nI found your portfolio and would like to discuss a relevant opportunity or collaboration.\n\nThanks,",
+  );
+
   return (
-    <footer id="contact" className="relative mt-20 scroll-mt-20 overflow-hidden">
-      {/* Decorative background */}
-      <div className="absolute inset-0 -z-10 gradient-animation opacity-10" />
-      
-      {/* Angled divider */}
-      <div className="absolute top-0 left-0 right-0 h-16 overflow-hidden -z-10">
-        <div className="absolute inset-0 bg-background transform -skew-y-2" />
-      </div>
-      
-      {/* Grid pattern */}
-      <div className="site-grid pointer-events-none absolute inset-0 -z-10 opacity-20" />
-      
-      <div className="container py-20">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="md:col-span-2"
-          >
-            <Link href="/" className="font-bold text-2xl text-primary flex items-center gap-2">
-              <Terminal className="h-6 w-6" />
-              <span className="gradient-text font-mono tracking-tight">SK PORTFOLIO</span>
-            </Link>
-            
-            <p className="mt-4 text-muted-foreground max-w-md">
-              Software Engineer focused on secure full-stack development, cloud services, AI-assisted automation, and product systems that are practical, reliable, and maintainable.
-            </p>
-            
-            <div className="flex items-center gap-4 mt-8">
-              {[
-                { icon: <Github className="h-5 w-5" />, url: "https://github.com/Sukhraj1000", label: "GitHub", color: "hover:text-primary" },
-                { icon: <Linkedin className="h-5 w-5" />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn", color: "hover:text-signal-cyan" },
-                { icon: <X className="h-5 w-5" />, url: "https://x.com/SKalon52254", label: "X", color: "hover:text-sky-500" },
-                // Use a click handler instead of direct mailto link for the email
-                { icon: <Mail className="h-5 w-5" />, url: "#", label: "Email", color: "hover:text-accent", onClick: handleEmailClick },
-              ].map((social, index) => (
-                <motion.a
-                  key={social.label}
-                  href={social.url}
-                  target={social.onClick ? "_self" : "_blank"}
-                  rel="noopener noreferrer"
-                  onClick={social.onClick}
-                  className={`p-3 rounded-full glass-morphism text-foreground ${social.color} hover-lift transition-all`}
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ 
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    delay: 0.1 * index 
-                  }}
-                  viewport={{ once: true }}
-                  whileHover={{ y: -5 }}
-                >
-                  {social.icon}
-                  <span className="sr-only">{social.label}</span>
-                </motion.a>
-              ))}
+    <>
+      <section
+        id="contact"
+        data-game-checkpoint="comms"
+        aria-labelledby="comms-title"
+        className="relative py-24 sm:py-32"
+      >
+        <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-40" />
+        <div className="dither-field pointer-events-none absolute bottom-0 right-0 -z-10 h-72 w-1/2 opacity-25 [mask-image:linear-gradient(to_left,black,transparent)]" />
+
+        <div className="section-shell">
+          <SectionHeading
+            label={commsChapter.gameLabel}
+            index={commsChapter.index}
+            headingId="comms-title"
+            title={commsChapter.title}
+            description={commsChapter.summary}
+          />
+
+          <div className="mt-14 grid items-start gap-8 lg:mt-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] lg:gap-14">
+            <div>
+              <SystemLabel tone="green">Channel available</SystemLabel>
+              <p className="text-pretty mt-5 max-w-xl text-xl font-semibold leading-8 text-foreground sm:text-2xl sm:leading-9">
+                Recruiters, hiring managers, engineering teams, and collaborators can
+                use these channels to discuss relevant work or request a private CV.
+              </p>
+              <p className="mt-4 max-w-xl text-sm leading-6 text-ink-muted sm:text-base sm:leading-7">
+                The most useful conversations start with the problem, team, or outcome
+                you are trying to move forward.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <CVAccessDialog buttonClassName="h-11 px-5" />
+                <Button variant="outline" size="lg" asChild>
+                  <a
+                    href={email ? `mailto:${email}?subject=${subject}&body=${body}` : undefined}
+                    aria-disabled={!email}
+                    onClick={(event) => {
+                      if (!email) event.preventDefault();
+                    }}
+                  >
+                    <Mail aria-hidden="true" />
+                    {contactDetails.emailLabel}
+                  </a>
+                </Button>
+              </div>
             </div>
-          </motion.div>
-          
-          <div className="md:col-span-2 md:flex md:justify-end">
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="font-semibold mb-6 text-lg flex items-center gap-2">
-                  <Code className="h-4 w-4 text-primary" />
-                  <span>Navigation</span>
-                </h3>
-                <ul className="space-y-4">
-                  {[
-                    { href: "#home", label: "Home", icon: <Terminal className="h-4 w-4" /> },
-                    { href: "#about", label: "About", icon: <Cpu className="h-4 w-4" /> },
-                    { href: "#projects", label: "Projects", icon: <Code className="h-4 w-4" /> },
-                  ].map((link) => (
-                    <li key={link.href}>
-                      <Link 
-                        href={link.href} 
-                        className="text-muted-foreground hover:text-primary transition-colors group flex items-center gap-2"
+
+            <PixelFrame tone="cyan" raised className="overflow-hidden">
+              <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
+                <SystemLabel tone="cyan">{"Comms uplink // Direct channels"}</SystemLabel>
+                <StatusIndicator pulse>Ready</StatusIndicator>
+              </div>
+
+              <dl className="grid gap-px bg-border sm:grid-cols-2">
+                <div className="bg-surface p-4 sm:p-5">
+                  <dt className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-faint">
+                    Location
+                  </dt>
+                  <dd className="mt-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <MapPin aria-hidden="true" className="h-4 w-4 text-primary" />
+                    {contactDetails.location}
+                  </dd>
+                </div>
+                <div className="bg-surface p-4 sm:p-5">
+                  <dt className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-faint">
+                    CV protocol
+                  </dt>
+                  <dd className="mt-2 text-sm leading-6 text-foreground">
+                    Shared privately on request
+                  </dd>
+                </div>
+              </dl>
+
+              <ul aria-label="Professional and social profiles" className="grid sm:grid-cols-3">
+                {socialLinks.map((social) => {
+                  const Icon = socialIcons[social.id];
+
+                  return (
+                    <li key={social.id} className="border-t border-border sm:border-r sm:last:border-r-0">
+                      <Link
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex min-h-16 items-center justify-between gap-3 px-4 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-surface-raised hover:text-primary"
                       >
-                        <span className="text-primary/50 group-hover:text-primary transition-colors">{link.icon}</span>
-                        <span className="animated-underline inline-block">{link.label}</span>
+                        <span className="flex items-center gap-2.5">
+                          <Icon aria-hidden="true" className="h-4 w-4 text-primary" />
+                          {social.label}
+                        </span>
+                        <ArrowUpRight
+                          aria-hidden="true"
+                          className="h-3.5 w-3.5 text-ink-faint transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                        />
                       </Link>
                     </li>
-                  ))}
-                </ul>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="font-semibold mb-6 text-lg flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 text-primary" />
-                  <span>Contact</span>
-                </h3>
-                <ul className="space-y-4">
-                  <li className="text-muted-foreground">
-                    <span className="block font-medium">West Midlands, UK</span>
-                    <span className="text-sm text-muted-foreground/80">United Kingdom</span>
-                  </li>
-                  <li className="text-muted-foreground">
-                    <button 
-                      onClick={handleEmailClick}
-                      className="hover:text-primary transition-colors group flex items-center gap-2"
-                    >
-                      <Mail className="h-4 w-4 text-primary/50 group-hover:text-primary transition-colors" />
-                      <span className="animated-underline inline-block">
-                        {email || "Email Address"}
-                      </span>
-                    </button>
-                  </li>
-                  <li className="text-muted-foreground mt-4">
-                    <CVAccessDialog 
-                      buttonClassName="glass-morphism hover:border-primary/50 text-sm px-4"
-                      buttonText="Request CV"
-                    />
-                  </li>
-                </ul>
-              </motion.div>
-            </div>
+                  );
+                })}
+              </ul>
+            </PixelFrame>
           </div>
         </div>
-        
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="mt-20 flex flex-col items-center justify-between border-t border-border pt-8 sm:flex-row"
-        >
-          <p className="text-sm text-muted-foreground">
-            &copy; {currentYear} <span className="text-primary font-mono">Sukhraj Kalon</span>. All rights reserved.
-          </p>
-          
-        </motion.div>
-      </div>
-    </footer>
+      </section>
+
+      <footer className="border-t border-border-strong bg-surface">
+        <div className="section-shell grid gap-8 py-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div>
+            <Link
+              href="/#home"
+              className="inline-flex items-center gap-3 text-foreground transition-colors hover:text-primary"
+            >
+              <span className="grid h-9 w-9 place-items-center bg-primary font-mono text-xs font-bold text-primary-foreground">
+                {portfolioProfile.initials}
+              </span>
+              <span>
+                <span className="block text-sm font-semibold">
+                  {portfolioProfile.name}
+                </span>
+                <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-muted">
+                  {portfolioProfile.role}
+                </span>
+              </span>
+            </Link>
+            <p className="mt-4 text-xs text-ink-muted">
+              &copy; {currentYear} {portfolioProfile.name}. All rights reserved.
+            </p>
+          </div>
+
+          <nav aria-label="Footer story navigation">
+            <ol className="flex flex-wrap gap-x-4 gap-y-2 md:justify-end">
+              {storyChapters.map((chapter) => (
+                <li key={chapter.id}>
+                  <Link
+                    href={chapter.href}
+                    className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-primary"
+                  >
+                    {chapter.index} {chapter.portfolioLabel}
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+      </footer>
+    </>
   );
 }
