@@ -190,7 +190,7 @@ function CapabilityRecord({
 
         <ArrowDown
           aria-hidden="true"
-          className="col-start-3 row-start-1 h-4 w-4 shrink-0 text-primary transition-transform duration-200 group-open/loadout:rotate-180 motion-reduce:transition-none lg:col-start-auto"
+          className="col-start-3 row-start-1 h-4 w-4 shrink-0 text-primary transition-transform duration-200 group-open/loadout:rotate-180 motion-reduce:transition-none lg:col-start-auto lg:row-start-auto"
         />
       </summary>
 
