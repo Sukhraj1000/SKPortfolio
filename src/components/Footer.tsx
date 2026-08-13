@@ -50,7 +50,7 @@ export function Footer() {
         id="contact"
         data-game-checkpoint="comms"
         aria-labelledby="comms-title"
-        className="relative py-24 sm:py-32"
+        className="relative py-16 sm:py-20 lg:py-24"
       >
         <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-40" />
         <div className="dither-field pointer-events-none absolute bottom-0 right-0 -z-10 h-72 w-1/2 opacity-25 [mask-image:linear-gradient(to_left,black,transparent)]" />
@@ -64,7 +64,7 @@ export function Footer() {
             description={commsChapter.summary}
           />
 
-          <div className="mt-14 grid items-start gap-8 lg:mt-20 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] lg:gap-14">
+          <div className="mt-10 grid items-start gap-8 sm:mt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] lg:gap-14">
             <div>
               <SystemLabel tone="green">Channel available</SystemLabel>
               <p className="text-pretty mt-5 max-w-xl text-xl font-semibold leading-8 text-foreground sm:text-2xl sm:leading-9">
