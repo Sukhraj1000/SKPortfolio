@@ -440,6 +440,16 @@
   }
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .project-media-image {
+    transition: transform var(--motion-base) var(--ease-standard);
+  }
+
+  .project-media-frame:hover .project-media-image {
+    transform: scale(1.025);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

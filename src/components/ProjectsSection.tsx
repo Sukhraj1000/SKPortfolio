@@ -1,255 +1,246 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { Github, Code, Cpu, LayoutGrid, ExternalLink } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { useRef } from "react";
-import { useInView } from "framer-motion";
-import { TiltCard } from "@/components/ui/tilt-card";
-import { LiquidButton } from "@/components/ui/liquid-button";
+import Link from "next/link";
+import {
+  ArrowDown,
+  ExternalLink,
+  Github,
+  Layers3,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PixelFrame } from "@/components/ui/pixel-frame";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { StatusIndicator } from "@/components/ui/status-indicator";
+import { SystemLabel } from "@/components/ui/system-label";
+import {
+  portfolioProjects,
+  socialLinks,
+  storyChapters,
+  type PortfolioProject,
+} from "@/data/portfolio";
+import { cn } from "@/lib/utils";
 
-// Terminal window component
-const TerminalWindow = ({ title, children }: { title: string, children: React.ReactNode }) => {
+const archiveChapter = storyChapters[1];
+const githubProfile = socialLinks.find((social) => social.id === "github");
+
+function ProjectMedia({ project }: { project: PortfolioProject }) {
   return (
-    <motion.div 
-      className="w-full overflow-hidden border border-primary/20 bg-surface/90 backdrop-blur-sm"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+    <PixelFrame
+      tone="primary"
+      raised
+      className="project-media-frame overflow-hidden bg-surface-raised"
     >
-      <div className="bg-secondary/30 p-2 flex items-center border-b border-primary/10">
-        <div className="flex space-x-1.5 mr-2">
-          <div className="h-3 w-3 bg-signal-red/70" />
-          <div className="h-3 w-3 bg-primary/70" />
-          <div className="h-3 w-3 bg-signal-green/70" />
-        </div>
-        <div className="text-xs font-medium text-center w-full">{title}</div>
+      <div className="flex items-center justify-between gap-3 border-b border-border bg-surface px-3 py-2.5">
+        <SystemLabel marker={false} tone="neutral">
+          Visual record
+        </SystemLabel>
+        <span className="font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-faint">
+          {project.id}
+        </span>
       </div>
-      <div className="p-4 font-mono text-sm">
-        {children}
+
+      <div className="micro-grid relative aspect-[16/10] overflow-hidden bg-background">
+        <Image
+          src={project.image}
+          alt={project.imageAlt}
+          fill
+          sizes="(min-width: 1024px) 42vw, (min-width: 768px) 46vw, 100vw"
+          className={cn(
+            "project-media-image object-contain p-6 sm:p-8",
+            project.id === "crypto-portfolio" && "p-4 sm:p-5",
+          )}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-[linear-gradient(to_top,var(--surface-raised),transparent)] opacity-40"
+        />
       </div>
-    </motion.div>
+    </PixelFrame>
   );
-};
+}
 
-const projects = [
-  {
-    id: 1,
-    title: "Tymaura",
-    description: "A broader event-planning web platform with vendor workflows, authentication, guest RSVP journeys, messaging, and admin readiness controls. Built across frontend, backend, deployment, database workflows, and production QA.",
-    image: "/tymaura-logo-card.svg",
-    tags: ["React", "TypeScript", "Next.js", "Convex", "Clerk", "Vercel", "Stripe"],
-    websiteUrl: "https://tymaura.app",
-    feature: "Production-focused vendor, guest, messaging, and admin workflows",
-    icon: <LayoutGrid className="h-5 w-5" />
-  },
-  {
-    id: 2,
-    title: "Skaltek",
-    description: "A freelance software engineering and digital-agent business building high-performance websites, AI automation, and practical lead-generation systems for local UK businesses, with a focus on measurable operational improvements rather than generic agency work.",
-    image: "/skaltek-logo-card.png",
-    tags: ["Web Development", "AI Automation", "Lead Generation", "Local SEO", "Operations", "QA"],
-    websiteUrl: "https://skaltek.co.uk",
-    feature: "Websites, automation, and client-acquisition systems for UK businesses",
-    icon: <Cpu className="h-5 w-5" />
-  },
-  {
-    id: 3,
-    title: "Solana Smart Contract AI Generator",
-    description: "Final-year project graded 82%: a platform to generate, compile, test, and analyse Solana smart contracts using AI, with a FastAPI backend, Claude API integration, React frontend, Rust, Anchor, and Solana Devnet testing.",
-    image: "/solana.png",
-    tags: ["React", "FastAPI", "Claude API", "Solana", "Anchor", "Rust"],
-    githubUrl: "https://github.com/Sukhraj1000/SmartContractGen",
-    feature: "AI-assisted Solana smart contract generation and testing",
-    icon: <Cpu className="h-5 w-5" />
-  },
-  {
-    id: 4,
-    title: "Crypto Portfolio Mobile App",
-    description: "Independent project graded 80%: a .NET MAUI mobile app for tracking crypto holdings, live price changes, buy/sell activity, real-time portfolio valuation, and transaction management via the CoinGecko API.",
-    image: "/cryptoapp.png",
-    tags: [".NET MAUI", "C#", "CoinGecko API", "Mobile", "Data Visualisation"],
-    githubUrl: "https://github.com/Sukhraj1000/CryptoMobileAppPorfolio",
-    feature: "Real-time portfolio valuation and transaction management",
-    icon: <LayoutGrid className="h-5 w-5" />
-  },
-];
-
-// Project card with advanced animation
-const ProjectCard = ({ project, index, isInView }: { project: typeof projects[0], index: number, isInView: boolean }) => {
+function MissionLinks({ project }: { project: PortfolioProject }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.6, delay: 0.1 * index }}
+    <div className="flex flex-wrap gap-2.5">
+      {project.links.map((link) => {
+        const Icon = link.kind === "source" ? Github : ExternalLink;
+
+        return (
+          <Button
+            key={`${project.id}-${link.kind}`}
+            variant={link.kind === "live" ? "default" : "outline"}
+            size="sm"
+            asChild
+          >
+            <Link href={link.href} target="_blank" rel="noopener noreferrer">
+              <Icon aria-hidden="true" />
+              {link.label}
+            </Link>
+          </Button>
+        );
+      })}
+    </div>
+  );
+}
+
+function MissionRecord({
+  project,
+  index,
+}: {
+  project: PortfolioProject;
+  index: number;
+}) {
+  const recordNumber = String(index + 1).padStart(2, "0");
+  const isEven = index % 2 === 1;
+
+  return (
+    <article
+      id={`mission-${project.id}`}
+      data-project-record={project.id}
+      aria-labelledby={`mission-${project.id}-title`}
+      className="scroll-mt-24 border-t border-border-strong py-10 last:border-b sm:py-14 lg:py-20"
     >
-      <TiltCard 
-        className="h-full"
-        tiltAmount={5}
-      >
-        <div className="relative h-full rounded-lg overflow-hidden border border-primary/10 bg-background/50 backdrop-blur-sm shadow-lg group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80 z-10"></div>
-          
-          <div className="relative aspect-video overflow-hidden">
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:mb-8">
+        <SystemLabel>{`Archive ${recordNumber} / ${project.kind}`}</SystemLabel>
+        <div className="flex items-center gap-3">
+          <StatusIndicator
+            tone={project.status === "Live" ? "active" : "info"}
+          >
+            {project.status}
+          </StatusIndicator>
+          {project.grade ? (
+            <span className="border border-border-strong bg-surface px-2.5 py-1 font-mono text-xs font-bold text-primary">
+              Grade {project.grade}
+            </span>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid items-start gap-8 md:grid-cols-2 lg:gap-14 xl:gap-20">
+        <div className={cn(isEven && "md:order-2")}>
+          <ProjectMedia project={project} />
+        </div>
+
+        <div className={cn("min-w-0", isEven && "md:order-1")}>
+          <p className="font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-faint">
+            {`Mission record // ${recordNumber}`}
+          </p>
+          <h3
+            id={`mission-${project.id}-title`}
+            className="text-balance mt-3 text-3xl font-semibold leading-[1.02] tracking-[-0.035em] text-foreground lg:text-5xl"
+          >
+            {project.title}
+          </h3>
+          <p className="text-pretty mt-4 text-base leading-7 text-ink-muted lg:text-lg lg:leading-8">
+            {project.summary}
+          </p>
+
+          <div className="mt-6">
+            <MissionLinks project={project} />
           </div>
-          
-          <div className="relative z-20 p-6">
-            <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-            <p className="text-muted-foreground mb-4">{project.description}</p>
-            
-            <div className="flex flex-wrap gap-2 mb-6">
-              {project.tags.map((tag) => (
-                <span 
-                  key={tag} 
-                  className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary"
+
+          <details className="group/details mt-7 border-y border-border bg-surface/60 open:bg-surface">
+            <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:text-primary focus-visible:outline-offset-[-2px] [&::-webkit-details-marker]:hidden">
+              <span className="flex items-center gap-2.5">
+                <Layers3 aria-hidden="true" className="h-4 w-4 text-primary" />
+                Inspect case study
+              </span>
+              <ArrowDown
+                aria-hidden="true"
+                className="h-4 w-4 text-primary transition-transform duration-200 group-open/details:rotate-180 motion-reduce:transition-none"
+              />
+            </summary>
+
+            <div className="grid gap-6 border-t border-border pb-6 pt-5 sm:grid-cols-2">
+              <div>
+                <h4 className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
+                  01 / Problem
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-ink-muted">
+                  {project.problem}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
+                  02 / Ownership
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-ink-muted">
+                  {project.contribution}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
+                  03 / Result
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-ink-muted">
+                  {project.outcome}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
+                  04 / Technical approach
+                </h4>
+                <ul
+                  aria-label={`${project.title} technologies`}
+                  className="mt-2 flex flex-wrap gap-1.5"
                 >
-                  {tag}
-                </span>
-              ))}
+                  {project.technologies.map((technology) => (
+                    <li
+                      key={technology}
+                      className="border border-border bg-background px-2 py-1 font-mono text-[0.625rem] text-foreground"
+                    >
+                      {technology}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            
-            <div className="flex space-x-3 mt-auto">
-              {(project.websiteUrl || project.githubUrl) && (
-                <LiquidButton variant="default" size="sm" asChild>
-                  <a 
-                    href={project.websiteUrl || project.githubUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5"
-                  >
-                    {project.websiteUrl ? (
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    ) : (
-                      <Github className="h-3.5 w-3.5" />
-                    )}
-                    {project.websiteUrl ? "View Website" : "View on GitHub"}
-                  </a>
-                </LiquidButton>
-              )}
-            </div>
-          </div>
+          </details>
         </div>
-      </TiltCard>
-    </motion.div>
+      </div>
+    </article>
   );
-};
+}
 
 export function ProjectsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const projectsContainerRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
-  
   return (
-    <section
-      id="projects"
-      ref={sectionRef}
-      className="py-32 md:py-40 relative overflow-hidden"
-    >
-      <div className="site-grid pointer-events-none absolute inset-0 -z-10 opacity-20" />
-      
-      <div className="container mx-auto px-4">
-        <motion.div
-          className="text-center mb-20"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.div 
-            className="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              Featured Projects
-            </span>
-          </motion.div>
-          
-          <motion.h2 
-            className="text-3xl md:text-5xl font-bold tracking-tight mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            My Recent <span className="text-primary neon-text">Work</span>
-          </motion.h2>
-          
-          <motion.p 
-            className="text-muted-foreground max-w-2xl mx-auto text-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            A few current and recent builds spanning full-stack products, AI automation, cloud-backed workflows, and applied blockchain development
-          </motion.p>
-        </motion.div>
+    <section id="projects" aria-labelledby="projects-title" className="relative py-24 sm:py-32">
+      <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-35" />
+      <div className="section-shell">
+        <SectionHeading
+          label={archiveChapter.gameLabel}
+          index={archiveChapter.index}
+          headingId="projects-title"
+          title={archiveChapter.title}
+          description={archiveChapter.summary}
+        />
 
-        {/* Projects grid with enhanced cards */}
-        <motion.div 
-          ref={projectsContainerRef}
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-10"
-          initial={{ opacity: 0, y: 40 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          {projects.map((project, index) => (
-            <ProjectCard 
-              key={project.id} 
-              project={project} 
-              index={index} 
-              isInView={isInView} 
-            />
+        <div className="mt-14 sm:mt-20">
+          {portfolioProjects.map((project, index) => (
+            <MissionRecord key={project.id} project={project} index={index} />
           ))}
-        </motion.div>
-        
-        {/* Call to action */}
-        <motion.div 
-          className="text-center mt-20"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <TerminalWindow title="terminal">
-            <div className="text-sm md:text-base">
-              <span className="text-primary mr-2">&gt;</span>
-              <span className="text-muted-foreground">Want to see more of what I&apos;m building?</span>
-              <br />
-              <span className="text-primary mr-2">&gt;</span>
-              <span className="text-muted-foreground">Check out my GitHub repository for what I&apos;ve been up to</span>
-              <motion.span 
-                className="inline-block w-2 h-5 bg-primary ml-1"
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              />
+        </div>
+
+        {githubProfile ? (
+          <div className="mt-12 flex flex-col items-start justify-between gap-5 border-l-2 border-primary bg-surface px-5 py-5 sm:flex-row sm:items-center sm:px-6">
+            <div>
+              <SystemLabel tone="neutral">Archive continues</SystemLabel>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-muted">
+                These four records are the selected evidence. Additional experiments
+                and repositories remain available on GitHub.
+              </p>
             </div>
-          </TerminalWindow>
-          
-          <motion.div 
-            className="mt-8"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Button 
-              className="hover-lift glow-effect px-8" 
-              size="lg"
-              asChild
-            >
-              <Link href="https://github.com/Sukhraj1000" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                <Github className="h-4 w-4" />
-                View More Projects
+            <Button variant="outline" asChild>
+              <Link
+                href={githubProfile.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github aria-hidden="true" />
+                View GitHub
               </Link>
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
