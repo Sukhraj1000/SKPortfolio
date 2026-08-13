@@ -28,7 +28,7 @@ export function HeroSection() {
     <section
       id="home"
       aria-labelledby="hero-title"
-      className="relative isolate min-h-[100svh] overflow-hidden border-b border-border bg-background pt-16"
+      className="relative isolate overflow-hidden border-b border-border bg-background pt-16"
     >
       <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-60" />
       <div className="dither-field pointer-events-none absolute right-0 top-16 -z-10 h-72 w-1/3 opacity-30 [mask-image:linear-gradient(to_left,black,transparent)]" />
@@ -37,7 +37,7 @@ export function HeroSection() {
         className="absolute left-0 top-16 h-1 w-32 bg-primary sm:w-52"
       />
 
-      <div className="section-shell flex min-h-[calc(100svh-4rem)] flex-col justify-center py-6 sm:py-10 lg:py-12">
+      <div className="section-shell flex flex-col justify-center py-8 sm:py-12 lg:min-h-[calc(88svh-4rem)] lg:py-12">
         <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(20rem,0.88fr)] lg:gap-12 xl:gap-20">
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -143,7 +143,7 @@ export function HeroSection() {
           <PixelFrame
             tone="cyan"
             raised
-            className="mx-auto w-full max-w-[29rem] overflow-hidden bg-surface"
+            className="mx-auto hidden w-full max-w-[29rem] overflow-hidden bg-surface lg:block"
           >
             <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
               <SystemLabel tone="cyan">{"Operator record // SK"}</SystemLabel>
