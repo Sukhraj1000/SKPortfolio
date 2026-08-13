@@ -1,5 +1,6 @@
 export const gameReturnKey = "iron-signal:portfolio-return";
 export const gameSoundKey = "iron-signal:game-sound";
+export const gameProgressKey = "iron-signal:game-progress";
 
 export const portfolioStoryAnchors = [
   "home",
