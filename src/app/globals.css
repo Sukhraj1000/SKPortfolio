@@ -253,10 +253,10 @@
   .operator-sprite {
     width: 144px;
     height: 192px;
-    background-image: url("/game/assets/sk-character-sheet.png");
+    background-image: url("/sk-operator-portrait.png");
     background-position: 0 0;
     background-repeat: no-repeat;
-    background-size: 576px 768px;
+    background-size: 100% 100%;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
@@ -464,7 +464,6 @@
   .operator-sprite {
     width: 192px;
     height: 256px;
-    background-size: 768px 1024px;
   }
 }
 

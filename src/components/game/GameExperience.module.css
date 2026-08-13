@@ -1,0 +1,217 @@
+.stage {
+  position: relative;
+  min-height: clamp(34rem, calc(100svh - 11.5rem), 52rem);
+  overflow: hidden;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(var(--grid-line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--primary) 8%, transparent));
+  background-size: 24px 24px, 24px 24px, 100% 100%;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 3px,
+    color-mix(in srgb, var(--foreground) 4%, transparent) 3px 4px
+  );
+}
+
+.hatch {
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  z-index: 5;
+  width: min(20rem, 64vw);
+  height: 3.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-top: 0;
+  background: var(--surface-high);
+  box-shadow: 0 6px 0 var(--shadow-strong);
+  transform: translateX(-50%);
+}
+
+.hatch::after {
+  position: absolute;
+  inset: 50% 0 auto;
+  z-index: -1;
+  height: 2px;
+  content: "";
+  background: var(--primary);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+.hatchLeft,
+.hatchRight {
+  position: absolute;
+  inset-block: 0;
+  width: 50%;
+  background-color: var(--surface-raised);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 12px,
+    color-mix(in srgb, var(--primary) 15%, transparent) 12px 14px
+  );
+}
+
+.hatchLeft {
+  left: 0;
+  border-right: 1px solid var(--border-strong);
+  animation: hatch-left 520ms var(--ease-enter) forwards;
+}
+
+.hatchRight {
+  right: 0;
+  border-left: 1px solid var(--border-strong);
+  animation: hatch-right 520ms var(--ease-enter) forwards;
+}
+
+.stageReadout {
+  position: absolute;
+  top: 5rem;
+  left: clamp(1rem, 4vw, 4rem);
+  z-index: 2;
+  max-width: 18rem;
+  border-left: 2px solid var(--primary);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  padding: 0.75rem 1rem;
+}
+
+.operator {
+  position: absolute;
+  bottom: 4.75rem;
+  left: 50%;
+  z-index: 6;
+  width: 144px;
+  height: 192px;
+  background-image: url("/game/assets/sk-character-sheet.png");
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 576px 768px;
+  filter: drop-shadow(8px 10px 0 var(--shadow-soft));
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.operatorDropping {
+  animation: character-drop 760ms var(--ease-enter) both;
+}
+
+.operatorLanded {
+  transform: translateX(-50%);
+}
+
+.spawnMarker {
+  position: absolute;
+  bottom: 4rem;
+  left: 50%;
+  z-index: 2;
+  width: min(22rem, 72vw);
+  height: 3rem;
+  border: 1px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  transform: translateX(-50%) skewX(-18deg);
+}
+
+.spawnMarker span {
+  position: absolute;
+  inset: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--primary) 65%, transparent);
+}
+
+.floor {
+  position: absolute;
+  inset: auto 0 0;
+  height: 5rem;
+  border-top: 2px solid var(--border-strong);
+  background-color: var(--surface-high);
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--surface-raised) 0 16px,
+    var(--surface-high) 16px 32px
+  );
+  box-shadow: inset 0 8px 0 color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.pauseOverlay {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  z-index: 12;
+  min-width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 6px 6px 0 var(--shadow-strong);
+  transform: translate(-50%, -50%);
+}
+
+@keyframes hatch-left {
+  to {
+    transform: translateX(-102%);
+  }
+}
+
+@keyframes hatch-right {
+  to {
+    transform: translateX(102%);
+  }
+}
+
+@keyframes character-drop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -72vh);
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  78% {
+    transform: translate(-50%, 0);
+  }
+
+  90% {
+    transform: translate(-50%, -12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 639px) {
+  .stage {
+    min-height: calc(100svh - 15rem);
+  }
+
+  .stageReadout {
+    top: 4.25rem;
+  }
+
+  .operator {
+    width: 96px;
+    height: 128px;
+    background-size: 384px 512px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hatchLeft,
+  .hatchRight {
+    display: none;
+  }
+
+  .operatorDropping {
+    animation: none;
+    transform: translateX(-50%);
+  }
+}
