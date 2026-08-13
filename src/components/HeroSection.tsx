@@ -1,257 +1,215 @@
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowDownCircle, Github, Linkedin, X, Code, Terminal } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-import { useRef, useState, useEffect, useCallback } from "react";
+import {
+  ArrowDown,
+  Building2,
+  Github,
+  GraduationCap,
+  Linkedin,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CVAccessDialog } from "@/components/CVAccessDialog";
+import { PixelFrame } from "@/components/ui/pixel-frame";
+import { StatusIndicator } from "@/components/ui/status-indicator";
+import { SystemLabel } from "@/components/ui/system-label";
+import {
+  portfolioProfile,
+  socialLinks,
+  storyChapters,
+} from "@/data/portfolio";
 
-// Terminal text effect component with improved animation and callback when complete
-const TerminalText = ({ text, onComplete }: { text: string; onComplete: () => void }) => {
-  const [displayText, setDisplayText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isDone, setIsDone] = useState(false);
-  
-  // Start typing animation only once
-  useEffect(() => {
-    if (isTyping || isDone) return;
-    
-    setIsTyping(true);
-    let currentIndex = 0;
-    const maxIndex = text.length;
-    
-    function typeNextChar() {
-      if (currentIndex < maxIndex) {
-        setDisplayText(text.substring(0, currentIndex + 1));
-        currentIndex++;
-        setTimeout(typeNextChar, 50);
-      } else {
-        setIsTyping(false);
-        setIsDone(true);
-        onComplete();
-      }
-    }
-    
-    typeNextChar();
-  }, [text, onComplete, isTyping, isDone]);
-  
-  return (
-    <div className="font-mono text-sm sm:text-base flex items-start">
-      <span className="text-primary mr-2">&gt;</span>
-      <span>{displayText}</span>
-      <motion.span 
-        className="inline-block w-2 h-5 bg-primary ml-1"
-        animate={{ opacity: [1, 0, 1] }}
-        transition={{ repeat: Infinity, duration: 1 }}
-      />
-    </div>
-  );
-};
+const originChapter = storyChapters[0];
+const heroSocials = socialLinks.filter(
+  (social) => social.id === "github" || social.id === "linkedin",
+);
 
 export function HeroSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [heroVisible, setHeroVisible] = useState(false);
-  
-  // Set hero visible after initial delay
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setHeroVisible(true);
-    }, 300);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  // Handler for when typewriter animation completes
-  const handleTypewriterComplete = useCallback(() => {
-    // This is a placeholder function that does nothing but satisfies the interface
-  }, []);
-  
-  // Create scroll-based animations
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"]
-  });
-  
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-  const y = useTransform(scrollYProgress, [0, 0.5], [0, 100]);
-
   return (
-    <section 
-      id="home" 
-      ref={sectionRef}
-      className="relative min-h-screen flex flex-col items-center justify-center py-20 overflow-hidden"
+    <section
+      id="home"
+      aria-labelledby="hero-title"
+      className="relative isolate min-h-[100svh] overflow-hidden border-b border-border bg-background pt-16"
     >
-      <div className="site-grid pointer-events-none absolute inset-0 opacity-35" />
+      <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-60" />
+      <div className="dither-field pointer-events-none absolute right-0 top-16 -z-10 h-72 w-1/3 opacity-30 [mask-image:linear-gradient(to_left,black,transparent)]" />
+      <div
+        aria-hidden="true"
+        className="absolute left-0 top-16 h-1 w-32 bg-primary sm:w-52"
+      />
 
-      <div className="container flex flex-row items-center justify-between z-10 max-w-6xl px-4">
-        {/* Text content - fades in from left */}
-        <motion.div 
-          style={{ opacity, scale, y }} 
-          className="flex flex-col items-start text-left max-w-2xl"
-          initial={{ opacity: 0, x: -100 }}
-          animate={heroVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: -100 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mb-2 text-sm font-medium px-6 py-2 rounded-full bg-primary/10 text-primary backdrop-blur-sm border border-primary/20 flex items-center gap-2"
-          >
-            <Terminal className="h-4 w-4" />
-            <span className="font-mono">Hello, I&apos;m Sukhraj Kalon, a</span>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-6 mb-2"
-          >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="gradient-text">
-                Software Engineer
-              </span>
-              <motion.span 
-                className="inline-block w-3 h-14 bg-primary ml-2"
-                animate={{ opacity: [1, 0, 1] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-              />
-            </h1>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="mt-8 text-xl text-muted-foreground max-w-2xl"
-          >
-            <div className="glass-morphism px-4 py-3 rounded-lg">
-              {heroVisible && (
-                <TerminalText 
-                  text="I build secure full-stack products, cloud-backed services, AI automation workflows, and practical systems that turn messy real-world problems into reliable software." 
-                  onComplete={handleTypewriterComplete}
-                />
-              )}
+      <div className="section-shell flex min-h-[calc(100svh-4rem)] flex-col justify-center py-6 sm:py-10 lg:py-12">
+        <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(20rem,0.88fr)] lg:gap-12 xl:gap-20">
+          <div className="max-w-3xl">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <SystemLabel>
+                {`${originChapter.index} // ${originChapter.portfolioLabel}`}
+              </SystemLabel>
+              <StatusIndicator pulse>Operator online</StatusIndicator>
             </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 mt-12"
-          >
-            <Button size="lg" className="hover-lift hover:shadow-lg hover:shadow-primary/20 px-8 glow-effect group" asChild>
-              <Link href="#projects" className="flex items-center gap-2">
-                <Code className="h-4 w-4 group-hover:animate-pulse" />
-                View My Work
-              </Link>
-            </Button>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="flex items-center gap-8 mt-10"
-          >
-            {[
-              { icon: <Github size={20} />, url: "https://github.com/Sukhraj1000", label: "GitHub" },
-              { icon: <Linkedin size={20} />, url: "https://www.linkedin.com/in/sukhraj-kalon-037031252/", label: "LinkedIn" },
-              { icon: <X size={20} />, url: "https://x.com/SKalon52254", label: "X" },
-            ].map((social, index) => (
-              <motion.div 
-                key={social.label}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.1 }}
-              >
-                <Link 
-                  href={social.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {social.icon}
-                  <span className="sr-only">{social.label}</span>
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-        
-        {/* Profile Image - fades in from right at the same time as text content */}
-        <motion.div
-          className="hidden md:block relative"
-          initial={{ opacity: 0, x: 100 }}
-          animate={heroVisible ? { opacity: 1, x: 0 } : { opacity: 0, x: 100 }}
-          transition={{ 
-            duration: 0.7, 
-            ease: "easeOut",
-          }}
-        >
-          <div className="relative w-80 h-80 rounded-full overflow-hidden border-2 border-primary/30 shadow-xl shadow-primary/10">
-            <Image 
-              src="/profile.png" 
-              alt="Profile" 
-              fill
-              className="object-cover"
-            />
-            {/* Decorative ring */}
-            <motion.div 
-              className="absolute inset-0 border-4 border-primary/20 rounded-full z-10"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-            />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-background/50" />
+
+            <h1
+              id="hero-title"
+              className="mt-4 text-[clamp(3rem,15vw,7.5rem)] font-semibold uppercase leading-[0.82] tracking-[-0.075em] text-foreground sm:mt-6 lg:mt-8 lg:text-[clamp(5.5rem,9vw,8.25rem)]"
+            >
+              <span className="block">Sukhraj</span>
+              <span className="block text-primary">Kalon</span>
+            </h1>
+
+            <p className="mt-4 flex flex-wrap items-baseline gap-x-2 text-lg font-semibold text-foreground sm:mt-6 sm:text-xl lg:text-2xl">
+              <span>{portfolioProfile.role}</span>
+              <span className="font-normal text-ink-muted">
+                at {portfolioProfile.employer}
+              </span>
+            </p>
+
+            <dl className="mt-4 grid max-w-2xl grid-cols-2 gap-px border border-border bg-border sm:mt-5">
+              <div className="flex min-h-14 items-center gap-3 bg-surface px-2 py-2 sm:px-4 sm:py-2.5">
+                <GraduationCap
+                  aria-hidden="true"
+                  className="hidden h-4 w-4 shrink-0 text-primary sm:block"
+                />
+                <div>
+                  <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                    Education signal
+                  </dt>
+                  <dd className="mt-1 text-[0.6875rem] font-medium leading-4 text-foreground sm:text-sm">
+                    {portfolioProfile.education}
+                  </dd>
+                </div>
+              </div>
+              <div className="flex min-h-14 items-center gap-3 bg-surface px-2 py-2 sm:px-4 sm:py-2.5">
+                <MapPin
+                  aria-hidden="true"
+                  className="hidden h-4 w-4 shrink-0 text-primary sm:block"
+                />
+                <div>
+                  <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                    Current base
+                  </dt>
+                  <dd className="mt-1 text-[0.6875rem] font-medium leading-4 text-foreground sm:text-sm">
+                    {portfolioProfile.location}
+                  </dd>
+                </div>
+              </div>
+            </dl>
+
+            <p className="mt-4 border-l-2 border-primary pl-3 font-mono text-[0.6875rem] font-medium uppercase leading-5 tracking-[0.06em] text-ink-muted sm:hidden">
+              Full-stack systems / Cloud services / AI automation / Secure engineering
+            </p>
+
+            <p className="text-pretty mt-5 hidden max-w-2xl text-sm leading-6 text-ink-muted sm:block sm:text-base sm:leading-7">
+              {portfolioProfile.summary}
+            </p>
+
+            <div className="mt-5 flex flex-wrap gap-2.5 sm:mt-7 sm:gap-3">
+              <Button size="lg" asChild>
+                <Link href="/#projects">View projects</Link>
+              </Button>
+
+              <CVAccessDialog buttonClassName="h-11 px-5 text-xs" />
+
+              {heroSocials.map((social) => {
+                const Icon = social.id === "github" ? Github : Linkedin;
+
+                return (
+                  <Button key={social.id} variant="ghost" size="lg" asChild>
+                    <Link
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Icon aria-hidden="true" />
+                      {social.label}
+                    </Link>
+                  </Button>
+                );
+              })}
+            </div>
+
+            <Link
+              href="/#projects"
+              className="group mt-5 inline-grid grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-border pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-primary sm:mt-8"
+              aria-label="Continue to chapter 02, Selected Work"
+            >
+              <span className="text-primary">02</span>
+              <span>Continue to selected work</span>
+              <ArrowDown
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform group-hover:translate-y-1"
+              />
+            </Link>
           </div>
-          
-          {/* Decorative elements around profile */}
-          <motion.div 
-            className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-primary/10 backdrop-blur-md z-[-1]"
-            animate={{ 
-              y: [0, -10, 0],
-              opacity: [0.5, 0.8, 0.5]
-            }}
-            transition={{ 
-              duration: 4,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div 
-            className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-accent/10 backdrop-blur-md z-[-1]"
-            animate={{ 
-              y: [0, 10, 0],
-              opacity: [0.5, 0.8, 0.5]
-            }}
-            transition={{ 
-              duration: 5,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5
-            }}
-          />
-        </motion.div>
+
+          <PixelFrame
+            tone="cyan"
+            raised
+            className="mx-auto w-full max-w-[29rem] overflow-hidden bg-surface"
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
+              <SystemLabel tone="cyan">{"Operator record // SK"}</SystemLabel>
+              <span className="font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-faint">
+                ID-01
+              </span>
+            </div>
+
+            <div className="relative grid min-h-[17rem] place-items-center overflow-hidden bg-background micro-grid sm:min-h-[20rem]">
+              <span
+                aria-hidden="true"
+                className="signal-scan absolute inset-x-0 top-0 z-10 h-9 border-y border-signal-cyan/20 bg-signal-cyan/5"
+              />
+              <div
+                role="img"
+                aria-label="Pixel-art representation of Sukhraj Kalon wearing a dark bomber jacket with a blue signal stripe"
+                className="operator-sprite relative z-0"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute bottom-4 left-4 h-3 w-3 border-b border-l border-signal-cyan"
+              />
+              <span
+                aria-hidden="true"
+                className="absolute right-4 top-4 h-3 w-3 border-r border-t border-signal-cyan"
+              />
+            </div>
+
+            <dl className="grid grid-cols-2 gap-px border-t border-border bg-border">
+              <div className="bg-surface p-3 sm:p-4">
+                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                  Assignment
+                </dt>
+                <dd className="mt-1.5 flex items-center gap-2 text-xs font-semibold sm:text-sm">
+                  <Building2 aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+                  {portfolioProfile.employer}
+                </dd>
+              </div>
+              <div className="bg-surface p-3 sm:p-4">
+                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                  Discipline
+                </dt>
+                <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
+                  Software Engineering
+                </dd>
+              </div>
+              <div className="bg-surface p-3 sm:p-4">
+                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                  Systems
+                </dt>
+                <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
+                  Full-stack / Cloud
+                </dd>
+              </div>
+              <div className="bg-surface p-3 sm:p-4">
+                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
+                  Method
+                </dt>
+                <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
+                  Secure / AI-assisted
+                </dd>
+              </div>
+            </dl>
+          </PixelFrame>
+        </div>
       </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.8 }}
-        className="absolute bottom-10"
-      >
-        <Link href="#about" className="text-muted-foreground hover:text-primary transition-colors flex flex-col items-center gap-2 group">
-          <span className="text-sm animated-underline font-mono">&lt; Scroll_Down /&gt;</span>
-          <ArrowDownCircle size={20} className="float-animation group-hover:text-primary" />
-        </Link>
-      </motion.div>
     </section>
   );
 }

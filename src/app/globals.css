@@ -159,6 +159,11 @@
       color var(--motion-base) var(--ease-standard);
   }
 
+  section[id],
+  footer[id] {
+    scroll-margin-top: 5rem;
+  }
+
   button,
   a {
     -webkit-tap-highlight-color: transparent;
@@ -227,6 +232,17 @@
 
   .theme-icon-night {
     display: grid;
+  }
+
+  .operator-sprite {
+    width: 144px;
+    height: 192px;
+    background-image: url("/game/assets/sk-character-sheet.png");
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: 576px 768px;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
   }
 
   .dark .theme-icon-day {
@@ -413,6 +429,14 @@
 @media (min-width: 768px) {
   .section-shell {
     width: min(100% - 4rem, 80rem);
+  }
+}
+
+@media (min-width: 640px) {
+  .operator-sprite {
+    width: 192px;
+    height: 256px;
+    background-size: 768px 1024px;
   }
 }
 
