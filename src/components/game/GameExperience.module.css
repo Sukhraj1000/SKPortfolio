@@ -1,25 +1,56 @@
+.hudBar {
+  position: relative;
+  z-index: 22;
+  min-height: 4.5rem;
+  border-bottom: 1px solid var(--border-strong);
+  background: var(--surface);
+  padding: 0.65rem 0.75rem;
+}
+
 .stage {
   position: relative;
-  min-height: clamp(34rem, calc(100svh - 11.5rem), 52rem);
+  min-height: clamp(34rem, calc(100svh - 12rem), 52rem);
   overflow: hidden;
-  background-color: var(--background);
-  background-image:
-    linear-gradient(var(--grid-line-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line-soft) 1px, transparent 1px),
-    linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--primary) 8%, transparent));
-  background-size: 24px 24px, 24px 24px, 100% 100%;
+  background: var(--background);
+  outline: none;
+  touch-action: none;
+}
+
+.canvasHost {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: inherit;
+  outline: none;
+}
+
+.canvasHost canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .scanlines {
   position: absolute;
   inset: 0;
-  z-index: 8;
+  z-index: 7;
   pointer-events: none;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent 0 3px,
     color-mix(in srgb, var(--foreground) 4%, transparent) 3px 4px
   );
+}
+
+.spawnOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 18;
+  overflow: hidden;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--background) 86%, transparent);
 }
 
 .hatch {
@@ -35,16 +66,6 @@
   background: var(--surface-high);
   box-shadow: 0 6px 0 var(--shadow-strong);
   transform: translateX(-50%);
-}
-
-.hatch::after {
-  position: absolute;
-  inset: 50% 0 auto;
-  z-index: -1;
-  height: 2px;
-  content: "";
-  background: var(--primary);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--primary) 70%, transparent);
 }
 
 .hatchLeft,
@@ -72,20 +93,9 @@
   animation: hatch-right 520ms var(--ease-enter) forwards;
 }
 
-.stageReadout {
-  position: absolute;
-  top: 5rem;
-  left: clamp(1rem, 4vw, 4rem);
-  z-index: 2;
-  max-width: 18rem;
-  border-left: 2px solid var(--primary);
-  background: color-mix(in srgb, var(--surface) 90%, transparent);
-  padding: 0.75rem 1rem;
-}
-
 .operator {
   position: absolute;
-  bottom: 4.75rem;
+  bottom: 4rem;
   left: 50%;
   z-index: 6;
   width: 144px;
@@ -103,46 +113,63 @@
   animation: character-drop 760ms var(--ease-enter) both;
 }
 
-.operatorLanded {
+.notice {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  z-index: 12;
+  display: flex;
+  max-width: min(36rem, calc(100% - 2rem));
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  padding: 0.7rem 0.9rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--shadow-strong);
   transform: translateX(-50%);
 }
 
-.spawnMarker {
+.noticeInfo {
+  color: var(--signal-cyan);
+}
+
+.noticeSuccess {
+  color: var(--signal-green);
+}
+
+.noticeWarning {
+  color: var(--signal-red);
+}
+
+.interactionPrompt {
   position: absolute;
-  bottom: 4rem;
+  bottom: 1.25rem;
   left: 50%;
-  z-index: 2;
-  width: min(22rem, 72vw);
-  height: 3rem;
-  border: 1px solid var(--primary);
-  background: color-mix(in srgb, var(--primary) 8%, transparent);
-  transform: translateX(-50%) skewX(-18deg);
-}
-
-.spawnMarker span {
-  position: absolute;
-  inset: 0.5rem;
-  border: 1px dashed color-mix(in srgb, var(--primary) 65%, transparent);
-}
-
-.floor {
-  position: absolute;
-  inset: auto 0 0;
-  height: 5rem;
-  border-top: 2px solid var(--border-strong);
-  background-color: var(--surface-high);
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--surface-raised) 0 16px,
-    var(--surface-high) 16px 32px
-  );
-  box-shadow: inset 0 8px 0 color-mix(in srgb, var(--primary) 12%, transparent);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  padding: 0.55rem 0.75rem;
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--shadow-strong);
+  transform: translateX(-50%);
 }
 
 .pauseOverlay {
   position: absolute;
   inset: 50% auto auto 50%;
-  z-index: 12;
+  z-index: 16;
   min-width: min(22rem, calc(100vw - 2rem));
   border: 1px solid var(--border-strong);
   background: color-mix(in srgb, var(--surface) 96%, transparent);
@@ -150,6 +177,78 @@
   text-align: center;
   box-shadow: 6px 6px 0 var(--shadow-strong);
   transform: translate(-50%, -50%);
+}
+
+.touchControls {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 14;
+  display: none;
+  align-items: end;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.touchButton {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border: 2px solid var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--foreground);
+  box-shadow: 3px 3px 0 var(--shadow-strong);
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.touchButton:active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 1px 1px 0 var(--shadow-strong);
+  transform: translate(2px, 2px);
+}
+
+.panelBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--background) 72%, transparent);
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.signalPanel {
+  width: min(62rem, 100%);
+  max-height: calc(100% - 1rem);
+  overflow: auto;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 8px 8px 0 var(--shadow-strong);
+}
+
+.panelBody {
+  padding: 1.25rem;
+}
+
+.gameFooter {
+  display: flex;
+  min-height: 2.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  border-top: 1px solid var(--border-strong);
+  background: var(--surface);
+  padding: 0.65rem 1rem;
+  color: var(--ink-muted);
+  font-size: 0.6875rem;
 }
 
 @keyframes hatch-left {
@@ -188,19 +287,49 @@
   }
 }
 
-@media (max-width: 639px) {
-  .stage {
-    min-height: calc(100svh - 15rem);
+@media (pointer: coarse), (max-width: 767px) {
+  .touchControls {
+    display: flex;
   }
 
-  .stageReadout {
-    top: 4.25rem;
+  .interactionPrompt {
+    bottom: 5.25rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .hudBar {
+    min-height: 7.5rem;
+  }
+
+  .stage {
+    min-height: calc(100svh - 14rem);
   }
 
   .operator {
     width: 96px;
     height: 128px;
     background-size: 384px 512px;
+  }
+
+  .notice {
+    top: 0.65rem;
+  }
+
+  .panelBackdrop {
+    padding: 0.5rem;
+  }
+
+  .signalPanel {
+    max-height: calc(100% - 0.5rem);
+  }
+
+  .panelBody {
+    padding: 1rem;
+  }
+
+  .gameFooter {
+    display: none;
   }
 }
 
