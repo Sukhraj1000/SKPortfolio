@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,53 +17,101 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CVAccessDialog, CVAccessDialogMobile } from "@/components/CVAccessDialog";
 import { portfolioNavigation, portfolioProfile } from "@/data/portfolio";
+import {
+  defaultPortfolioHref,
+  portfolioStoryAnchors,
+  readPortfolioReturnHref,
+  rememberPortfolioAnchor,
+  type PortfolioStoryAnchor,
+} from "@/lib/game-mode";
 import { cn } from "@/lib/utils";
 
-function ModeControl() {
+function ModeControl({
+  isGameMode,
+  portfolioReturnHref,
+  onEnterGame,
+}: {
+  isGameMode: boolean;
+  portfolioReturnHref: string;
+  onEnterGame: () => void;
+}) {
   return (
     <div
       role="group"
       aria-label="Portfolio experience mode"
       className="grid h-10 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em]"
     >
-      <button
-        type="button"
-        className="bg-primary px-2.5 text-primary-foreground"
-        aria-pressed="true"
-        title="Portfolio mode selected"
-      >
-        Portfolio
-        <span className="sr-only"> mode selected</span>
-      </button>
-      <button
-        type="button"
-        className="border-l border-border px-2 text-ink-faint"
-        aria-pressed="false"
-        aria-label="Game mode unavailable"
-        title="Game mode will be enabled in a later build"
-        disabled
-      >
-        Game
-      </button>
+      {isGameMode ? (
+        <Link
+          href={portfolioReturnHref}
+          className="grid place-items-center px-2.5 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+          aria-label="Return to Portfolio mode"
+          title="Return to Portfolio mode"
+        >
+          Portfolio
+        </Link>
+      ) : (
+        <span
+          className="grid place-items-center bg-primary px-2.5 text-primary-foreground"
+          aria-current="page"
+          title="Portfolio mode selected"
+        >
+          Portfolio
+          <span className="sr-only"> mode selected</span>
+        </span>
+      )}
+
+      {isGameMode ? (
+        <span
+          className="grid place-items-center border-l border-border bg-primary px-2 text-primary-foreground"
+          aria-current="page"
+          title="Game mode selected"
+        >
+          Game
+          <span className="sr-only"> mode selected</span>
+        </span>
+      ) : (
+        <Link
+          href="/game"
+          prefetch={false}
+          className="grid place-items-center border-l border-border px-2 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+          aria-label="Enter Game mode"
+          title="Enter Game mode"
+          onClick={onEnterGame}
+        >
+          Game
+        </Link>
+      )}
     </div>
   );
 }
 
 export function Navbar() {
-  const [activeSection, setActiveSection] = React.useState("home");
+  const pathname = usePathname();
+  const isGameMode = pathname.startsWith("/game");
+  const [activeSection, setActiveSection] =
+    React.useState<PortfolioStoryAnchor>("home");
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
+    defaultPortfolioHref,
+  );
 
   React.useEffect(() => {
+    if (isGameMode) setPortfolioReturnHref(readPortfolioReturnHref());
+  }, [isGameMode]);
+
+  React.useEffect(() => {
+    if (isGameMode) return;
+
     const updateActiveSection = () => {
       const readingLine = window.scrollY + 112;
-      let currentSection: (typeof portfolioNavigation)[number]["id"] =
-        portfolioNavigation[0].id;
+      let currentSection: PortfolioStoryAnchor = portfolioStoryAnchors[0];
 
-      for (const link of portfolioNavigation) {
-        const section = document.getElementById(link.id);
+      for (const sectionId of portfolioStoryAnchors) {
+        const section = document.getElementById(sectionId);
 
         if (section && section.offsetTop <= readingLine) {
-          currentSection = link.id;
+          currentSection = sectionId;
         }
       }
 
@@ -84,15 +133,26 @@ export function Navbar() {
       window.removeEventListener("scroll", updateActiveSection);
       window.removeEventListener("resize", updateActiveSection);
     };
-  }, []);
+  }, [isGameMode]);
+
+  const handleEnterGame = React.useCallback(() => {
+    if (isGameMode) return;
+
+    rememberPortfolioAnchor(activeSection);
+    setPortfolioReturnHref(`/#${activeSection}`);
+  }, [activeSection, isGameMode]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border-strong bg-background shadow-[0_3px_0_var(--shadow-soft)]">
       <div className="section-shell flex h-16 items-center gap-2 lg:gap-4">
         <Link
-          href="/#home"
+          href={isGameMode ? portfolioReturnHref : "/#home"}
           className="group flex shrink-0 items-center gap-2"
-          aria-label={`${portfolioProfile.name}, return to Origin`}
+          aria-label={
+            isGameMode
+              ? `${portfolioProfile.name}, exit Game mode`
+              : `${portfolioProfile.name}, return to Origin`
+          }
           onClick={() => setActiveSection("home")}
         >
           <span className="grid h-10 w-10 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
@@ -108,118 +168,132 @@ export function Navbar() {
           </span>
         </Link>
 
-        <nav
-          aria-label="Primary navigation"
-          className="ml-auto hidden items-stretch self-stretch lg:flex"
-        >
-          {portfolioNavigation.map((link, index) => {
-            const isActive = activeSection === link.id;
+        {!isGameMode ? (
+          <nav
+            aria-label="Primary navigation"
+            className="ml-auto hidden items-stretch self-stretch lg:flex"
+          >
+            {portfolioNavigation.map((link, index) => {
+              const isActive = activeSection === link.id;
 
-            return (
-              <Link
-                key={link.id}
-                href={link.href}
-                aria-current={isActive ? "location" : undefined}
-                className={cn(
-                  "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition-colors last:border-r",
-                  isActive
-                    ? "bg-surface-raised text-primary"
-                    : "text-ink-muted hover:bg-surface hover:text-foreground",
-                )}
-                onClick={() => setActiveSection(link.id)}
-              >
-                <span className="mr-1.5 text-[0.5625rem] text-ink-faint">
-                  0{index + 1}
-                </span>
-                {link.label}
-                <span
-                  aria-hidden="true"
+              return (
+                <Link
+                  key={link.id}
+                  href={link.href}
+                  aria-current={isActive ? "location" : undefined}
                   className={cn(
-                    "absolute inset-x-3 bottom-0 h-0.5 bg-primary transition-transform",
-                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                    "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition-colors last:border-r",
+                    isActive
+                      ? "bg-surface-raised text-primary"
+                      : "text-ink-muted hover:bg-surface hover:text-foreground",
                   )}
-                />
-              </Link>
-            );
-          })}
-        </nav>
+                  onClick={() => setActiveSection(link.id)}
+                >
+                  <span className="mr-1.5 text-[0.5625rem] text-ink-faint">
+                    0{index + 1}
+                  </span>
+                  {link.label}
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute inset-x-3 bottom-0 h-0.5 bg-primary transition-transform",
+                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                    )}
+                  />
+                </Link>
+              );
+            })}
+          </nav>
+        ) : (
+          <p className="ml-auto hidden font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-ink-muted lg:block">
+            Game route // isolated runtime
+          </p>
+        )}
 
         <div className="ml-auto flex items-center gap-1.5 lg:ml-0 lg:gap-2">
-          <ModeControl />
+          <ModeControl
+            isGameMode={isGameMode}
+            portfolioReturnHref={portfolioReturnHref}
+            onEnterGame={handleEnterGame}
+          />
 
           <ThemeToggle className="h-10 w-10" />
 
-          <div className="hidden lg:block">
-            <CVAccessDialog buttonClassName="h-10 px-3" />
-          </div>
+          {!isGameMode ? (
+            <div className="hidden lg:block">
+              <CVAccessDialog buttonClassName="h-10 px-3" />
+            </div>
+          ) : null}
 
-          <div className="lg:hidden">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-10 w-10"
-                  aria-label="Open portfolio navigation"
-                  title="Open navigation"
+          {!isGameMode ? (
+            <div className="lg:hidden">
+              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10"
+                    aria-label="Open portfolio navigation"
+                    title="Open navigation"
+                  >
+                    <Menu aria-hidden="true" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="right"
+                  className="w-[min(22rem,calc(100vw-1rem))] gap-0 border-l border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-soft)]"
                 >
-                  <Menu aria-hidden="true" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="w-[min(22rem,calc(100vw-1rem))] gap-0 border-l border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-soft)]"
-              >
-                <SheetHeader className="border-b border-border px-5 py-5 text-left">
-                  <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-primary">
-                    {"IRON//SIGNAL"}
-                  </span>
-                  <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
-                  <SheetDescription>
-                    Move directly between Sukhraj&apos;s story chapters.
-                  </SheetDescription>
-                </SheetHeader>
+                  <SheetHeader className="border-b border-border px-5 py-5 text-left">
+                    <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-primary">
+                      {"IRON//SIGNAL"}
+                    </span>
+                    <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
+                    <SheetDescription>
+                      Move directly between Sukhraj&apos;s story chapters.
+                    </SheetDescription>
+                  </SheetHeader>
 
-                <nav aria-label="Mobile navigation" className="grid p-3">
-                  {portfolioNavigation.map((link, index) => {
-                    const isActive = activeSection === link.id;
+                  <nav aria-label="Mobile navigation" className="grid p-3">
+                    {portfolioNavigation.map((link, index) => {
+                      const isActive = activeSection === link.id;
 
-                    return (
-                      <SheetClose asChild key={link.id}>
-                        <Link
-                          href={link.href}
-                          aria-current={isActive ? "location" : undefined}
-                          className={cn(
-                            "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] transition-colors first:border-t",
-                            isActive
-                              ? "bg-surface-raised text-primary"
-                              : "text-foreground hover:bg-surface",
-                          )}
-                          onClick={() => setActiveSection(link.id)}
-                        >
-                          <span className="text-[0.625rem] text-ink-faint">
-                            0{index + 1}
-                          </span>
-                          {link.label}
-                          <span aria-hidden="true" className="text-primary">
-                            /&#47;
-                          </span>
-                        </Link>
-                      </SheetClose>
-                    );
-                  })}
-                </nav>
+                      return (
+                        <SheetClose asChild key={link.id}>
+                          <Link
+                            href={link.href}
+                            aria-current={isActive ? "location" : undefined}
+                            className={cn(
+                              "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] transition-colors first:border-t",
+                              isActive
+                                ? "bg-surface-raised text-primary"
+                                : "text-foreground hover:bg-surface",
+                            )}
+                            onClick={() => setActiveSection(link.id)}
+                          >
+                            <span className="text-[0.625rem] text-ink-faint">
+                              0{index + 1}
+                            </span>
+                            {link.label}
+                            <span aria-hidden="true" className="text-primary">
+                              /&#47;
+                            </span>
+                          </Link>
+                        </SheetClose>
+                      );
+                    })}
+                  </nav>
 
-                <div className="mt-auto border-t border-border bg-surface p-4">
-                  <p className="mb-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
-                    Recruiter access
-                  </p>
-                  <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                  <div className="mt-auto border-t border-border bg-surface p-4">
+                    <p className="mb-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
+                      Recruiter access
+                    </p>
+                    <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>
