@@ -1,13 +1,2 @@
-# Allow all web crawlers
 User-agent: *
 Allow: /
-
-# Disallow specific paths that might contain sensitive information
-Disallow: /api/
-Disallow: /_next/
-Disallow: /*.pdf
-Disallow: /.well-known/
-Disallow: /js/
-
-# Sitemap location (add your actual sitemap URL if you have one)
-Sitemap: https://yourdomain.com/sitemap.xml 

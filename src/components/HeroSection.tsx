@@ -128,7 +128,7 @@ export function HeroSection() {
 
             <Link
               href="/#projects"
-              className="group mt-5 inline-grid grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-border pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-primary sm:mt-8"
+              className="group mt-5 inline-grid min-h-11 grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-border pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-primary sm:mt-8"
               aria-label="Continue to chapter 02, Selected Work"
             >
               <span className="text-primary">02</span>

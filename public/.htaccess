@@ -58,7 +58,9 @@ ErrorDocument 404 /404.html
   ExpiresByType image/jpeg "access plus 1 year"
   ExpiresByType image/gif "access plus 1 year"
   ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
   ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
@@ -67,4 +69,4 @@ ErrorDocument 404 /404.html
 <FilesMatch "(\.env|\.git|\.htaccess|package.json|package-lock.json)$">
   Order deny,allow
   Deny from all
-</FilesMatch> 
+</FilesMatch>

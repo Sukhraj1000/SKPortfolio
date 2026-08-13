@@ -83,7 +83,7 @@ function CVRequestDialog({
           size={mobile ? "default" : "sm"}
           className={cn(
             "group text-xs",
-            mobile ? "w-full justify-center" : "h-9",
+            mobile ? "w-full justify-center" : "h-11",
             buttonClassName,
           )}
         >

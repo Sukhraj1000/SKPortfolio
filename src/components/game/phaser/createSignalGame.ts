@@ -104,6 +104,7 @@ export function createSignalGame({
   callbacks: SignalGameCallbacks;
 }): SignalGameHandle {
   let pausedRequested = true;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   class SignalScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite;
@@ -214,7 +215,8 @@ export function createSignalGame({
       this.createHazards(platforms);
       this.createFinalUplink();
 
-      this.cameras.main.startFollow(this.player, true, 0.09, 0.09);
+      const cameraLerp = prefersReducedMotion ? 1 : 0.09;
+      this.cameras.main.startFollow(this.player, true, cameraLerp, cameraLerp);
       this.cameras.main.setDeadzone(220, 120);
 
       this.cursors = this.input.keyboard!.createCursorKeys();
@@ -363,14 +365,16 @@ export function createSignalGame({
         core.setDataEnabled();
         core.setData("coreId", definition.id);
         core.setDepth(8);
-        this.tweens.add({
-          targets: core,
-          y: definition.y - 10,
-          duration: 900,
-          yoyo: true,
-          repeat: -1,
-          ease: "Sine.inOut",
-        });
+        if (!prefersReducedMotion) {
+          this.tweens.add({
+            targets: core,
+            y: definition.y - 10,
+            duration: 900,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.inOut",
+          });
+        }
       });
 
       this.physics.add.overlap(this.player, cores, (_player, gameObject) => {

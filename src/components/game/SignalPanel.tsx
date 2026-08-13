@@ -217,7 +217,7 @@ function CommsPanel({ completed = false }: { completed?: boolean }) {
       ) : null}
 
       <div className="mt-6 flex flex-wrap gap-2.5">
-        <CVAccessDialog buttonClassName="h-10 px-4" />
+        <CVAccessDialog buttonClassName="h-11 px-4" />
         <Button variant="outline" asChild>
           <a href={email ? `mailto:${email}?subject=${subject}` : undefined} aria-disabled={!email}>
             <Mail aria-hidden="true" />
@@ -306,7 +306,7 @@ export function SignalPanel({
             type="button"
             aria-label="Close terminal and resume gameplay"
             title="Close terminal"
-            className="grid h-10 w-10 place-items-center border border-border-strong bg-surface text-foreground hover:border-primary hover:text-primary"
+            className="grid h-11 w-11 place-items-center border border-border-strong bg-surface text-foreground hover:border-primary hover:text-primary"
             onClick={onClose}
           >
             <X aria-hidden="true" className="h-4 w-4" />
