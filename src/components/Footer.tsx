@@ -154,7 +154,7 @@ export function Footer() {
           <div>
             <Link
               href="/#home"
-              className="inline-flex items-center gap-3 text-foreground transition-colors hover:text-primary"
+              className="inline-flex min-h-11 items-center gap-3 text-foreground transition-colors hover:text-primary"
             >
               <span className="grid h-9 w-9 place-items-center bg-primary font-mono text-xs font-bold text-primary-foreground">
                 {portfolioProfile.initials}
@@ -179,7 +179,7 @@ export function Footer() {
                 <li key={chapter.id}>
                   <Link
                     href={chapter.href}
-                    className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-primary"
+                    className="inline-flex min-h-11 items-center font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-primary"
                   >
                     {chapter.index} {chapter.portfolioLabel}
                   </Link>
