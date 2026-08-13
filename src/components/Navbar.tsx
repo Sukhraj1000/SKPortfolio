@@ -2,225 +2,226 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { MenuIcon, Code, Terminal, Laptop } from "lucide-react";
-import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
-import { CVAccessDialog, CVAccessDialogMobile } from "./CVAccessDialog";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { CVAccessDialog, CVAccessDialogMobile } from "@/components/CVAccessDialog";
+import { portfolioNavigation, portfolioProfile } from "@/data/portfolio";
+import { cn } from "@/lib/utils";
 
-const navLinks = [
-  { href: "/#", label: "Home", icon: <Terminal className="h-3.5 w-3.5" /> },
-  { href: "/#projects", label: "Projects", icon: <Code className="h-3.5 w-3.5" /> },
-  { href: "/#about", label: "About", icon: <Laptop className="h-3.5 w-3.5" /> },
-];
+function ModeControl() {
+  return (
+    <div
+      role="group"
+      aria-label="Portfolio experience mode"
+      className="grid h-10 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em]"
+    >
+      <button
+        type="button"
+        className="bg-primary px-2.5 text-primary-foreground"
+        aria-pressed="true"
+        title="Portfolio mode selected"
+      >
+        Portfolio
+        <span className="sr-only"> mode selected</span>
+      </button>
+      <button
+        type="button"
+        className="border-l border-border px-2 text-ink-faint"
+        aria-pressed="false"
+        aria-label="Game mode unavailable"
+        title="Game mode will be enabled in a later build"
+        disabled
+      >
+        Game
+      </button>
+    </div>
+  );
+}
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = React.useState(false);
-  const [activeLink, setActiveLink] = React.useState("/#");
-  const { scrollY } = useScroll();
-  
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 5);
-  });
-  
-  // Update active link based on scroll position
+  const [activeSection, setActiveSection] = React.useState("home");
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+
   React.useEffect(() => {
-    const handleScroll = () => {
-      const sections = navLinks.map(link => link.href.replace('/#', '')).filter(Boolean);
-      
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
-            setActiveLink(`/#${section}`);
-            break;
-          }
+    const updateActiveSection = () => {
+      const readingLine = window.scrollY + 112;
+      let currentSection: (typeof portfolioNavigation)[number]["id"] =
+        portfolioNavigation[0].id;
+
+      for (const link of portfolioNavigation) {
+        const section = document.getElementById(link.id);
+
+        if (section && section.offsetTop <= readingLine) {
+          currentSection = link.id;
         }
       }
-      
-      // If we're at the top of the page, set Home as active
-      if (window.scrollY < 100) {
-        setActiveLink("/#");
+
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 8
+      ) {
+        currentSection = "contact";
       }
+
+      setActiveSection(currentSection);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
   }, []);
 
   return (
-    <motion.header
-      className={cn(
-        "fixed top-0 z-50 w-full transition-all duration-300",
-        isScrolled 
-          ? "border-b border-border bg-background/90 shadow-md shadow-[var(--shadow-soft)] backdrop-blur-xl"
-          : "bg-transparent"
-      )}
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      {/* Glowing line accent when scrolled */}
-      {isScrolled && (
-        <motion.div 
-          className="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"
-          initial={{ width: 0 }}
-          animate={{ width: "100%" }}
-          transition={{ duration: 0.8 }}
-        />
-      )}
-      
-      {/* Centered navigation bar - enhanced for sleek design */}
-      <div className="h-16 w-full flex items-center justify-center">
-        <div className="w-full max-w-screen-xl mx-auto px-4 flex justify-center relative">
-          {/* Logo on the left for mobile */}
-          <motion.div 
-            className="absolute left-4 flex md:hidden items-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Link 
-              href="/#" 
-              className="text-primary font-bold flex items-center"
-              onClick={() => setActiveLink("/#")}
-            >
-              <span className="text-xl font-mono tracking-tight">DEV</span>
-            </Link>
-          </motion.div>
-          
-          {/* Desktop Navigation - Centered with glass effect */}
-          <div className="hidden md:flex items-center glass-morphism rounded-full px-4 py-2">
-            {navLinks.map((link, index) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={cn(
-                  "px-5 py-1.5 text-sm font-medium rounded-full transition-all mx-1 flex items-center gap-1.5 group",
-                  activeLink === link.href
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "text-foreground/90 hover:bg-primary/20 hover:text-foreground"
-                )}
-                onClick={() => setActiveLink(link.href)}
-              >
-                <motion.span
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index + 0.3 }}
-                >
-                  {link.icon}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, x: -5 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index + 0.3 }}
-                >
-                  {link.label}
-                </motion.span>
-              </Link>
-            ))}
-          </div>
-          
-          {/* Right actions */}
-          <div className="absolute right-4 flex items-center space-x-3">
-            <ThemeToggle />
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-border-strong bg-background shadow-[0_3px_0_var(--shadow-soft)]">
+      <div className="section-shell flex h-16 items-center gap-2 lg:gap-4">
+        <Link
+          href="/#home"
+          className="group flex shrink-0 items-center gap-2"
+          aria-label={`${portfolioProfile.name}, return to Origin`}
+          onClick={() => setActiveSection("home")}
+        >
+          <span className="grid h-10 w-10 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
+            {portfolioProfile.initials}
+          </span>
+          <span className="hidden leading-none sm:block">
+            <span className="block text-sm font-semibold text-foreground">
+              {portfolioProfile.name}
+            </span>
+            <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
+              Software Engineer
+            </span>
+          </span>
+        </Link>
 
-            <AnimatePresence>
-              {isScrolled && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.3 }}
-                  className="hidden md:block mr-2"
+        <nav
+          aria-label="Primary navigation"
+          className="ml-auto hidden items-stretch self-stretch lg:flex"
+        >
+          {portfolioNavigation.map((link, index) => {
+            const isActive = activeSection === link.id;
+
+            return (
+              <Link
+                key={link.id}
+                href={link.href}
+                aria-current={isActive ? "location" : undefined}
+                className={cn(
+                  "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition-colors last:border-r",
+                  isActive
+                    ? "bg-surface-raised text-primary"
+                    : "text-ink-muted hover:bg-surface hover:text-foreground",
+                )}
+                onClick={() => setActiveSection(link.id)}
+              >
+                <span className="mr-1.5 text-[0.5625rem] text-ink-faint">
+                  0{index + 1}
+                </span>
+                {link.label}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute inset-x-3 bottom-0 h-0.5 bg-primary transition-transform",
+                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
+                  )}
+                />
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-1.5 lg:ml-0 lg:gap-2">
+          <ModeControl />
+
+          <ThemeToggle className="h-10 w-10" />
+
+          <div className="hidden lg:block">
+            <CVAccessDialog buttonClassName="h-10 px-3" />
+          </div>
+
+          <div className="lg:hidden">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-10 w-10"
+                  aria-label="Open portfolio navigation"
+                  title="Open navigation"
                 >
-                  <Link 
-                    href="/#" 
-                    className="text-primary font-bold flex items-center"
-                    onClick={() => setActiveLink("/#")}
-                  >
-                    <span className="text-xl font-mono tracking-tight flex items-center">
-                      <Terminal className="mr-1 h-4 w-4" />
-                      <span className="gradient-text">SK</span>
-                    </span>
-                  </Link>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5 }}
-              className="hidden md:block"
-            >
-              <CVAccessDialog />
-            </motion.div>
-            
-            {/* Mobile menu trigger */}
-            <motion.div
-              className="md:hidden"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 border-border bg-surface">
-                    <MenuIcon className="h-4 w-4" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent 
-                  side="right" 
-                  className="w-72 p-0 border-none bg-background/95 backdrop-blur-xl"
-                >
-                  <div className="flex flex-col h-full">
-                    <div className="mb-2 border-b border-border p-4">
-                      <SheetHeader className="text-left">
-                        <SheetTitle className="text-xl flex items-center">
-                          <Terminal className="mr-2 h-5 w-5 text-primary" />
-                          <span className="gradient-text">Menu</span>
-                        </SheetTitle>
-                      </SheetHeader>
-                    </div>
-                    
-                    <nav className="flex flex-col gap-2 p-4">
-                      {navLinks.map((link) => (
+                  <Menu aria-hidden="true" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="w-[min(22rem,calc(100vw-1rem))] gap-0 border-l border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-soft)]"
+              >
+                <SheetHeader className="border-b border-border px-5 py-5 text-left">
+                  <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-primary">
+                    {"IRON//SIGNAL"}
+                  </span>
+                  <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
+                  <SheetDescription>
+                    Move directly between Sukhraj&apos;s story chapters.
+                  </SheetDescription>
+                </SheetHeader>
+
+                <nav aria-label="Mobile navigation" className="grid p-3">
+                  {portfolioNavigation.map((link, index) => {
+                    const isActive = activeSection === link.id;
+
+                    return (
+                      <SheetClose asChild key={link.id}>
                         <Link
-                          key={link.label}
                           href={link.href}
+                          aria-current={isActive ? "location" : undefined}
                           className={cn(
-                            "px-3 py-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2",
-                            activeLink === link.href
-                              ? "bg-primary/10 text-primary"
-                              : "hover:bg-secondary/10"
+                            "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] transition-colors first:border-t",
+                            isActive
+                              ? "bg-surface-raised text-primary"
+                              : "text-foreground hover:bg-surface",
                           )}
+                          onClick={() => setActiveSection(link.id)}
                         >
-                          {link.icon}
+                          <span className="text-[0.625rem] text-ink-faint">
+                            0{index + 1}
+                          </span>
                           {link.label}
+                          <span aria-hidden="true" className="text-primary">
+                            /&#47;
+                          </span>
                         </Link>
-                      ))}
-                    </nav>
-                    
-                    <div className="mt-auto border-t border-border p-4">
-                      <CVAccessDialogMobile />
-                    </div>
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </motion.div>
+                      </SheetClose>
+                    );
+                  })}
+                </nav>
+
+                <div className="mt-auto border-t border-border bg-surface p-4">
+                  <p className="mb-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
+                    Recruiter access
+                  </p>
+                  <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </div>
-    </motion.header>
+    </header>
   );
 }
