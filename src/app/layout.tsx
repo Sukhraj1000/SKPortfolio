@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/geist-latin.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  display: "swap",
+  weight: "100 900",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/geist-mono-latin.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
+  weight: "100 900",
 });
 
 export const metadata: Metadata = {
@@ -21,15 +25,15 @@ export const metadata: Metadata = {
   icons: [
     {
       rel: 'icon',
-      url: '/pixelprofile.png',
+      url: '/sk-icon.png',
     },
     {
       rel: 'apple-touch-icon',
-      url: '/pixelprofile.png',
+      url: '/sk-icon.png',
     },
     {
       rel: 'shortcut icon',
-      url: '/pixelprofile.png',
+      url: '/sk-icon.png',
     }
   ],
 };
@@ -53,7 +57,6 @@ export default function RootLayout({
           <Navbar />
           <main>{children}</main>
         </ThemeProvider>
-        <script src="/js/csp-report.js" async defer></script>
       </body>
     </html>
   );

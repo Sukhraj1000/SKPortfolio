@@ -81,7 +81,7 @@ function HudButton({
       aria-label={label}
       title={label}
       className={cn(
-        "grid h-10 min-w-10 place-items-center border px-2.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:h-11 sm:min-w-11 sm:px-3",
+        "grid h-11 min-w-11 place-items-center border px-2.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:px-3",
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border-strong bg-surface text-foreground hover:bg-surface-raised hover:text-primary",

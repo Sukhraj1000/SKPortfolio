@@ -32,6 +32,9 @@ export interface PortfolioProject {
   outcome: string;
   image: string;
   imageAlt: string;
+  imageWidth: number;
+  imageHeight: number;
+  imageSrcSet?: string;
   technologies: readonly string[];
   links: readonly ProjectLink[];
   grade?: string;
@@ -185,6 +188,8 @@ export const portfolioProjects: readonly PortfolioProject[] = [
       "A live platform supporting vendor, guest, messaging, and administrative workflows.",
     image: "/tymaura-logo-card.svg",
     imageAlt: "Tymaura event-planning platform logo",
+    imageWidth: 1200,
+    imageHeight: 675,
     technologies: [
       "React",
       "TypeScript",
@@ -212,8 +217,11 @@ export const portfolioProjects: readonly PortfolioProject[] = [
       "Delivered websites, automation, lead-generation systems, operational QA, and local search improvements.",
     outcome:
       "A live client-services business focused on practical operational outcomes.",
-    image: "/skaltek-logo-card.png",
+    image: "/skaltek-logo-card.webp",
     imageAlt: "Skaltek software engineering business logo",
+    imageWidth: 960,
+    imageHeight: 540,
+    imageSrcSet: "/skaltek-logo-card-480.webp 480w, /skaltek-logo-card.webp 960w",
     technologies: [
       "Web Development",
       "AI Automation",
@@ -240,8 +248,10 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     contribution:
       "Built the React frontend, FastAPI backend, Claude API integration, Rust and Anchor workflow, and Solana Devnet testing path.",
     outcome: "Completed as a final-year Computer Science project graded 82%.",
-    image: "/solana.png",
+    image: "/solana.webp",
     imageAlt: "Solana logo used for the smart contract generator project",
+    imageWidth: 450,
+    imageHeight: 450,
     technologies: [
       "React",
       "FastAPI",
@@ -272,8 +282,11 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     contribution:
       "Built the cross-platform application, CoinGecko integration, portfolio calculations, transaction management, and data visualisation.",
     outcome: "Completed as an independently delivered project graded 80%.",
-    image: "/cryptoapp.png",
+    image: "/cryptoapp.webp",
     imageAlt: "Crypto portfolio mobile application showing price history charts",
+    imageWidth: 480,
+    imageHeight: 782,
+    imageSrcSet: "/cryptoapp-240.webp 240w, /cryptoapp.webp 480w",
     technologies: [
       ".NET MAUI",
       "C#",

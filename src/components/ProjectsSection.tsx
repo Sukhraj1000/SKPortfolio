@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -39,13 +38,19 @@ function ProjectMedia({ project }: { project: PortfolioProject }) {
       </div>
 
       <div className="micro-grid relative aspect-[16/10] overflow-hidden bg-background">
-        <Image
+        {/* The explicit dimensions reserve space; srcSet keeps raster transfers proportional to the viewport. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- Static export uses a hand-authored responsive srcSet. */}
+        <img
           src={project.image}
+          srcSet={project.imageSrcSet}
           alt={project.imageAlt}
-          fill
+          width={project.imageWidth}
+          height={project.imageHeight}
           sizes="(min-width: 1024px) 42vw, (min-width: 768px) 46vw, 100vw"
+          loading="lazy"
+          decoding="async"
           className={cn(
-            "project-media-image object-contain p-6 sm:p-8",
+            "project-media-image absolute inset-0 h-full w-full object-contain p-6 sm:p-8",
             project.id === "crypto-portfolio" && "p-4 sm:p-5",
           )}
         />

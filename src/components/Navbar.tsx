@@ -39,7 +39,7 @@ function ModeControl({
     <div
       role="group"
       aria-label="Portfolio experience mode"
-      className="grid h-10 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em]"
+      className="grid h-11 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em]"
     >
       {isGameMode ? (
         <Link
@@ -155,7 +155,7 @@ export function Navbar() {
           }
           onClick={() => setActiveSection("home")}
         >
-          <span className="grid h-10 w-10 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
+          <span className="grid h-11 w-11 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
             {portfolioProfile.initials}
           </span>
           <span className="hidden leading-none sm:block">
@@ -217,11 +217,11 @@ export function Navbar() {
             onEnterGame={handleEnterGame}
           />
 
-          <ThemeToggle className="h-10 w-10" />
+          <ThemeToggle />
 
           {!isGameMode ? (
             <div className="hidden lg:block">
-              <CVAccessDialog buttonClassName="h-10 px-3" />
+              <CVAccessDialog buttonClassName="h-11 px-3" />
             </div>
           ) : null}
 
@@ -233,7 +233,7 @@ export function Navbar() {
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10"
+                    className="h-11 w-11"
                     aria-label="Open portfolio navigation"
                     title="Open navigation"
                   >
