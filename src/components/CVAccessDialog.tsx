@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import * as React from "react";
+import { FileText, Linkedin, Mail } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FileText, Mail, Linkedin } from "lucide-react";
+import { SystemLabel } from "@/components/ui/system-label";
+import { contactDetails, socialLinks } from "@/data/portfolio";
 import { cn, getObfuscatedEmail } from "@/lib/utils";
 
 interface CVAccessDialogProps {
@@ -19,63 +21,89 @@ interface CVAccessDialogProps {
 }
 
 function PrivateCVRequestContent() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = React.useState("");
+  const linkedIn = socialLinks.find((social) => social.id === "linkedin");
 
-  useEffect(() => {
+  React.useEffect(() => {
     setEmail(getObfuscatedEmail());
   }, []);
 
   const subject = encodeURIComponent("CV request from sukhrajkalon.info");
   const body = encodeURIComponent(
-    "Hi Sukhraj,\n\nI found your portfolio and would like to request a copy of your CV.\n\nThanks,"
+    "Hi Sukhraj,\n\nI found your portfolio and would like to request a copy of your CV.\n\nThanks,",
   );
 
   return (
-    <div className="space-y-4 py-2">
-      <div className="border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
-        I don&apos;t publish my full CV as an open download. If you&apos;re a recruiter, hiring manager, or collaborator, please request it directly and I&apos;ll share the right version privately.
+    <div className="border-t border-border px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
+      <div className="border-l-2 border-primary bg-background px-4 py-3 text-sm leading-6 text-foreground">
+        {contactDetails.cvRequest} I&apos;ll share the most relevant version directly.
       </div>
 
-      <div className="grid gap-3">
+      <div className="mt-5 grid gap-2.5">
         <Button className="w-full" asChild>
-          <a href={email ? `mailto:${email}?subject=${subject}&body=${body}` : "#"}>
-            <Mail className="mr-2 h-4 w-4" />
-            Request CV by Email
+          <a
+            href={email ? `mailto:${email}?subject=${subject}&body=${body}` : undefined}
+            aria-disabled={!email}
+            onClick={(event) => {
+              if (!email) event.preventDefault();
+            }}
+          >
+            <Mail aria-hidden="true" />
+            Request CV by email
           </a>
         </Button>
 
-        <Button variant="outline" className="w-full hover:bg-primary/10" asChild>
-          <a href="https://www.linkedin.com/in/sukhraj-kalon-037031252/" target="_blank" rel="noopener noreferrer">
-            <Linkedin className="mr-2 h-4 w-4" />
-            Contact on LinkedIn
-          </a>
-        </Button>
+        {linkedIn ? (
+          <Button variant="outline" className="w-full" asChild>
+            <a href={linkedIn.href} target="_blank" rel="noopener noreferrer">
+              <Linkedin aria-hidden="true" />
+              Contact on LinkedIn
+            </a>
+          </Button>
+        ) : null}
       </div>
+
+      <p className="mt-4 font-mono text-[0.625rem] uppercase leading-5 tracking-[0.08em] text-ink-faint">
+        No public download / direct request only
+      </p>
     </div>
   );
 }
 
-export function CVAccessDialog({ buttonClassName, buttonText = "Request CV" }: CVAccessDialogProps = {}) {
+function CVRequestDialog({
+  buttonClassName,
+  buttonText = "Request CV",
+  mobile = false,
+}: CVAccessDialogProps & { mobile?: boolean }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size={mobile ? "default" : "sm"}
           className={cn(
-            "h-9 text-xs hover:bg-primary/10 group",
-            buttonClassName
+            "group text-xs",
+            mobile ? "w-full justify-center" : "h-9",
+            buttonClassName,
           )}
         >
-          <FileText className="mr-1.5 h-3.5 w-3.5 group-hover:text-primary transition-colors" />
+          <FileText
+            aria-hidden="true"
+            className="transition-colors group-hover:text-primary"
+          />
           {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm border border-border-strong bg-surface-raised shadow-[6px_6px_0_var(--shadow-strong)]">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Request CV Privately</DialogTitle>
-          <DialogDescription className="text-ink-muted">
-            My full CV is no longer available as a public download.
+
+      <DialogContent className="max-w-md gap-0 overflow-hidden rounded-none border border-border-strong bg-surface p-0 shadow-[6px_6px_0_var(--shadow-strong)]">
+        <DialogHeader className="px-5 pb-4 pr-12 pt-5 text-left sm:px-6 sm:pr-12 sm:pt-6">
+          <SystemLabel>Recruiter access // Private channel</SystemLabel>
+          <DialogTitle className="pt-2 text-2xl leading-tight text-foreground">
+            Request Sukhraj&apos;s CV
+          </DialogTitle>
+          <DialogDescription className="text-sm leading-6 text-ink-muted">
+            The full CV is shared privately with recruiters, hiring managers, and
+            relevant collaborators.
           </DialogDescription>
         </DialogHeader>
         <PrivateCVRequestContent />
@@ -84,34 +112,10 @@ export function CVAccessDialog({ buttonClassName, buttonText = "Request CV" }: C
   );
 }
 
-interface CVAccessDialogMobileProps {
-  buttonClassName?: string;
-  buttonText?: string;
+export function CVAccessDialog(props: CVAccessDialogProps = {}) {
+  return <CVRequestDialog {...props} />;
 }
 
-export function CVAccessDialogMobile({ buttonClassName, buttonText = "Request CV" }: CVAccessDialogMobileProps = {}) {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "w-full justify-center",
-            buttonClassName
-          )}
-        >
-          <FileText className="mr-2 h-4 w-4" /> {buttonText}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm border border-border-strong bg-surface-raised shadow-[6px_6px_0_var(--shadow-strong)]">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">Request CV Privately</DialogTitle>
-          <DialogDescription className="text-ink-muted">
-            My full CV is no longer available as a public download.
-          </DialogDescription>
-        </DialogHeader>
-        <PrivateCVRequestContent />
-      </DialogContent>
-    </Dialog>
-  );
+export function CVAccessDialogMobile(props: CVAccessDialogProps = {}) {
+  return <CVRequestDialog {...props} mobile />;
 }
