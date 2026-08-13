@@ -136,7 +136,7 @@ export const storyChapters: readonly StoryChapter[] = [
     title: "Tools matter most in how they are applied.",
     summary:
       "Capabilities grouped around solving product, data, cloud, automation, and delivery problems.",
-    href: "/#about",
+    href: "/#loadout",
   },
   {
     id: "next",
