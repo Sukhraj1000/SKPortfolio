@@ -85,7 +85,7 @@ export const portfolioProfile = {
   journey:
     "From learning how systems work to building dependable products in secure, real-world environments.",
   summary:
-    "Software Engineer working across full-stack development, cloud services, data automation, AI-assisted systems, and secure engineering environments.",
+    "Software Engineer and First-Class Computer Science graduate with hands-on experience across secure full-stack development, cloud services, data automation, AI-assisted systems, and blockchain applications.",
   proofPoints: [
     "Software Engineer at Northrop Grumman",
     "First-Class Computer Science graduate",
@@ -104,21 +104,21 @@ export const storyChapters: readonly StoryChapter[] = [
   {
     id: "briefing",
     index: "01",
-    portfolioLabel: "Origin",
+    portfolioLabel: "Profile",
     gameLabel: "Briefing Room",
-    title: "Start with the person behind the systems.",
+    title: "Software engineer building secure, useful systems.",
     summary:
-      "Who Sukhraj is, where he is now, and why practical engineering problems hold his attention.",
+      "Current role, background, and the engineering work Sukhraj focuses on.",
     href: "/#home",
   },
   {
     id: "build",
     index: "02",
-    portfolioLabel: "Selected Work",
+    portfolioLabel: "Projects",
     gameLabel: "Mission Archive",
-    title: "Learning by building things that have to work.",
+    title: "Selected projects and product work.",
     summary:
-      "Products, platforms, and experiments that show increasing ownership from idea through delivery.",
+      "Production products and technical projects, with outcomes and individual contribution made clear.",
     href: "/#projects",
   },
   {
@@ -126,19 +126,19 @@ export const storyChapters: readonly StoryChapter[] = [
     index: "03",
     portfolioLabel: "Experience",
     gameLabel: "Field Log",
-    title: "A path from study into secure engineering.",
+    title: "Professional experience.",
     summary:
-      "The education, internship, professional roles, and operational work that shaped the engineer behind the portfolio.",
+      "Current and previous roles across software engineering, data, and operations.",
     href: "/#about",
   },
   {
     id: "method",
     index: "04",
-    portfolioLabel: "Capabilities",
+    portfolioLabel: "Skills",
     gameLabel: "Loadout Bay",
-    title: "Tools matter most in how they are applied.",
+    title: "Technical skills.",
     summary:
-      "Capabilities grouped around solving product, data, cloud, automation, and delivery problems.",
+      "Technologies grouped by how they are used across applications, data, cloud, automation, and delivery.",
     href: "/#loadout",
   },
   {
@@ -146,9 +146,9 @@ export const storyChapters: readonly StoryChapter[] = [
     index: "05",
     portfolioLabel: "Contact",
     gameLabel: "Comms Tower",
-    title: "The next chapter starts with a useful problem.",
+    title: "Get in touch.",
     summary:
-      "A direct route for recruiters, engineering teams, and collaborators to continue the conversation.",
+      "Contact details for recruiters, engineering teams, and relevant collaborators.",
     href: "/#contact",
   },
 ];
@@ -207,28 +207,28 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     id: "skaltek",
     title: "Skaltek",
     shortTitle: "Skaltek",
-    kind: "Software and digital operations",
+    kind: "AI systems and product automation",
     status: "Live",
     summary:
-      "A software engineering and digital-agent business building websites, AI automation, and practical lead-generation systems for local UK businesses.",
+      "Independent AI-assisted systems for research, outreach, product, and content workflows, alongside production web delivery for local UK businesses.",
     problem:
-      "Local businesses need measurable improvements to digital operations and customer acquisition rather than generic agency deliverables.",
+      "Small teams need repeatable automation that improves digital operations without removing human review from important decisions.",
     contribution:
-      "Delivered websites, automation, lead-generation systems, operational QA, and local search improvements.",
+      "Built workflows with Python, TypeScript, LLM APIs, prompt and system instructions, browser automation, scheduled agents, logging, QA gates, and human checks.",
     outcome:
-      "A live client-services business focused on practical operational outcomes.",
+      "Reusable AI-assisted workflows with practical monitoring, quality checks, and human oversight.",
     image: "/skaltek-logo-card.webp",
     imageAlt: "Skaltek software engineering business logo",
     imageWidth: 960,
     imageHeight: 540,
     imageSrcSet: "/skaltek-logo-card-480.webp 480w, /skaltek-logo-card.webp 960w",
     technologies: [
-      "Web Development",
-      "AI Automation",
-      "Lead Generation",
-      "Local SEO",
-      "Operations",
-      "QA",
+      "Python",
+      "TypeScript",
+      "LLM APIs",
+      "Workflow Automation",
+      "Browser Automation",
+      "GitHub Workflows",
     ],
     links: [
       { kind: "live", label: "Visit Skaltek", href: "https://skaltek.co.uk" },
@@ -328,6 +328,28 @@ export const experience: readonly ExperienceEntry[] = [
     ],
   },
   {
+    id: "endeavour-data",
+    role: "Administration & Data Analysis",
+    organisation: "Endeavour Restaurants Ltd",
+    start: "Jul 2025",
+    end: "Present",
+    current: true,
+    summary:
+      "Developing operational reporting and automation while supporting business IT infrastructure and data quality.",
+    highlights: [
+      "Develop Excel automation for reporting, sales projections, and performance analysis.",
+      "Configure and troubleshoot Cloudflare domains, DNS records, and SSL enforcement.",
+      "Maintain spreadsheet workflows and data accuracy for day-to-day operations.",
+    ],
+    technologies: [
+      "Excel Automation",
+      "Reporting Dashboards",
+      "Cloudflare",
+      "DNS",
+      "SSL",
+    ],
+  },
+  {
     id: "northrop-intern",
     role: "Software Engineer Intern",
     organisation: "Northrop Grumman",
@@ -355,24 +377,24 @@ export const experience: readonly ExperienceEntry[] = [
     ],
   },
   {
-    id: "endeavour-data",
-    role: "Administration & Data Analysis",
-    organisation: "Endeavour Restaurants Ltd",
-    start: "Jul 2025",
-    end: "Present",
-    current: true,
+    id: "techfront-led-technician",
+    role: "LED Technician",
+    organisation: "Techfront UK Ltd",
+    start: "Apr 2023",
+    end: "Jun 2025",
+    current: false,
     summary:
-      "Developing operational reporting and automation while supporting business IT infrastructure and data quality.",
+      "Installed and supported electrical systems, LED display boards, hardware, and data transmission for live sports and major events.",
     highlights: [
-      "Develop Excel automation for reporting, sales projections, and performance analysis.",
-      "Configure and troubleshoot Cloudflare domains, DNS records, and SSL enforcement.",
+      "Delivered hardware setup and LED display support in time-critical live environments.",
+      "Built practical fault awareness and maintained reliable operations under pressure.",
     ],
     technologies: [
-      "Excel Automation",
-      "Reporting Dashboards",
-      "Cloudflare",
-      "DNS",
-      "SSL",
+      "Electrical Systems",
+      "LED Display Systems",
+      "Hardware Setup",
+      "Data Transmission",
+      "Live Event Operations",
     ],
   },
 ];
@@ -422,25 +444,30 @@ export const capabilityGroups: readonly CapabilityGroup[] = [
   {
     id: "ai-automation",
     title: "AI & Automation",
-    summary: "AI-assisted products and workflow automation grounded in useful outcomes.",
+    summary: "AI-assisted products and monitored automation grounded in useful outcomes.",
     items: [
       { name: "LLM API Integration", level: "primary" },
       { name: "Workflow Automation", level: "primary" },
+      { name: "AI-assisted Development", level: "primary" },
+      { name: "Prompt / System Instructions", level: "supporting" },
+      { name: "RAG Workflows", level: "supporting" },
       { name: "Browser Automation", level: "supporting" },
-      { name: "YOLOv8 / Computer Vision", level: "supporting" },
-      { name: "Machine Learning", level: "supporting" },
+      { name: "Scheduled Agents", level: "supporting" },
+      { name: "Automated Testing & QA", level: "supporting" },
+      { name: "Claude / Codex / Cursor / Copilot", level: "supporting" },
     ],
   },
   {
     id: "emerging-technology",
-    title: "Emerging Technology",
-    summary: "Applied experimentation with blockchain, embedded systems, and new platforms.",
+    title: "Blockchain & Systems",
+    summary: "Applied work across blockchain, embedded hardware, and live technical systems.",
     items: [
       { name: "Solana / Anchor", level: "primary" },
       { name: "Rust", level: "supporting" },
       { name: "Solidity / Web3.js", level: "supporting" },
       { name: "Raspberry Pi", level: "supporting" },
-      { name: "Project Management", level: "supporting" },
+      { name: "Electrical / LED Systems", level: "supporting" },
+      { name: "Hardware / Data Transmission", level: "supporting" },
     ],
   },
 ];

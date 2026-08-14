@@ -8,6 +8,8 @@
     "export": "node scripts/next-safe-webstorage.mjs build",
     "qa": "npm run build && npm run qa:static",
     "qa:static": "node scripts/validate-static-export.mjs",
+    "qa:ui": "playwright test",
+    "qa:ui:install": "playwright install chromium",
     "start": "node scripts/next-safe-webstorage.mjs start",
     "lint": "next lint"
   },
@@ -31,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
