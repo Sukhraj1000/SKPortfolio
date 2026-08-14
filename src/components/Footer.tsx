@@ -23,7 +23,7 @@ import {
 } from "@/data/portfolio";
 import { getObfuscatedEmail } from "@/lib/utils";
 
-const commsChapter = storyChapters[4];
+const contactChapter = storyChapters[4];
 
 const socialIcons = {
   github: Github,
@@ -49,7 +49,7 @@ export function Footer() {
       <section
         id="contact"
         data-game-checkpoint="comms"
-        aria-labelledby="comms-title"
+        aria-labelledby="contact-title"
         className="relative py-16 sm:py-20 lg:py-24"
       >
         <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-40" />
@@ -57,23 +57,23 @@ export function Footer() {
 
         <div className="section-shell">
           <SectionHeading
-            label={commsChapter.gameLabel}
-            index={commsChapter.index}
-            headingId="comms-title"
-            title={commsChapter.title}
-            description={commsChapter.summary}
+            label={contactChapter.portfolioLabel}
+            index={contactChapter.index}
+            headingId="contact-title"
+            title={contactChapter.title}
+            description={contactChapter.summary}
           />
 
           <div className="mt-10 grid items-start gap-8 sm:mt-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(24rem,1.1fr)] lg:gap-14">
             <div>
-              <SystemLabel tone="green">Channel available</SystemLabel>
+              <SystemLabel tone="green">Contact</SystemLabel>
               <p className="text-pretty mt-5 max-w-xl text-xl font-semibold leading-8 text-foreground sm:text-2xl sm:leading-9">
                 Recruiters, hiring managers, engineering teams, and collaborators can
-                use these channels to discuss relevant work or request a private CV.
+                get in touch about relevant work or request a private CV.
               </p>
-              <p className="mt-4 max-w-xl text-sm leading-6 text-ink-muted sm:text-base sm:leading-7">
-                The most useful conversations start with the problem, team, or outcome
-                you are trying to move forward.
+              <p className="mt-4 max-w-xl text-base leading-7 text-ink-muted">
+                Include a little context about the role, team, or problem so I can
+                respond usefully.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -95,25 +95,25 @@ export function Footer() {
 
             <PixelFrame tone="cyan" raised className="overflow-hidden">
               <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
-                <SystemLabel tone="cyan">{"Comms uplink // Direct channels"}</SystemLabel>
-                <StatusIndicator pulse>Ready</StatusIndicator>
+                <SystemLabel tone="cyan">Contact details</SystemLabel>
+                <StatusIndicator>Available</StatusIndicator>
               </div>
 
               <dl className="grid gap-px bg-border sm:grid-cols-2">
                 <div className="bg-surface p-4 sm:p-5">
-                  <dt className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-faint">
+                  <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
                     Location
                   </dt>
-                  <dd className="mt-2 flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <dd className="mt-2 flex items-center gap-2 text-base font-semibold text-foreground">
                     <MapPin aria-hidden="true" className="h-4 w-4 text-primary" />
                     {contactDetails.location}
                   </dd>
                 </div>
                 <div className="bg-surface p-4 sm:p-5">
-                  <dt className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-faint">
-                    CV protocol
+                  <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                    CV access
                   </dt>
-                  <dd className="mt-2 text-sm leading-6 text-foreground">
+                  <dd className="mt-2 text-base leading-7 text-foreground">
                     Shared privately on request
                   </dd>
                 </div>
@@ -129,7 +129,7 @@ export function Footer() {
                         href={social.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group flex min-h-16 items-center justify-between gap-3 px-4 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-foreground transition-colors hover:bg-surface-raised hover:text-primary"
+                        className="group flex min-h-16 items-center justify-between gap-3 px-4 font-mono text-sm font-semibold uppercase tracking-[0.04em] text-foreground transition-colors hover:bg-surface-raised hover:text-primary"
                       >
                         <span className="flex items-center gap-2.5">
                           <Icon aria-hidden="true" className="h-4 w-4 text-primary" />
@@ -163,23 +163,23 @@ export function Footer() {
                 <span className="block text-sm font-semibold">
                   {portfolioProfile.name}
                 </span>
-                <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-muted">
+                <span className="mt-1 block font-mono text-sm uppercase tracking-[0.04em] text-ink-muted">
                   {portfolioProfile.role}
                 </span>
               </span>
             </Link>
-            <p className="mt-4 text-xs text-ink-muted">
+            <p className="mt-4 text-sm text-ink-muted">
               &copy; {currentYear} {portfolioProfile.name}. All rights reserved.
             </p>
           </div>
 
-          <nav aria-label="Footer story navigation">
+          <nav aria-label="Footer navigation">
             <ol className="flex flex-wrap gap-x-4 gap-y-2 md:justify-end">
               {storyChapters.map((chapter) => (
                 <li key={chapter.id}>
                   <Link
                     href={chapter.href}
-                    className="inline-flex min-h-11 items-center font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-ink-muted transition-colors hover:text-primary"
+                    className="inline-flex min-h-11 items-center font-mono text-sm font-semibold uppercase tracking-[0.04em] text-ink-muted transition-colors hover:text-primary"
                   >
                     {chapter.index} {chapter.portfolioLabel}
                   </Link>

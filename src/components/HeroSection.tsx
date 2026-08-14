@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { CVAccessDialog } from "@/components/CVAccessDialog";
 import { PixelFrame } from "@/components/ui/pixel-frame";
-import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
 import {
   portfolioProfile,
@@ -18,7 +17,7 @@ import {
   storyChapters,
 } from "@/data/portfolio";
 
-const originChapter = storyChapters[0];
+const profileChapter = storyChapters[0];
 const heroSocials = socialLinks.filter(
   (social) => social.id === "github" || social.id === "linkedin",
 );
@@ -42,14 +41,13 @@ export function HeroSection() {
           <div className="max-w-3xl">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <SystemLabel>
-                {`${originChapter.index} // ${originChapter.portfolioLabel}`}
+                {`${profileChapter.index} // ${profileChapter.portfolioLabel}`}
               </SystemLabel>
-              <StatusIndicator pulse>Operator online</StatusIndicator>
             </div>
 
             <h1
               id="hero-title"
-              className="mt-4 text-[clamp(3rem,15vw,7.5rem)] font-semibold uppercase leading-[0.82] tracking-[-0.075em] text-foreground sm:mt-6 lg:mt-8 lg:text-[clamp(5.5rem,9vw,8.25rem)]"
+              className="mt-4 text-[min(15vw,7.5rem)] font-semibold uppercase leading-[0.82] tracking-[-0.075em] text-foreground sm:mt-6 lg:mt-8 lg:text-[min(9vw,8.25rem)]"
             >
               <span className="block">Sukhraj</span>
               <span className="block text-primary">Kalon</span>
@@ -62,42 +60,41 @@ export function HeroSection() {
               </span>
             </p>
 
-            <dl className="mt-4 grid max-w-2xl grid-cols-2 gap-px border border-border bg-border sm:mt-5">
-              <div className="flex min-h-14 items-center gap-3 bg-surface px-2 py-2 sm:px-4 sm:py-2.5">
+            <dl className="mt-4 grid max-w-2xl grid-cols-1 gap-px border border-border bg-border sm:mt-5 sm:grid-cols-2">
+              <div className="flex min-h-14 items-center gap-3 bg-surface px-4 py-3">
                 <GraduationCap
                   aria-hidden="true"
                   className="hidden h-4 w-4 shrink-0 text-primary sm:block"
                 />
                 <div>
-                  <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                    Education signal
+                  <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                    Education
                   </dt>
-                  <dd className="mt-1 text-[0.6875rem] font-medium leading-4 text-foreground sm:text-sm">
+                  <dd className="mt-1 text-sm font-medium leading-5 text-foreground">
                     {portfolioProfile.education}
                   </dd>
                 </div>
               </div>
-              <div className="flex min-h-14 items-center gap-3 bg-surface px-2 py-2 sm:px-4 sm:py-2.5">
+              <div className="flex min-h-14 items-center gap-3 bg-surface px-4 py-3">
                 <MapPin
                   aria-hidden="true"
                   className="hidden h-4 w-4 shrink-0 text-primary sm:block"
                 />
                 <div>
-                  <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                    Current base
+                  <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                    Location
                   </dt>
-                  <dd className="mt-1 text-[0.6875rem] font-medium leading-4 text-foreground sm:text-sm">
+                  <dd className="mt-1 text-sm font-medium leading-5 text-foreground">
                     {portfolioProfile.location}
                   </dd>
                 </div>
               </div>
             </dl>
 
-            <p className="mt-4 border-l-2 border-primary pl-3 font-mono text-[0.6875rem] font-medium uppercase leading-5 tracking-[0.06em] text-ink-muted sm:hidden">
-              Full-stack systems / Cloud services / AI automation / Secure engineering
-            </p>
-
-            <p className="text-pretty mt-5 hidden max-w-2xl text-sm leading-6 text-ink-muted sm:block sm:text-base sm:leading-7">
+            <p
+              data-hero-summary
+              className="text-pretty mt-5 max-w-2xl text-base leading-7 text-ink-muted"
+            >
               {portfolioProfile.summary}
             </p>
 
@@ -106,7 +103,7 @@ export function HeroSection() {
                 <Link href="/#projects">View projects</Link>
               </Button>
 
-              <CVAccessDialog buttonClassName="h-11 px-5 text-xs" />
+              <CVAccessDialog buttonClassName="h-11 px-5" />
 
               {heroSocials.map((social) => {
                 const Icon = social.id === "github" ? Github : Linkedin;
@@ -128,11 +125,11 @@ export function HeroSection() {
 
             <Link
               href="/#projects"
-              className="group mt-5 inline-grid min-h-11 grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-border pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-ink-muted transition-colors hover:text-primary sm:mt-8"
-              aria-label="Continue to chapter 02, Selected Work"
+              className="group mt-5 inline-grid min-h-11 grid-cols-[auto_1fr_auto] items-center gap-3 border-t border-border pt-3 font-mono text-sm font-semibold uppercase tracking-[0.06em] text-ink-muted transition-colors hover:text-primary sm:mt-8"
+              aria-label="Go to selected projects"
             >
               <span className="text-primary">02</span>
-              <span>Continue to selected work</span>
+              <span>Explore selected projects</span>
               <ArrowDown
                 aria-hidden="true"
                 className="h-4 w-4 transition-transform group-hover:translate-y-1"
@@ -146,8 +143,8 @@ export function HeroSection() {
             className="mx-auto hidden w-full max-w-[29rem] overflow-hidden bg-surface lg:block"
           >
             <div className="flex items-center justify-between gap-4 border-b border-border bg-surface-raised px-4 py-3">
-              <SystemLabel tone="cyan">{"Operator record // SK"}</SystemLabel>
-              <span className="font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-faint">
+              <SystemLabel tone="cyan">Profile snapshot</SystemLabel>
+              <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
                 ID-01
               </span>
             </div>
@@ -159,7 +156,7 @@ export function HeroSection() {
               />
               <div
                 role="img"
-                aria-label="Pixel-art representation of Sukhraj Kalon wearing a dark bomber jacket with a blue signal stripe"
+                aria-label="Pixel-art portrait of Sukhraj Kalon"
                 className="operator-sprite relative z-0"
               />
               <span
@@ -174,8 +171,8 @@ export function HeroSection() {
 
             <dl className="grid grid-cols-2 gap-px border-t border-border bg-border">
               <div className="bg-surface p-3 sm:p-4">
-                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                  Assignment
+                <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                  Employer
                 </dt>
                 <dd className="mt-1.5 flex items-center gap-2 text-xs font-semibold sm:text-sm">
                   <Building2 aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
@@ -183,24 +180,24 @@ export function HeroSection() {
                 </dd>
               </div>
               <div className="bg-surface p-3 sm:p-4">
-                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                  Discipline
+                <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                  Role
                 </dt>
                 <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
                   Software Engineering
                 </dd>
               </div>
               <div className="bg-surface p-3 sm:p-4">
-                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                  Systems
+                <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                  Focus
                 </dt>
                 <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
                   Full-stack / Cloud
                 </dd>
               </div>
               <div className="bg-surface p-3 sm:p-4">
-                <dt className="font-mono text-[0.5625rem] uppercase tracking-[0.1em] text-ink-faint">
-                  Method
+                <dt className="font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                  Approach
                 </dt>
                 <dd className="mt-1.5 text-xs font-semibold sm:text-sm">
                   Secure / AI-assisted

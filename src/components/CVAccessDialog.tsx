@@ -63,8 +63,8 @@ function PrivateCVRequestContent() {
         ) : null}
       </div>
 
-      <p className="mt-4 font-mono text-[0.625rem] uppercase leading-5 tracking-[0.08em] text-ink-faint">
-        No public download / direct request only
+      <p className="mt-4 font-mono text-sm leading-5 text-ink-muted">
+        Shared privately on request.
       </p>
     </div>
   );
@@ -82,7 +82,7 @@ function CVRequestDialog({
           variant="outline"
           size={mobile ? "default" : "sm"}
           className={cn(
-            "group text-xs",
+            "group text-sm",
             mobile ? "w-full justify-center" : "h-11",
             buttonClassName,
           )}
@@ -97,7 +97,7 @@ function CVRequestDialog({
 
       <DialogContent className="max-w-md gap-0 overflow-hidden rounded-none border border-border-strong bg-surface p-0 shadow-[6px_6px_0_var(--shadow-strong)]">
         <DialogHeader className="px-5 pb-4 pr-12 pt-5 text-left sm:px-6 sm:pr-12 sm:pt-6">
-          <SystemLabel>Recruiter access // Private channel</SystemLabel>
+          <SystemLabel>CV access</SystemLabel>
           <DialogTitle className="pt-2 text-2xl leading-tight text-foreground">
             Request Sukhraj&apos;s CV
           </DialogTitle>

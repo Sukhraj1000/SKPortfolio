@@ -16,12 +16,13 @@ import {
   type ExperienceEntry,
 } from "@/data/portfolio";
 
-const fieldLogChapter = storyChapters[2];
-const loadoutChapter = storyChapters[3];
+const experienceChapter = storyChapters[2];
+const skillsChapter = storyChapters[3];
 const experienceOrder = [
   "northrop-software-engineer",
   "endeavour-data",
   "northrop-intern",
+  "techfront-led-technician",
 ] as const;
 
 const chronologicalExperience = experienceOrder.flatMap((id) => {
@@ -29,7 +30,7 @@ const chronologicalExperience = experienceOrder.flatMap((id) => {
   return entry ? [entry] : [];
 });
 
-// capabilityGroups is the authoritative current loadout. The former scrolling
+// capabilityGroups is the authoritative current skills list. The former scrolling
 // ticker duplicated these entries and included unsubstantiated legacy labels,
 // so it is deliberately retired rather than implying that every old label is current.
 
@@ -45,7 +46,7 @@ function CapabilityTags({
       {technologies.map((technology) => (
         <li
           key={technology}
-          className="border border-border bg-surface px-2 py-1 font-mono text-[0.625rem] text-foreground"
+          className="border border-border bg-surface px-2 py-1 font-mono text-sm text-foreground"
         >
           {technology}
         </li>
@@ -76,10 +77,10 @@ function ExperienceRecord({
       >
         <summary className="grid min-h-28 cursor-pointer items-center gap-4 px-3 py-5 transition-colors hover:bg-surface-raised focus-visible:outline-offset-[-3px] sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:px-5 lg:grid-cols-[13rem_minmax(0,1fr)_auto] lg:gap-7">
           <div>
-            <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-faint">
-              Record {recordNumber}
+            <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
+              Position {recordNumber}
             </span>
-            <p className="mt-2 flex items-center gap-2 font-mono text-xs font-semibold text-primary">
+            <p className="mt-2 flex items-center gap-2 font-mono text-sm font-semibold text-primary">
               <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
               <time>{entry.start}</time>
               <span aria-hidden="true">—</span>
@@ -98,17 +99,24 @@ function ExperienceRecord({
               <BriefcaseBusiness aria-hidden="true" className="h-3.5 w-3.5" />
               {entry.organisation}
             </p>
-            <p className="text-pretty mt-2 max-w-3xl text-sm leading-6 text-ink-muted">
+            <p className="text-pretty mt-2 max-w-3xl text-base leading-7 text-ink-muted">
               {entry.summary}
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-3 sm:justify-end">
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
             {entry.current ? (
               <StatusIndicator pulse>Current</StatusIndicator>
             ) : (
               <StatusIndicator tone="idle">Completed</StatusIndicator>
             )}
+            <span
+              data-disclosure-action
+              className="font-mono text-sm font-semibold text-foreground"
+            >
+              <span className="group-open/experience:hidden">View details</span>
+              <span className="hidden group-open/experience:inline">Hide details</span>
+            </span>
             <ArrowDown
               aria-hidden="true"
               className="h-4 w-4 shrink-0 text-primary transition-transform duration-200 group-open/experience:rotate-180 motion-reduce:transition-none"
@@ -117,12 +125,12 @@ function ExperienceRecord({
         </summary>
 
         <div className="story-disclosure-panel border-t border-border px-3 py-5 sm:px-5 sm:py-6 md:pl-[12.25rem] lg:pl-[16.75rem]">
-          <SystemLabel marker={false}>Expanded field evidence</SystemLabel>
+          <SystemLabel marker={false}>Responsibilities and impact</SystemLabel>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
             {entry.highlights.map((highlight) => (
               <li
                 key={highlight}
-                className="flex items-start gap-2.5 border-l border-border pl-3 text-sm leading-6 text-foreground"
+                className="flex items-start gap-2.5 border-l border-border pl-3 text-base leading-7 text-foreground"
               >
                 <Check
                   aria-hidden="true"
@@ -163,7 +171,7 @@ function CapabilityRecord({
       data-capability-record={group.id}
       className="story-disclosure group/loadout border-t border-border-strong bg-background last:border-b open:bg-surface/75"
     >
-      <summary className="grid min-h-24 cursor-pointer items-center gap-4 px-3 py-5 transition-colors hover:bg-surface-raised focus-visible:outline-offset-[-3px] sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:px-5 sm:py-6 lg:grid-cols-[3rem_minmax(12rem,0.8fr)_minmax(0,1.2fr)_auto] lg:gap-8">
+      <summary className="grid min-h-24 cursor-pointer grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center gap-4 px-3 py-5 transition-colors hover:bg-surface-raised focus-visible:outline-offset-[-3px] sm:grid-cols-[3rem_minmax(0,1fr)_auto] sm:px-5 sm:py-6 lg:grid-cols-[3rem_minmax(12rem,0.8fr)_minmax(0,1.2fr)_auto_auto] lg:gap-8">
         <span className="font-mono text-xs font-semibold text-primary">
           {recordNumber}
         </span>
@@ -174,19 +182,27 @@ function CapabilityRecord({
           >
             {group.title}
           </h3>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-ink-muted">
+          <p className="mt-2 max-w-xl text-base leading-7 text-ink-muted">
             {group.summary}
           </p>
         </div>
 
-        <div className="col-start-2 flex flex-wrap gap-2 lg:col-start-auto">
-          <span className="border border-primary bg-primary px-2 py-1 font-mono text-[0.625rem] font-semibold text-primary-foreground">
+        <div className="col-span-2 col-start-2 flex flex-wrap gap-2 lg:col-span-1 lg:col-start-auto">
+          <span className="border border-primary bg-primary px-2 py-1 font-mono text-sm font-semibold text-primary-foreground">
             {primaryItems.length} primary
           </span>
-          <span className="border border-border bg-surface px-2 py-1 font-mono text-[0.625rem] text-foreground">
+          <span className="border border-border bg-surface px-2 py-1 font-mono text-sm text-foreground">
             {supportingItems.length} supporting
           </span>
         </div>
+
+        <span
+          data-disclosure-action
+          className="col-span-2 col-start-2 font-mono text-sm font-semibold text-foreground lg:col-span-1 lg:col-start-auto"
+        >
+          <span className="group-open/loadout:hidden">View skills</span>
+          <span className="hidden group-open/loadout:inline">Hide skills</span>
+        </span>
 
         <ArrowDown
           aria-hidden="true"
@@ -197,15 +213,15 @@ function CapabilityRecord({
       <div className="story-disclosure-panel border-t border-border px-3 py-5 sm:px-5 sm:py-6 lg:pl-[8rem]">
         <div className="grid gap-5 sm:grid-cols-2 lg:max-w-4xl">
           <div>
-            <h4 className="flex items-center gap-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
+            <h4 className="flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
               <span aria-hidden="true" className="h-2 w-2 bg-primary" />
-              Primary methods
+              Core skills
             </h4>
             <ul className="mt-3 grid gap-1.5">
               {primaryItems.map((item) => (
                 <li
                   key={item.name}
-                  className="border border-primary bg-primary px-2.5 py-1.5 font-mono text-[0.6875rem] font-semibold text-primary-foreground"
+                  className="border border-primary bg-primary px-2.5 py-1.5 font-mono text-sm font-semibold text-primary-foreground"
                 >
                   {item.name}
                 </li>
@@ -214,7 +230,7 @@ function CapabilityRecord({
           </div>
 
           <div>
-            <h4 className="flex items-center gap-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+            <h4 className="flex items-center gap-2 font-mono text-sm font-semibold uppercase tracking-[0.04em] text-ink-muted">
               <span
                 aria-hidden="true"
                 className="h-2 w-2 border border-border-strong bg-surface"
@@ -225,7 +241,7 @@ function CapabilityRecord({
               {supportingItems.map((item) => (
                 <li
                   key={item.name}
-                  className="border border-border bg-surface px-2.5 py-1.5 font-mono text-[0.6875rem] text-foreground"
+                  className="border border-border bg-surface px-2.5 py-1.5 font-mono text-sm text-foreground"
                 >
                   {item.name}
                 </li>
@@ -250,11 +266,11 @@ export function AboutSection() {
         <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-35" />
         <div className="section-shell">
           <SectionHeading
-            label={fieldLogChapter.gameLabel}
-            index={fieldLogChapter.index}
+            label={experienceChapter.portfolioLabel}
+            index={experienceChapter.index}
             headingId="field-log-title"
-            title={fieldLogChapter.title}
-            description={fieldLogChapter.summary}
+            title={experienceChapter.title}
+            description={experienceChapter.summary}
           />
 
           <ol className="mt-10 sm:mt-12">
@@ -274,22 +290,22 @@ export function AboutSection() {
         <div className="micro-grid pointer-events-none absolute inset-0 -z-10 opacity-45" />
         <div className="section-shell">
           <SectionHeading
-            label={loadoutChapter.gameLabel}
-            index={loadoutChapter.index}
+            label={skillsChapter.portfolioLabel}
+            index={skillsChapter.index}
             headingId="loadout-title"
-            title={loadoutChapter.title}
-            description={loadoutChapter.summary}
+            title={skillsChapter.title}
+            description={skillsChapter.summary}
           />
 
           <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-l-2 border-primary bg-background px-4 py-3 sm:mt-10">
             <SystemLabel tone="neutral" marker={false}>
-              Loadout key
+              Skills key
             </SystemLabel>
-            <span className="flex items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-foreground">
+            <span className="flex items-center gap-2 font-mono text-sm font-medium text-foreground">
               <span aria-hidden="true" className="h-2 w-2 bg-primary" />
               Primary capability
             </span>
-            <span className="flex items-center gap-2 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-muted">
+            <span className="flex items-center gap-2 font-mono text-sm font-medium text-ink-muted">
               <span
                 aria-hidden="true"
                 className="h-2 w-2 border border-border-strong bg-surface"
@@ -304,7 +320,7 @@ export function AboutSection() {
             ))}
           </div>
 
-          <div className="mt-7 flex items-start gap-3 border-l border-border-strong pl-4 text-sm leading-6 text-ink-muted">
+          <div className="mt-7 flex items-start gap-3 border-l border-border-strong pl-4 text-base leading-7 text-ink-muted">
             <Layers3
               aria-hidden="true"
               className="mt-1 h-4 w-4 shrink-0 text-primary"

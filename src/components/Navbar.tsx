@@ -39,7 +39,7 @@ function ModeControl({
     <div
       role="group"
       aria-label="Portfolio experience mode"
-      className="grid h-11 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.08em]"
+      className="grid h-11 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
     >
       {isGameMode ? (
         <Link
@@ -147,11 +147,11 @@ export function Navbar() {
       <div className="section-shell flex h-16 items-center gap-2 lg:gap-4">
         <Link
           href={isGameMode ? portfolioReturnHref : "/#home"}
-          className="group flex shrink-0 items-center gap-2"
+          className="group hidden shrink-0 items-center gap-2 min-[360px]:flex"
           aria-label={
             isGameMode
               ? `${portfolioProfile.name}, exit Game mode`
-              : `${portfolioProfile.name}, return to Origin`
+              : `${portfolioProfile.name}, return to Home`
           }
           onClick={() => setActiveSection("home")}
         >
@@ -162,7 +162,7 @@ export function Navbar() {
             <span className="block text-sm font-semibold text-foreground">
               {portfolioProfile.name}
             </span>
-            <span className="mt-1 block font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
+            <span className="mt-1 block font-mono text-sm uppercase tracking-[0.06em] text-ink-muted">
               Software Engineer
             </span>
           </span>
@@ -171,7 +171,7 @@ export function Navbar() {
         {!isGameMode ? (
           <nav
             aria-label="Primary navigation"
-            className="ml-auto hidden items-stretch self-stretch lg:flex"
+            className="ml-auto hidden items-stretch self-stretch xl:flex"
           >
             {portfolioNavigation.map((link, index) => {
               const isActive = activeSection === link.id;
@@ -182,14 +182,14 @@ export function Navbar() {
                   href={link.href}
                   aria-current={isActive ? "location" : undefined}
                   className={cn(
-                    "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition-colors last:border-r",
+                    "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-sm font-semibold uppercase tracking-[0.04em] transition-colors last:border-r",
                     isActive
                       ? "bg-surface-raised text-primary"
                       : "text-ink-muted hover:bg-surface hover:text-foreground",
                   )}
                   onClick={() => setActiveSection(link.id)}
                 >
-                  <span className="mr-1.5 text-[0.5625rem] text-ink-faint">
+                  <span className="mr-1.5 text-xs text-ink-faint">
                     0{index + 1}
                   </span>
                   {link.label}
@@ -205,12 +205,12 @@ export function Navbar() {
             })}
           </nav>
         ) : (
-          <p className="ml-auto hidden font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-ink-muted lg:block">
+          <p className="ml-auto hidden font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted xl:block">
             Game route // isolated runtime
           </p>
         )}
 
-        <div className="ml-auto flex items-center gap-1.5 lg:ml-0 lg:gap-2">
+        <div className="ml-auto flex items-center gap-1.5 xl:ml-0 xl:gap-2">
           <ModeControl
             isGameMode={isGameMode}
             portfolioReturnHref={portfolioReturnHref}
@@ -220,13 +220,13 @@ export function Navbar() {
           <ThemeToggle />
 
           {!isGameMode ? (
-            <div className="hidden lg:block">
+            <div className="hidden xl:block">
               <CVAccessDialog buttonClassName="h-11 px-3" />
             </div>
           ) : null}
 
           {!isGameMode ? (
-            <div className="lg:hidden">
+            <div className="xl:hidden">
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                   <Button
@@ -245,12 +245,12 @@ export function Navbar() {
                   className="w-[min(22rem,calc(100vw-1rem))] gap-0 border-l border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-soft)]"
                 >
                   <SheetHeader className="border-b border-border px-5 py-5 text-left">
-                    <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-primary">
-                      {"IRON//SIGNAL"}
+                    <span className="font-mono text-xs uppercase tracking-[0.08em] text-primary">
+                      Sukhraj Kalon
                     </span>
                     <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
                     <SheetDescription>
-                      Move directly between Sukhraj&apos;s story chapters.
+                      Move directly between portfolio sections.
                     </SheetDescription>
                   </SheetHeader>
 
@@ -264,14 +264,14 @@ export function Navbar() {
                             href={link.href}
                             aria-current={isActive ? "location" : undefined}
                             className={cn(
-                              "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-xs font-semibold uppercase tracking-[0.08em] transition-colors first:border-t",
+                              "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-sm font-semibold uppercase tracking-[0.04em] transition-colors first:border-t",
                               isActive
                                 ? "bg-surface-raised text-primary"
                                 : "text-foreground hover:bg-surface",
                             )}
                             onClick={() => setActiveSection(link.id)}
                           >
-                            <span className="text-[0.625rem] text-ink-faint">
+                            <span className="text-xs text-ink-faint">
                               0{index + 1}
                             </span>
                             {link.label}
@@ -285,8 +285,8 @@ export function Navbar() {
                   </nav>
 
                   <div className="mt-auto border-t border-border bg-surface p-4">
-                    <p className="mb-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-muted">
-                      Recruiter access
+                    <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                      CV access
                     </p>
                     <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
                   </div>

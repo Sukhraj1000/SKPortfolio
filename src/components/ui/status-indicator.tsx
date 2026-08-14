@@ -26,7 +26,7 @@ export function StatusIndicator({
     <span
       data-slot="status-indicator"
       className={cn(
-        "inline-flex items-center gap-2 font-mono text-xs uppercase",
+        "inline-flex items-center gap-2 font-mono text-sm font-medium uppercase leading-5",
         toneClasses[tone],
         className,
       )}

@@ -26,7 +26,7 @@ export function SystemLabel({
     <span
       data-slot="system-label"
       className={cn(
-        "inline-flex items-center gap-2 font-mono text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.12em]",
+        "inline-flex items-center gap-2 font-mono text-xs font-semibold uppercase leading-4 tracking-[0.1em]",
         toneClasses[tone],
         className,
       )}
