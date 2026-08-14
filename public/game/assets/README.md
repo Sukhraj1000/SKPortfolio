@@ -19,4 +19,4 @@ The artwork avoids weapons, military rank marks, cute or chibi treatment, pastel
 
 ## Source provenance
 
-The source sheets were generated with the built-in OpenAI image generation workflow on 2026-08-12. `assets/game/source/profile-reference.png` was used only as an identity reference for the SK character. The character source used a flat chroma background that was removed locally; the world source was returned with an alpha channel. Both were normalized into exact frame grids using nearest-neighbour resampling.
+The source sheets were generated with the built-in OpenAI image generation workflow on 2026-08-12. A private profile photograph was used only as an identity reference for the SK character and is deliberately not included in the repository. The character source used a flat chroma background that was removed locally; the world source was returned with an alpha channel. Both were normalized into exact frame grids using nearest-neighbour resampling.
