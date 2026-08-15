@@ -144,6 +144,40 @@ test.describe("Pixel Quest portfolio", () => {
     expect(secondMedia?.x).toBeGreaterThan(secondStory?.x ?? Number.NEGATIVE_INFINITY);
   });
 
+  test("orders the complete professional experience as a level path", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/#about");
+
+    const records = page.locator("[data-experience-record]");
+    await expect(records).toHaveCount(4);
+    await expect(records.locator(".pq-level-node")).toHaveText(["04", "03", "02", "01"]);
+    await expect(records.getByRole("heading", { level: 3 })).toHaveText([
+      "Software Engineer",
+      "Administration & Data Analysis",
+      "Software Engineer Intern",
+      "LED Technician",
+    ]);
+    await expect(records.first()).toContainText("Northrop Grumman");
+    await expect(records.first()).toContainText("Sep 2025 — Present");
+
+    for (const record of await records.all()) {
+      const details = record.locator("details");
+      if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
+        await details.locator("summary").click();
+      }
+      await expect(details.locator(".pq-level-details-panel > ul").first().locator("li").first()).toBeVisible();
+      await expect(details.locator(".pq-tech-list li").first()).toBeVisible();
+    }
+
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");

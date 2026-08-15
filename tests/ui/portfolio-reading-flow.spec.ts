@@ -249,9 +249,10 @@ test.describe("portfolio reading flow", () => {
     await expect(experienceRecords).toHaveCount(4);
 
     for (const record of await experienceRecords.all()) {
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.locator("time")).toBeVisible();
       const summary = record.locator("summary");
-      await expect(summary.getByRole("heading")).toBeVisible();
-      await expect(summary.locator("[data-disclosure-action]")).toBeVisible();
+      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
       expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
     }
 
@@ -261,7 +262,9 @@ test.describe("portfolio reading flow", () => {
     await secondExperienceSummary.focus();
     await page.keyboard.press("Enter");
     await expect(secondExperienceDetails).toHaveAttribute("open", "");
-    await expect(secondExperienceSummary.getByText("Hide details")).toBeVisible();
+    await expect(
+      secondExperienceSummary.getByText("Hide responsibilities and stack"),
+    ).toBeVisible();
     await expect(secondExperienceSummary).toBeFocused();
 
     const capabilityRecords = page.locator("[data-capability-record]");

@@ -1,13 +1,10 @@
-import {
-  ArrowDown,
-  BriefcaseBusiness,
-  CalendarDays,
-  Check,
-  Layers3,
-} from "lucide-react";
+import { ArrowDown, Layers3 } from "lucide-react";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
+import {
+  QuestChapterHeading,
+  QuestChip,
+} from "@/components/pixel-quest/QuestPrimitives";
 import {
   capabilityGroups,
   experience,
@@ -34,27 +31,6 @@ const chronologicalExperience = experienceOrder.flatMap((id) => {
 // ticker duplicated these entries and included unsubstantiated legacy labels,
 // so it is deliberately retired rather than implying that every old label is current.
 
-function CapabilityTags({
-  technologies,
-  label,
-}: {
-  technologies: readonly string[];
-  label: string;
-}) {
-  return (
-    <ul aria-label={label} className="mt-5 flex flex-wrap gap-1.5">
-      {technologies.map((technology) => (
-        <li
-          key={technology}
-          className="border border-border bg-surface px-2 py-1 font-mono text-sm text-foreground"
-        >
-          {technology}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function ExperienceRecord({
   entry,
   index,
@@ -62,91 +38,49 @@ function ExperienceRecord({
   entry: ExperienceEntry;
   index: number;
 }) {
-  const recordNumber = String(index + 1).padStart(2, "0");
+  const levelNumber = String(chronologicalExperience.length - index).padStart(2, "0");
 
   return (
     <li
       id={`field-log-${entry.id}`}
       data-experience-record={entry.id}
-      className="scroll-mt-24 border-t border-border-strong last:border-b"
+      className="pq-level-record"
     >
-      <details
-        name="field-log"
-        open={index === 0}
-        className="story-disclosure group/experience bg-background open:bg-surface/70"
-      >
-        <summary className="grid min-h-28 cursor-pointer items-center gap-4 px-3 py-5 transition-colors hover:bg-surface-raised focus-visible:outline-offset-[-3px] sm:grid-cols-[10rem_minmax(0,1fr)_auto] sm:px-5 lg:grid-cols-[13rem_minmax(0,1fr)_auto] lg:gap-7">
-          <div>
-            <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
-              Position {recordNumber}
-            </span>
-            <p className="mt-2 flex items-center gap-2 font-mono text-sm font-semibold text-primary">
-              <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
-              <time>{entry.start}</time>
-              <span aria-hidden="true">—</span>
-              <time>{entry.end}</time>
-            </p>
+      <span className="pq-level-node" aria-hidden="true">
+        {levelNumber}
+      </span>
+      <time className="pq-level-date">
+        {entry.start} — {entry.end}
+      </time>
+      <div className="pq-level-body">
+        {entry.current ? <p className="pq-level-status">Current role</p> : null}
+        <h3 id={`field-log-${entry.id}-title`}>{entry.role}</h3>
+        <strong>{entry.organisation}</strong>
+        <p>{entry.summary}</p>
+
+        <details
+          name="experience-path"
+          open={index === 0}
+          className="pq-level-details"
+        >
+          <summary data-disclosure-action>
+            <span className="when-closed">View responsibilities and stack</span>
+            <span className="when-open">Hide responsibilities and stack</span>
+          </summary>
+          <div className="pq-level-details-panel">
+            <ul aria-label={`${entry.role} responsibilities and impact`}>
+              {entry.highlights.map((highlight) => (
+                <li key={highlight}>{highlight}</li>
+              ))}
+            </ul>
+            <ul className="pq-tech-list" aria-label={`${entry.role} technologies`}>
+              {entry.technologies.map((technology) => (
+                <QuestChip key={technology}>{technology}</QuestChip>
+              ))}
+            </ul>
           </div>
-
-          <div className="min-w-0">
-            <h3
-              id={`field-log-${entry.id}-title`}
-              className="text-xl font-semibold leading-tight text-foreground transition-colors group-hover/experience:text-primary sm:text-2xl"
-            >
-              {entry.role}
-            </h3>
-            <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-primary">
-              <BriefcaseBusiness aria-hidden="true" className="h-3.5 w-3.5" />
-              {entry.organisation}
-            </p>
-            <p className="text-pretty mt-2 max-w-3xl text-base leading-7 text-ink-muted">
-              {entry.summary}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
-            {entry.current ? (
-              <StatusIndicator pulse>Current</StatusIndicator>
-            ) : (
-              <StatusIndicator tone="idle">Completed</StatusIndicator>
-            )}
-            <span
-              data-disclosure-action
-              className="font-mono text-sm font-semibold text-foreground"
-            >
-              <span className="group-open/experience:hidden">View details</span>
-              <span className="hidden group-open/experience:inline">Hide details</span>
-            </span>
-            <ArrowDown
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0 text-primary transition-transform duration-200 group-open/experience:rotate-180 motion-reduce:transition-none"
-            />
-          </div>
-        </summary>
-
-        <div className="story-disclosure-panel border-t border-border px-3 py-5 sm:px-5 sm:py-6 md:pl-[12.25rem] lg:pl-[16.75rem]">
-          <SystemLabel marker={false}>Responsibilities and impact</SystemLabel>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {entry.highlights.map((highlight) => (
-              <li
-                key={highlight}
-                className="flex items-start gap-2.5 border-l border-border pl-3 text-base leading-7 text-foreground"
-              >
-                <Check
-                  aria-hidden="true"
-                  className="mt-1 h-3.5 w-3.5 shrink-0 text-signal-green"
-                />
-                {highlight}
-              </li>
-            ))}
-          </ul>
-
-          <CapabilityTags
-            technologies={entry.technologies}
-            label={`${entry.role} capability tags`}
-          />
-        </div>
-      </details>
+        </details>
+      </div>
     </li>
   );
 }
@@ -259,26 +193,24 @@ export function AboutSection() {
     <>
       <section
         id="about"
+        data-chapter="03"
         data-game-checkpoint="field-log"
         aria-labelledby="field-log-title"
-        className="relative py-16 sm:py-20 lg:py-24"
+        className="pq-chapter pq-experience-chapter"
       >
-        <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-35" />
-        <div className="section-shell">
-          <SectionHeading
-            label={experienceChapter.portfolioLabel}
-            index={experienceChapter.index}
-            headingId="field-log-title"
-            title={experienceChapter.title}
-            description={experienceChapter.summary}
-          />
+        <QuestChapterHeading
+          index={experienceChapter.index}
+          label="Progress / Experience"
+          headingId="field-log-title"
+          title="Every environment added a new constraint."
+          description="Secure engineering, business operations, product delivery, and live technical systems all shaped the route."
+        />
 
-          <ol className="mt-10 sm:mt-12">
-            {chronologicalExperience.map((entry, index) => (
-              <ExperienceRecord key={entry.id} entry={entry} index={index} />
-            ))}
-          </ol>
-        </div>
+        <ol className="pq-level-path">
+          {chronologicalExperience.map((entry, index) => (
+            <ExperienceRecord key={entry.id} entry={entry} index={index} />
+          ))}
+        </ol>
       </section>
 
       <section
