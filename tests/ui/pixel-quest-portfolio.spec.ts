@@ -523,6 +523,27 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(page.getByRole("link", { name: "Enter Game mode" })).toBeVisible();
   });
 
+  test("keeps Phaser and world assets behind the unchanged game Start action", async ({ page }) => {
+    const rootRequests: string[] = [];
+    page.on("request", (request) => rootRequests.push(request.url()));
+    await page.goto("/");
+    await page.locator("#contact").scrollIntoViewIfNeeded();
+    expect(rootRequests.some((url) => url.includes("/game/assets/"))).toBeFalsy();
+    expect(rootRequests.some((url) => url.includes("industrial-world-atlas"))).toBeFalsy();
+
+    const gameRequests: string[] = [];
+    page.on("request", (request) => gameRequests.push(request.url()));
+    await page.goto("/game/");
+    await expect(page.locator("canvas")).toHaveCount(0);
+    expect(gameRequests.some((url) => url.includes("industrial-world-atlas"))).toBeFalsy();
+
+    await page.getByRole("button", { name: "Start deployment" }).click();
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
+    await expect
+      .poll(() => gameRequests.some((url) => url.includes("industrial-world-atlas")))
+      .toBeTruthy();
+  });
+
   test("keeps the game route on its existing isolated header path", async ({ page }) => {
     await page.goto("/game/");
 
