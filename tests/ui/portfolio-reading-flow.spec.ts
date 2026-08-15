@@ -271,19 +271,20 @@ test.describe("portfolio reading flow", () => {
     await expect(capabilityRecords).toHaveCount(5);
 
     for (const record of await capabilityRecords.all()) {
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.getByText(/primary$/)).toBeVisible();
+      await expect(record.getByText(/supporting$/)).toBeVisible();
       const summary = record.locator("summary");
-      await expect(summary.getByRole("heading")).toBeVisible();
-      await expect(summary.getByText(/primary$/)).toBeVisible();
-      await expect(summary.getByText(/supporting$/)).toBeVisible();
-      await expect(summary.locator("[data-disclosure-action]")).toBeVisible();
+      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
       expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
     }
 
     const firstCapability = capabilityRecords.first();
+    const firstCapabilityDetails = firstCapability.locator("details");
     const firstCapabilitySummary = firstCapability.locator("summary");
     await firstCapabilitySummary.click();
-    await expect(firstCapability).toHaveAttribute("open", "");
-    await expect(firstCapabilitySummary.getByText("Hide skills")).toBeVisible();
+    await expect(firstCapabilityDetails).toHaveAttribute("open", "");
+    await expect(firstCapabilitySummary.getByText("Close inventory")).toBeVisible();
   });
 
   test("keeps keyboard focus visible and returns it after closing the CV dialog", async ({

@@ -178,6 +178,39 @@ test.describe("Pixel Quest portfolio", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
+  test("preserves every capability in the responsive inventory", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/#loadout");
+
+    const inventory = page.locator("#loadout");
+    const cards = inventory.locator("[data-capability-record]");
+    await expect(cards).toHaveCount(5);
+    await expect(cards.getByRole("heading", { level: 3 })).toHaveText([
+      "Application Engineering",
+      "Backend & Data",
+      "Cloud & Delivery",
+      "AI & Automation",
+      "Blockchain & Systems",
+    ]);
+    await expect(cards.locator("[data-level]")).toHaveCount(35);
+    await expect(inventory).toContainText("without implying a percentage");
+
+    for (const card of await cards.all()) {
+      const details = card.locator("details");
+      await details.locator("summary").click();
+      await expect(details).toHaveAttribute("open", "");
+      await expect(details.locator('[data-level="primary"]').first()).toBeVisible();
+    }
+
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
