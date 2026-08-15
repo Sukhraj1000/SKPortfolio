@@ -361,6 +361,9 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       data-journey-progress={journeyProgress}
       data-player-state={snapshot.playerState}
       data-dash-ready={snapshot.dashReady}
+      data-signal={snapshot.signal}
+      data-score={snapshot.score}
+      data-checkpoints={snapshot.checkpoints.length}
       className="min-h-[100svh] bg-background pt-16"
     >
       <h1 id="game-runtime-title" className="sr-only">
@@ -462,7 +465,7 @@ export function GameExperience({ onExit }: GameExperienceProps) {
         ) : null}
 
         {notice ? (
-          <div className={cn(styles.notice, styles[`notice${notice.tone[0].toUpperCase()}${notice.tone.slice(1)}`])} role="status" aria-live="polite">
+          <div data-game-notice className={cn(styles.notice, styles[`notice${notice.tone[0].toUpperCase()}${notice.tone.slice(1)}`])} role="status" aria-live="polite">
             <RadioTower aria-hidden="true" className="h-4 w-4 shrink-0" />
             {notice.message}
           </div>

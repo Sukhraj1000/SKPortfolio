@@ -160,4 +160,39 @@ test.describe("Chronicle Run", () => {
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeLessThanOrEqual(4);
   });
+
+  test("advances chapters and recovers quickly after a route impact", async ({
+    page,
+  }) => {
+    test.setTimeout(55_000);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Start Chronicle Run" }).click();
+
+    const runtime = page.locator("[data-journey-progress]");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-checkpoints")), {
+        timeout: 35_000,
+      })
+      .toBeGreaterThanOrEqual(2);
+    await expect(runtime).toHaveAttribute(
+      "data-chronicle-chapter",
+      "live-systems",
+    );
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-signal")), {
+        timeout: 15_000,
+      })
+      .toBeLessThan(100);
+
+    const recoveryProgress = Number(
+      await runtime.getAttribute("data-journey-progress"),
+    );
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThan(recoveryProgress);
+    await expect(page.locator("[data-game-notice]")).toContainText(
+      /Route impact|checkpoint/i,
+    );
+  });
 });
