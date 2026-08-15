@@ -1,71 +1,59 @@
-# Deployment Guide for Hostinger
+# Static deployment to Hostinger
 
-This guide explains how to deploy your Next.js portfolio to Hostinger as a static site.
+SKPortfolio uses Next.js static export. Production requires only the generated files in `out/`; it does not require a Node.js server.
 
 ## Prerequisites
 
-- A Hostinger account with web hosting
-- FTP client (like FileZilla) or Hostinger's File Manager
-- Node.js and npm installed on your local machine
+- Node.js 20.9 or newer
+- npm
+- Hostinger hosting with Apache support for `public/.htaccess`
 
-## Step 1: Prepare your project for deployment
+Install exact dependencies from the lockfile:
 
-The project is already configured for static site generation with the following settings:
+```bash
+npm ci
+```
 
-- `next.config.ts`: Configured with `output: 'export'` and `images.unoptimized: true`
-- Added a `.htaccess` file in the public directory
-- Created a deployment script (`deploy.sh`)
+## Build and verify
 
-## Step 2: Build your static site
-
-Run the deployment script to generate your static site:
+Run:
 
 ```bash
 ./deploy.sh
 ```
 
-This will:
-1. Clean previous builds
-2. Build your Next.js project as static HTML/CSS/JS files
-3. Output files to the `out` directory
+The script:
 
-## Step 3: Upload to Hostinger
+1. blocks critical production dependency advisories;
+2. removes previous `.next/` and `out/` output;
+3. runs lint, TypeScript, the production build, and static-export validation;
+4. verifies required Hostinger files; and
+5. reports the number of generated files.
 
-### Option 1: Using File Manager
+Browser tests are intentionally separate because they start a local development server:
 
-1. Log in to your Hostinger Control Panel
-2. Navigate to **File Manager**
-3. Navigate to the `public_html` directory (or your desired subdirectory)
-4. Upload all contents from your local `out` directory to this directory
+```bash
+npm run qa:ui:install # first run only
+npm run qa:ui
+```
 
-### Option 2: Using FTP
+## Upload
 
-1. Connect to your Hostinger server using an FTP client with credentials from your Hostinger control panel
-2. Navigate to the `public_html` directory on the remote server 
-3. Upload all contents from your local `out` directory to this directory
+Upload the **contents** of `out/` to Hostinger's `public_html` directory using File Manager, SFTP, or another approved transfer method. Do not upload repository source, `.env` files, credentials, private CV files, or package metadata.
 
-## Step 4: Verify your deployment
+`public/.htaccess` enforces HTTPS, disables directory listing, provides the exported 404 page, sets response security headers, and configures static-asset caching.
 
-1. Visit your domain to ensure the site is working properly
-2. Test navigation to different pages
-3. Check that all images and assets are loading correctly
+## Preview checks
 
-## Troubleshooting
+Before replacing the production site, verify the deployment preview against [`docs/RELEASE_QA.md`](docs/RELEASE_QA.md), including:
 
-- **404 errors**: Make sure the `.htaccess` file was properly uploaded
-- **Missing assets**: Check paths and verify all files were uploaded
-- **Image loading issues**: Ensure all image paths are correct
+- direct `/` and `/game/` refreshes;
+- dark/light theme persistence;
+- keyboard and reduced-motion behavior;
+- representative mobile and desktop layouts;
+- external project/contact links; and
+- the optional game's explicit Start and Exit flow.
 
-## Updating your site
+## Rollback
 
-When you want to update your site:
-
-1. Make changes to your code locally
-2. Run `./deploy.sh` to rebuild your site
-3. Upload the new contents of the `out` directory to Hostinger, replacing the old files
-
-## Additional Notes
-
-- The site is configured as a static export, which means it doesn't need a Node.js server to run
-- Dynamic routes in Next.js are pre-rendered at build time for static deployment
-- Your site should load quickly as it's fully static HTML/CSS/JS 
+Keep the previous known-good `out/` archive until preview checks pass. If deployment validation fails, restore that archive rather than uploading a partial build.

@@ -1,49 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Exit on error
-set -e
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
-echo "🚀 Starting deployment process for your portfolio..."
+echo "Preparing the SKPortfolio static export..."
 
-# Security check: report advisories and block critical findings.
-echo "🔒 Running production dependency audit..."
-if ! npm audit --omit=dev --audit-level=critical; then
-  echo "❌ Critical production dependency vulnerability detected."
+echo "Checking production dependencies for critical advisories..."
+npm audit --omit=dev --audit-level=critical
+
+echo "Removing previous build output..."
+rm -rf .next out
+
+echo "Running the release gate..."
+npm run qa
+
+for required_file in public/robots.txt public/.htaccess; do
+  if [[ ! -f "$required_file" ]]; then
+    echo "Required deployment file is missing: $required_file" >&2
+    exit 1
+  fi
+done
+
+if [[ ! -d out ]]; then
+  echo "Static export directory was not created." >&2
   exit 1
 fi
 
-# Clean previous builds
-echo "🧹 Cleaning up previous builds..."
-rm -rf out .next
-
-# Build the project
-echo "🏗️ Building your Next.js project..."
-npm run build
-
-echo "✨ Build completed successfully!"
-
-# Security Check: Verify all required security files exist
-echo "🔒 Verifying security files..."
-if [ ! -f "public/robots.txt" ]; then
-  echo "⚠️  Warning: robots.txt is missing"
-fi
-if [ ! -f "public/.htaccess" ]; then
-  echo "⚠️  Warning: .htaccess is missing"
-fi
-# Verify the output directory exists
-if [ -d "out" ]; then
-  echo "📁 Static files generated in the 'out' directory"
-  echo "📊 Files ready for upload to Hostinger:"
-  find out -type f | wc -l
-else
-  echo "❌ Build failed: 'out' directory was not created"
-  exit 1
-fi
-
-echo ""
-echo "✅ Deployment preparation complete!"
-echo "🌍 To deploy to Hostinger:"
-echo "   1. Log in to your Hostinger account"
-echo "   2. Navigate to File Manager or use FTP"
-echo "   3. Upload all contents from the 'out' directory to your hosting root (public_html)"
-echo ""
+file_count="$(find out -type f | wc -l | tr -d ' ')"
+echo "Static export ready: $file_count files in out/."
+echo "Upload the contents of out/ to the Hostinger public_html directory."

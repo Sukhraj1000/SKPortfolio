@@ -72,6 +72,12 @@ assert(
   !(await pathExists(path.join(outputRoot, "design-reference"))),
   "The approved design reference must remain outside production output.",
 );
+for (const requiredOutput of [".htaccess", "robots.txt", "404.html"]) {
+  assert(
+    await pathExists(path.join(outputRoot, requiredOutput)),
+    `Static export is missing ${requiredOutput}.`,
+  );
+}
 
 const chunkDirectory = path.join(outputRoot, "_next", "static", "chunks");
 const chunkFiles = (await walk(chunkDirectory)).filter((file) => file.endsWith(".js"));

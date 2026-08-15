@@ -21,7 +21,7 @@ npm run qa:ui:install # first run on a machine
 npm run qa:ui
 ```
 
-To capture full-page images for the five-size day/night visual matrix on macOS
+To capture full-page images for the five-size dark/light visual matrix on macOS
 or Linux, run:
 
 ```bash
@@ -52,12 +52,12 @@ Production bundle result after the Pixel Quest redesign:
 
 | Route | Route JS | First-load JS |
 | --- | ---: | ---: |
-| Portfolio `/` | 4.09 kB | 138 kB |
+| Portfolio `/` | 4.05 kB | 138 kB |
 | Game ready state `/game/` | 4.17 kB | 118 kB |
 
 The merged reading-flow baseline was 3.71 kB / 137 kB for Portfolio and
 4.23 kB / 118 kB for the Game ready state. Pixel Quest therefore adds only
-0.38 kB of route JavaScript and approximately 1 kB first-load JavaScript while
+0.34 kB of route JavaScript and approximately 1 kB first-load JavaScript while
 introducing no animation dependency. The Phaser runtime remains a separate
 lazy chunk of approximately 1.19 MB uncompressed and is requested only after
 Start deployment.
