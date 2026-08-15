@@ -107,11 +107,17 @@ export function StoryLogDialog({
         data-story-overlay={mode}
       >
         <div className={styles.storyDialogHeader}>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {mode === "complete" ? (
-              <Trophy aria-hidden="true" className="h-4 w-4 text-signal-yellow" />
+              <Trophy
+                aria-hidden="true"
+                className="h-4 w-4 text-signal-yellow max-sm:hidden"
+              />
             ) : (
-              <BookOpen aria-hidden="true" className="h-4 w-4 text-primary" />
+              <BookOpen
+                aria-hidden="true"
+                className="h-4 w-4 text-primary max-sm:hidden"
+              />
             )}
             <StatusIndicator tone={mode === "complete" ? "active" : "info"}>
               Gameplay paused
@@ -166,15 +172,23 @@ export function StoryLogDialog({
             </div>
 
             <div className={styles.storyActions}>
-              <Button onClick={onReplay}>
+              <Button className={styles.storyAction} onClick={onReplay}>
                 <RotateCcw aria-hidden="true" />
                 Replay run
               </Button>
-              <Button variant="outline" onClick={onShowLog}>
+              <Button
+                className={styles.storyAction}
+                variant="outline"
+                onClick={onShowLog}
+              >
                 <BookOpen aria-hidden="true" />
                 Open Story Log
               </Button>
-              <Button variant="ghost" onClick={onExit}>
+              <Button
+                className={styles.storyAction}
+                variant="ghost"
+                onClick={onExit}
+              >
                 <LogOut aria-hidden="true" />
                 Exit to Portfolio
               </Button>
@@ -240,12 +254,13 @@ export function StoryLogDialog({
 
             <div className={styles.storyActions}>
               {!runCompleted ? (
-                <Button onClick={onResume}>
+                <Button className={styles.storyAction} onClick={onResume}>
                   <Play aria-hidden="true" />
                   Resume run
                 </Button>
               ) : null}
               <Button
+                className={styles.storyAction}
                 variant="outline"
                 onClick={runCompleted ? onShowRecap : onClose}
               >

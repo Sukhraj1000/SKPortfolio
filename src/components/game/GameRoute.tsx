@@ -223,9 +223,16 @@ export function GameRoute() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 border-t border-border bg-surface px-4 py-3 text-xs leading-5 text-ink-muted">
-            <Gauge aria-hidden="true" className="h-4 w-4 shrink-0 text-signal-yellow" />
-            A guided opening introduces each action before scoring begins.
+          <div className={styles.utilityControls}>
+            <Gauge
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-signal-yellow"
+            />
+            <span>
+              A guided opening introduces each action before scoring begins.
+              Runtime shortcuts: P pause, L Story Log, R restart, M sound, and
+              Escape safely exits to Portfolio.
+            </span>
           </div>
         </PixelFrame>
       </div>

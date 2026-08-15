@@ -57,6 +57,7 @@
 .layout {
   display: grid;
   width: min(100%, 86rem);
+  min-width: 0;
   min-height: calc(100svh - 10.25rem);
   margin-inline: auto;
   align-items: center;
@@ -64,6 +65,7 @@
 }
 
 .copy {
+  min-width: 0;
   max-width: 48rem;
 }
 
@@ -93,9 +95,21 @@
 
 .actions {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 2rem;
+}
+
+.actions > * {
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 44px;
+  padding-block: 0.5rem;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 
 .assurance {
@@ -112,6 +126,7 @@
 }
 
 .panel {
+  min-width: 0;
   align-self: center;
   overflow: hidden;
   background: color-mix(in srgb, var(--surface) 94%, transparent);
@@ -133,6 +148,7 @@
 
 .panelBody h2 {
   margin: 0.55rem 0 0;
+  overflow-wrap: anywhere;
   color: var(--foreground);
   font-size: clamp(1.5rem, 2.5vw, 2.15rem);
   letter-spacing: -0.035em;
@@ -173,6 +189,7 @@
 
 .chapterList strong {
   min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--foreground);
   font-size: 0.875rem;
 }
@@ -241,9 +258,28 @@
 .controls span {
   display: block;
   margin-top: 0.3rem;
+  overflow-wrap: anywhere;
   color: var(--ink-muted);
   font-size: 0.72rem;
   line-height: 1.4;
+}
+
+.utilityControls {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.utilityControls span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 @media (min-width: 1024px) {
@@ -258,7 +294,15 @@
   }
 
   .title {
-    font-size: clamp(3.15rem, 17vw, 5rem);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: min(17vw, 5rem);
+  }
+
+  .lede,
+  .assurance,
+  .panelBody > p {
+    overflow-wrap: anywhere;
   }
 
   .actions {

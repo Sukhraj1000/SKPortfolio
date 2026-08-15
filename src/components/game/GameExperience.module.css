@@ -269,8 +269,9 @@
 
 .unlockHeader button {
   display: grid;
-  width: 3.25rem;
-  min-height: 3.25rem;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
   place-items: center;
   border: 0;
   border-left: 1px solid var(--border);
@@ -313,6 +314,7 @@
 
 .unlockBody > strong {
   display: block;
+  overflow-wrap: anywhere;
   margin-top: 0.4rem;
   color: var(--signal-cyan);
   font-size: 0.8rem;
@@ -320,6 +322,7 @@
 
 .unlockBody > p:nth-of-type(2) {
   margin: 0.8rem 0 0;
+  overflow-wrap: anywhere;
   color: var(--ink-muted);
   font-size: 0.8rem;
   line-height: 1.55;
@@ -357,6 +360,7 @@
 
 .tutorialPrompt {
   position: absolute;
+  min-width: 0;
   bottom: 5.25rem;
   left: 1rem;
   z-index: 15;
@@ -389,6 +393,7 @@
 .tutorialPrompt strong,
 .tutorialPrompt small {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .tutorialPrompt strong {
@@ -429,8 +434,8 @@
 
 .touchButton {
   display: grid;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 56px;
+  height: 56px;
   place-items: center;
   border: 2px solid var(--border-strong);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
@@ -474,19 +479,20 @@
   top: 0;
   z-index: 4;
   display: flex;
-  min-height: 3.5rem;
+  min-height: 44px;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 8px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-raised);
-  padding-left: 1rem;
+  padding-left: 12px;
 }
 
 .storyDialogHeader > button {
   display: grid;
-  width: 3.5rem;
-  min-height: 3.5rem;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
   place-items: center;
   border: 0;
   border-left: 1px solid var(--border);
@@ -516,6 +522,7 @@
   font-size: clamp(2rem, 4vw, 4rem);
   letter-spacing: -0.055em;
   line-height: 0.95;
+  overflow-wrap: anywhere;
 }
 
 .storyLogBody > p,
@@ -589,6 +596,7 @@
 }
 
 .storyRecords h3 {
+  min-width: 0;
   margin: 0.45rem 0 0;
   overflow-wrap: anywhere;
   color: var(--foreground);
@@ -665,11 +673,24 @@
 
 .storyActions {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   gap: 0.65rem;
   margin-top: 1.5rem;
   border-top: 1px solid var(--border);
   padding-top: 1.25rem;
+}
+
+.storyAction {
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 44px;
+  flex-shrink: 1;
+  padding-block: 0.5rem;
+  overflow-wrap: anywhere;
+  text-align: center;
+  white-space: normal;
 }
 
 .panelBackdrop {
@@ -772,12 +793,15 @@
   }
 
   .chapterRail strong {
+    overflow: visible;
+    overflow-wrap: anywhere;
     font-size: 0.5rem;
+    text-overflow: clip;
     white-space: normal;
   }
 
   .stage {
-    min-height: calc(100svh - 17rem);
+    min-height: 520px;
   }
 
   .operator {
@@ -795,6 +819,8 @@
     right: 0.65rem;
     left: 0.65rem;
     width: auto;
+    max-height: calc(100% - 144px);
+    overflow: auto;
   }
 
   .unlockBody {
@@ -812,6 +838,10 @@
     max-width: none;
   }
 
+  .tutorialPrompt > span {
+    min-width: 0;
+  }
+
   .storyBackdrop,
   .panelBackdrop {
     padding: 0.5rem;
@@ -819,6 +849,23 @@
 
   .storyDialog {
     max-height: calc(100% - 0.5rem);
+  }
+
+  .storyDialogHeader {
+    min-height: 44px;
+  }
+
+  .storyLogBody,
+  .recapBody {
+    min-width: 0;
+  }
+
+  .storyLogBody > p,
+  .recapBody > p,
+  .storyRecords p,
+  .storyRecords strong,
+  .recapSignal span {
+    overflow-wrap: anywhere;
   }
 
   .storyRecords {

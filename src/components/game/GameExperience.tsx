@@ -85,7 +85,7 @@ function HudButton({
       aria-label={label}
       title={label}
       className={cn(
-        "grid h-11 min-w-11 place-items-center border px-2.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:px-3",
+        "grid h-[44px] min-w-[44px] place-items-center border px-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:px-3",
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border-strong bg-surface text-foreground hover:bg-surface-raised hover:text-primary",
@@ -153,6 +153,7 @@ export function GameExperience({
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
   const [paused, setPaused] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
+  const [reducedMotionActive, setReducedMotionActive] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
   const [storyOverlay, setStoryOverlay] = React.useState<StoryOverlay | null>(null);
   const overlayTriggerRef = React.useRef<HTMLElement | null>(null);
@@ -293,14 +294,46 @@ export function GameExperience({
         return;
       }
 
-      if (event.key.toLowerCase() === "p" && !storyOverlay) {
+      const key = event.key.toLowerCase();
+      if (event.repeat && ["p", "l", "m", "r"].includes(key)) return;
+
+      if (key === "m" && !storyOverlay) {
+        event.preventDefault();
+        setSoundEnabled((current) => {
+          const next = !current;
+          try {
+            window.localStorage.setItem(gameSoundKey, next ? "on" : "off");
+          } catch {
+            // Sound remains usable for this session when storage is blocked.
+          }
+          return next;
+        });
+        return;
+      }
+
+      if (key === "r" && !storyOverlay) {
+        event.preventDefault();
+        completionShownRef.current = false;
+        setPaused(false);
+        setSnapshot(initialGameSnapshot);
+        setActiveUnlockId(null);
+        setSpawnCycle((cycle) => cycle + 1);
+        gameHandleRef.current?.restart();
+        showNotice(
+          "Transient run state reset. Story records and high score preserved.",
+          "info",
+        );
+        return;
+      }
+
+      if (key === "p" && !storyOverlay && !snapshot.completed) {
         event.preventDefault();
         if (!paused) gameHandleRef.current?.completeTutorialAction("pause");
         setPaused((current) => !current);
         return;
       }
 
-      if (event.key.toLowerCase() === "l" && !storyOverlay) {
+      if (key === "l" && !storyOverlay) {
         event.preventDefault();
         overlayTriggerRef.current = document.activeElement as HTMLElement | null;
         gameHandleRef.current?.completeTutorialAction("story-log");
@@ -330,7 +363,7 @@ export function GameExperience({
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [onExit, paused, storyOverlay]);
+  }, [onExit, paused, showNotice, snapshot.completed, storyOverlay]);
 
   React.useEffect(() => {
     const observer = new MutationObserver(() => gameHandleRef.current?.refreshTheme());
@@ -342,6 +375,7 @@ export function GameExperience({
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     const syncMotion = () => {
       reducedMotionRef.current = motionQuery.matches;
+      setReducedMotionActive(motionQuery.matches);
       gameHandleRef.current?.setReducedMotion(motionQuery.matches);
     };
     syncMotion();
@@ -439,7 +473,8 @@ export function GameExperience({
       data-tutorial-completed={snapshot.tutorialCompleted}
       data-recovered-records={snapshot.recoveredRecords.length}
       data-latest-unlock={snapshot.latestUnlockId ?? ""}
-      className="min-h-[100svh] bg-background pt-16"
+      data-reduced-motion={reducedMotionActive}
+      className="min-h-[100svh] bg-background pt-[64px]"
     >
       <h1 id="game-runtime-title" className="sr-only">
         Chronicle Run playable story
@@ -465,7 +500,11 @@ export function GameExperience({
             <div className="hidden md:block"><dt className="sr-only">High score</dt><dd>High {savedProgress.highScore.toLocaleString()}</dd></div>
           </dl>
 
-          <div role="group" aria-label="Game controls" className="flex items-center gap-1.5">
+          <div
+            role="group"
+            aria-label="Game controls"
+            className="flex flex-wrap items-center gap-[6px]"
+          >
             <HudButton
               label="Start or resume"
               icon={<Play aria-hidden="true" className="h-4 w-4" />}
@@ -656,7 +695,9 @@ export function GameExperience({
           <Gamepad2 aria-hidden="true" className="h-4 w-4 text-primary" />
           Auto-run active · Space jumps · Shift dashes · S drops
         </p>
-        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">Pause or Escape exits safely</p>
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">
+          P pause · L log · R restart · M sound · Esc exit
+        </p>
       </div>
     </section>
   );

@@ -515,6 +515,191 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-recovered-records", "9");
   });
 
+  test("updates theme and motion live and supports the documented runtime shortcuts", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 7300,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.emulateMedia({
+      colorScheme: "dark",
+      reducedMotion: "no-preference",
+    });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    const runtime = page.locator("[data-reduced-motion]");
+    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await stage.focus();
+    await expect(runtime).toHaveAttribute("data-reduced-motion", "false");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThan(1);
+
+    await page.keyboard.press("m");
+    await expect(page.getByRole("button", { name: "Mute sound" })).toBeVisible();
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("iron-signal:game-sound")))
+      .toBe("on");
+
+    const progressBeforeTheme = Number(
+      await runtime.getAttribute("data-journey-progress"),
+    );
+    await page.getByRole("button", { name: "Switch to day theme" }).click();
+    await expect(page.locator("html")).toHaveClass(/light/);
+    await expect(page.locator("canvas")).toHaveCount(1);
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThanOrEqual(progressBeforeTheme);
+
+    const progressBeforeMotion = Number(
+      await runtime.getAttribute("data-journey-progress"),
+    );
+    await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+    await expect(runtime).toHaveAttribute("data-reduced-motion", "true");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThanOrEqual(progressBeforeMotion);
+
+    await page.keyboard.press("r");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeLessThanOrEqual(4);
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return value?.highScore;
+        }, progressKey),
+      )
+      .toBe(7300);
+
+    await page.evaluate(() => {
+      Object.defineProperty(document, "visibilityState", {
+        configurable: true,
+        value: "hidden",
+      });
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await expect(runtime).toHaveAttribute("data-game-state", "paused");
+    await page.getByRole("button", { name: "Start or resume" }).click();
+    await expect(runtime).toHaveAttribute("data-game-state", "running");
+
+    await stage.focus();
+    await page.keyboard.press("Escape");
+    await expect(page).toHaveURL(/\/#home$/);
+    await expect(
+      page.getByRole("heading", { name: /I build systems that/i }),
+    ).toBeVisible();
+  });
+
+  test("reflows ready, runtime, Story Log, and unlock UI at 320 pixels and 200 percent text", async ({
+    browser,
+    baseURL,
+  }) => {
+    test.setTimeout(50_000);
+    const context = await browser.newContext({
+      viewport: { width: 320, height: 900 },
+      hasTouch: true,
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 0,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.goto(`${requireBaseURL(baseURL)}/game/`);
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+
+    const noHorizontalPageOverflow = async () =>
+      page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      );
+    await expect.poll(noHorizontalPageOverflow).toBe(true);
+    const startButton = page.getByRole("button", { name: "Replay guided run" });
+    await expect
+      .poll(() =>
+        startButton.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      )
+      .toBe(true);
+
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    await page.locator("canvas").waitFor();
+    await expect.poll(noHorizontalPageOverflow).toBe(true);
+    const touchButtons = page.locator('[aria-label="Touch game controls"] button');
+    await expect(touchButtons).toHaveCount(3);
+    for (let index = 0; index < 3; index += 1) {
+      const box = await touchButtons.nth(index).boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.width).toBeGreaterThanOrEqual(44);
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+    }
+
+    await page.getByRole("button", { name: "Open Story Log" }).click();
+    const dialog = page.getByRole("dialog", { name: "Recovered milestones." });
+    await expect(dialog).toContainText("No records recovered yet");
+    await expect.poll(noHorizontalPageOverflow).toBe(true);
+    await expect
+      .poll(() =>
+        dialog.evaluate((element) => element.scrollWidth <= element.clientWidth),
+      )
+      .toBe(true);
+    await page.getByRole("button", { name: "Close Story Log" }).click();
+    const runtime = page.locator("[data-recovered-records]");
+    await expect(runtime).toHaveAttribute("data-game-state", "paused");
+    await page.getByRole("button", { name: "Start or resume" }).click();
+    await page.getByRole("application").focus();
+
+    const unlockCard = page.locator("[data-unlock-card]");
+    for (let attempt = 0; attempt < 50; attempt += 1) {
+      if ((await unlockCard.count()) > 0) break;
+      await page.keyboard.down("Shift");
+      await page.waitForTimeout(70);
+      await page.keyboard.up("Shift");
+      await page.waitForTimeout(300);
+    }
+    await expect(unlockCard).toContainText("First-Class Computer Science graduate");
+    await expect.poll(noHorizontalPageOverflow).toBe(true);
+    const cardBox = await unlockCard.boundingBox();
+    const firstTouchBox = await touchButtons.first().boundingBox();
+    expect(cardBox).not.toBeNull();
+    expect(firstTouchBox).not.toBeNull();
+    expect(cardBox!.y + cardBox!.height).toBeLessThanOrEqual(firstTouchBox!.y);
+    await context.close();
+  });
+
   test("keeps labelled touch actions large enough on compact screens", async ({
     browser,
     baseURL,
