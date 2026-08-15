@@ -1,7 +1,9 @@
 import * as Phaser from "phaser";
 import type { MutableRefObject } from "react";
+import { chronicleTutorialSteps } from "@/components/game/chronicle-story";
 import type {
   ChroniclePlayerState,
+  ChronicleTutorialStepId,
   GameControlsState,
   GameSnapshot,
   GameZoneId,
@@ -95,7 +97,7 @@ const upperRoutes: readonly {
   tiles: number;
   nodeOffsets: readonly number[];
 }[] = [
-  { start: 4_250, y: 535, tiles: 12, nodeOffsets: [4, 8] },
+  { start: 2_500, y: 535, tiles: 12, nodeOffsets: [4, 8] },
   { start: 8_150, y: 510, tiles: 15, nodeOffsets: [3, 8, 12] },
   { start: 13_950, y: 495, tiles: 14, nodeOffsets: [4, 10] },
   { start: 19_750, y: 480, tiles: 16, nodeOffsets: [3, 8, 13] },
@@ -139,10 +141,12 @@ export function createSignalGame({
   parent,
   controls,
   callbacks,
+  skipTutorial,
 }: {
   parent: HTMLElement;
   controls: MutableRefObject<GameControlsState>;
   callbacks: SignalGameCallbacks;
+  skipTutorial: boolean;
 }): SignalGameHandle {
   let pausedRequested = true;
   let reducedMotion = window.matchMedia(
@@ -174,6 +178,9 @@ export function createSignalGame({
     private lastSnapshotAt = 0;
     private lastScoredX = 150;
     private playerState: ChroniclePlayerState = "grounded";
+    private tutorialStepIndex = skipTutorial
+      ? chronicleTutorialSteps.length - 1
+      : 0;
     private chapterPanels: Phaser.GameObjects.Rectangle[] = [];
     private chapterLabels: Phaser.GameObjects.Text[] = [];
     private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
@@ -244,6 +251,13 @@ export function createSignalGame({
         controls.current.drop;
       const previousState = this.playerState;
 
+      if (
+        this.currentTutorialStep() === "auto-run" &&
+        this.player.x >= 450
+      ) {
+        this.advanceTutorial("auto-run");
+      }
+
       if (grounded) this.lastGroundedAt = time;
       if (keyboardJump || touchJump) this.jumpBufferedAt = time;
 
@@ -254,12 +268,16 @@ export function createSignalGame({
         this.player.setVelocityY(-JUMP_SPEED);
         this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
         this.lastGroundedAt = Number.NEGATIVE_INFINITY;
+        this.advanceTutorial("jump");
       }
 
       if ((keyboardDash || touchDash) && time >= this.dashReadyAt) {
         this.dashEndsAt = time + DASH_DURATION;
         this.dashReadyAt = time + DASH_COOLDOWN;
-        this.score += Math.round(30 * this.multiplier);
+        if (this.tutorialCompleted()) {
+          this.score += Math.round(30 * this.multiplier);
+        }
+        this.advanceTutorial("dash");
       }
 
       const dashing = time < this.dashEndsAt;
@@ -267,6 +285,32 @@ export function createSignalGame({
 
       if (!grounded && dropHeld && body.velocity.y < DROP_SPEED) {
         this.player.setVelocityY(Math.max(380, body.velocity.y + 100));
+        this.advanceTutorial("drop");
+      }
+
+      if (
+        this.currentTutorialStep() === "route" &&
+        this.player.x >= 2_380 &&
+        grounded
+      ) {
+        this.player.setVelocityX(0);
+      }
+
+      if (
+        this.currentTutorialStep() === "route" &&
+        this.player.x >= 2_450 &&
+        this.player.y < 585
+      ) {
+        this.advanceTutorial("route");
+      }
+
+      if (
+        (this.currentTutorialStep() === "pause" ||
+          this.currentTutorialStep() === "story-log") &&
+        this.player.x >= 5_450 &&
+        grounded
+      ) {
+        this.player.setVelocityX(0);
       }
 
       if (dashing) {
@@ -317,6 +361,9 @@ export function createSignalGame({
       this.lastSnapshotAt = 0;
       this.lastScoredX = 150;
       this.playerState = "grounded";
+      this.tutorialStepIndex = skipTutorial
+        ? chronicleTutorialSteps.length - 1
+        : 0;
       this.chapterPanels = [];
       this.chapterLabels = [];
       this.parallaxLayers = [];
@@ -550,6 +597,15 @@ export function createSignalGame({
 
     private createFlowNodes() {
       const nodes = this.physics.add.staticGroup();
+      const tutorialNode = this.addWorldSprite(
+        nodes,
+        3_800,
+        FLOOR_Y - 82,
+        10,
+        0.32,
+      );
+      tutorialNode.setDepth(12);
+
       upperRoutes.forEach((route) => {
         route.nodeOffsets.forEach((offset) => {
           const node = this.addWorldSprite(
@@ -567,8 +623,11 @@ export function createSignalGame({
         const node = object as Phaser.Physics.Arcade.Sprite;
         if (!node.active) return;
         node.disableBody(true, true);
-        this.score += Math.round(125 * this.multiplier);
-        this.multiplier = Math.min(5, this.multiplier + 0.25);
+        if (this.tutorialCompleted()) {
+          this.score += Math.round(125 * this.multiplier);
+          this.multiplier = Math.min(5, this.multiplier + 0.25);
+        }
+        this.advanceTutorial("pickup");
         callbacks.onNotice("High route flow node recovered.", "success");
         this.emitSnapshot();
       });
@@ -657,8 +716,43 @@ export function createSignalGame({
       });
     }
 
+    private currentTutorialStep(): ChronicleTutorialStepId {
+      return (
+        chronicleTutorialSteps[this.tutorialStepIndex]?.id ?? "complete"
+      );
+    }
+
+    private tutorialCompleted() {
+      return this.currentTutorialStep() === "complete";
+    }
+
+    private advanceTutorial(expected: ChronicleTutorialStepId) {
+      if (this.currentTutorialStep() !== expected || expected === "complete") {
+        return;
+      }
+      this.tutorialStepIndex = Math.min(
+        chronicleTutorialSteps.length - 1,
+        this.tutorialStepIndex + 1,
+      );
+      const nextStep = chronicleTutorialSteps[this.tutorialStepIndex];
+      callbacks.onNotice(
+        nextStep.id === "complete"
+          ? "Guided opening complete. Score and momentum are now active."
+          : nextStep.title,
+        nextStep.id === "complete" ? "success" : "info",
+      );
+      this.lastScoredX = this.player.x;
+      this.emitSnapshot();
+    }
+
+    completeTutorialAction(action: "pause" | "story-log") {
+      this.advanceTutorial(action);
+    }
+
     private addDistanceScore() {
-      if (this.player.x <= this.lastScoredX + 24) return;
+      if (!this.tutorialCompleted() || this.player.x <= this.lastScoredX + 24) {
+        return;
+      }
       const distance = this.player.x - this.lastScoredX;
       this.score += Math.max(1, Math.floor((distance / 24) * this.multiplier));
       this.lastScoredX = this.player.x;
@@ -729,6 +823,8 @@ export function createSignalGame({
         ),
         playerState: this.playerState,
         dashReady: this.time.now >= this.dashReadyAt,
+        tutorialStep: this.currentTutorialStep(),
+        tutorialCompleted: this.tutorialCompleted(),
         score: this.score,
         multiplier: this.multiplier,
         signal: this.signal,
@@ -807,6 +903,9 @@ export function createSignalGame({
     },
     setReducedMotion(reduced) {
       getScene()?.setReducedMotion(reduced);
+    },
+    completeTutorialAction(action) {
+      getScene()?.completeTutorialAction(action);
     },
     restart() {
       pausedRequested = true;

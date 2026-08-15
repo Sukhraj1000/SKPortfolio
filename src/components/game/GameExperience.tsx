@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   ArrowDown,
   ArrowUp,
+  BookOpen,
   Gamepad2,
   LogOut,
   Pause,
@@ -15,7 +16,14 @@ import {
   Zap,
 } from "lucide-react";
 import { GameCanvas } from "@/components/game/GameCanvas";
-import { chronicleChapters } from "@/components/game/chronicle-story";
+import {
+  chronicleChapters,
+  chronicleTutorialSteps,
+  emptyChronicleProgress,
+  mergeChronicleProgress,
+  parseChronicleProgress,
+  type ChronicleProgress,
+} from "@/components/game/chronicle-story";
 import { SignalPanel } from "@/components/game/SignalPanel";
 import {
   initialGameSnapshot,
@@ -23,7 +31,6 @@ import {
   type GameControlsState,
   type GamePanelId,
   type GameSnapshot,
-  type SavedGameProgress,
   type SignalGameHandle,
 } from "@/components/game/game-types";
 import { StatusIndicator } from "@/components/ui/status-indicator";
@@ -35,8 +42,17 @@ import styles from "./GameExperience.module.css";
 type SpawnPhase = "dropping" | "landed";
 type NoticeTone = "info" | "success" | "warning";
 
+const gameZoneOrder = [
+  "onboarding",
+  "mission-archive",
+  "field-log",
+  "loadout",
+  "comms",
+] as const;
+
 interface GameExperienceProps {
   onExit: () => void;
+  skipTutorial: boolean;
 }
 
 interface HudButtonProps extends React.ComponentProps<"button"> {
@@ -45,26 +61,12 @@ interface HudButtonProps extends React.ComponentProps<"button"> {
   active?: boolean;
 }
 
-const emptyProgress: SavedGameProgress = {
-  completed: false,
-  highScore: 0,
-  discovered: [],
-  checkpoints: [],
-};
-
-function readSavedProgress(): SavedGameProgress {
-  if (typeof window === "undefined") return emptyProgress;
+function readSavedProgress(): ChronicleProgress {
+  if (typeof window === "undefined") return emptyChronicleProgress;
   try {
-    const value = JSON.parse(window.localStorage.getItem(gameProgressKey) ?? "null") as Partial<SavedGameProgress> | null;
-    return {
-      completed: value?.completed === true,
-      highScore: typeof value?.highScore === "number" ? value.highScore : 0,
-      discovered: Array.isArray(value?.discovered) ? value.discovered : [],
-      checkpoints: Array.isArray(value?.checkpoints) ? value.checkpoints : [],
-      completedAt: typeof value?.completedAt === "string" ? value.completedAt : undefined,
-    };
+    return parseChronicleProgress(window.localStorage.getItem(gameProgressKey));
   } catch {
-    return emptyProgress;
+    return { ...emptyChronicleProgress };
   }
 }
 
@@ -129,7 +131,10 @@ function TouchButton({
   );
 }
 
-export function GameExperience({ onExit }: GameExperienceProps) {
+export function GameExperience({
+  onExit,
+  skipTutorial,
+}: GameExperienceProps) {
   const controlsRef = React.useRef<GameControlsState>({
     jump: false,
     dash: false,
@@ -147,7 +152,8 @@ export function GameExperience({ onExit }: GameExperienceProps) {
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
   const [panelId, setPanelId] = React.useState<GamePanelId | null>(null);
-  const [savedProgress, setSavedProgress] = React.useState<SavedGameProgress>(emptyProgress);
+  const [savedProgress, setSavedProgress] =
+    React.useState<ChronicleProgress>(emptyChronicleProgress);
   const [notice, setNotice] = React.useState<{
     message: string;
     tone: NoticeTone;
@@ -225,23 +231,29 @@ export function GameExperience({ onExit }: GameExperienceProps) {
   }, [panelId, paused, spawnPhase]);
 
   React.useEffect(() => {
-    const nextProgress: SavedGameProgress = {
-      completed: savedProgress.completed || snapshot.completed,
-      highScore: Math.max(savedProgress.highScore, snapshot.score),
-      discovered: [...new Set([...savedProgress.discovered, ...snapshot.discovered])],
-      checkpoints: [...new Set([...savedProgress.checkpoints, ...snapshot.checkpoints])],
+    const completedChapters = snapshot.checkpoints.flatMap((zone) => {
+      const index = gameZoneOrder.indexOf(zone);
+      const chapter = chronicleChapters[index];
+      return chapter ? [chapter.id] : [];
+    });
+    const nextProgress = mergeChronicleProgress(savedProgress, {
+      completed: snapshot.completed,
+      completedChapters,
+      tutorialCompleted: snapshot.tutorialCompleted,
+      highScore: snapshot.completed ? snapshot.score : savedProgress.highScore,
       completedAt:
         snapshot.completed && !savedProgress.completedAt
           ? new Date().toISOString()
           : savedProgress.completedAt,
-    };
+    });
 
     const changed =
       nextProgress.completed !== savedProgress.completed ||
       nextProgress.highScore !== savedProgress.highScore ||
       nextProgress.completedAt !== savedProgress.completedAt ||
-      nextProgress.discovered.length !== savedProgress.discovered.length ||
-      nextProgress.checkpoints.length !== savedProgress.checkpoints.length;
+      nextProgress.tutorialCompleted !== savedProgress.tutorialCompleted ||
+      nextProgress.completedChapters.join("|") !==
+        savedProgress.completedChapters.join("|");
 
     if (!changed) return;
     setSavedProgress(nextProgress);
@@ -254,7 +266,28 @@ export function GameExperience({ onExit }: GameExperienceProps) {
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, [contenteditable='true']")) {
+        return;
+      }
+
+      if (event.key.toLowerCase() === "p" && !panelId) {
+        event.preventDefault();
+        if (!paused) gameHandleRef.current?.completeTutorialAction("pause");
+        setPaused((current) => !current);
+        return;
+      }
+
+      if (event.key.toLowerCase() === "l" && !panelId) {
+        event.preventDefault();
+        gameHandleRef.current?.completeTutorialAction("story-log");
+        setPanelId("briefing");
+        setPaused(true);
+        return;
+      }
+
+      if (event.key !== "Escape") return;
       event.preventDefault();
       if (panelId) {
         setPanelId(null);
@@ -275,7 +308,7 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [onExit, panelId]);
+  }, [onExit, panelId, paused]);
 
   React.useEffect(() => {
     const observer = new MutationObserver(() => gameHandleRef.current?.refreshTheme());
@@ -313,6 +346,12 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     }),
     [showNotice],
   );
+
+  const openStoryLog = React.useCallback(() => {
+    gameHandleRef.current?.completeTutorialAction("story-log");
+    setPanelId("briefing");
+    setPaused(true);
+  }, []);
 
   const toggleSound = () => {
     const nextSoundState = !soundEnabled;
@@ -352,6 +391,9 @@ export function GameExperience({ onExit }: GameExperienceProps) {
   const activeChapter =
     chronicleChapters[snapshot.chapterIndex] ?? chronicleChapters[0];
   const journeyProgress = snapshot.journeyProgress;
+  const tutorialStep = chronicleTutorialSteps.find(
+    (step) => step.id === snapshot.tutorialStep,
+  );
 
   return (
     <section
@@ -364,6 +406,8 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       data-signal={snapshot.signal}
       data-score={snapshot.score}
       data-checkpoints={snapshot.checkpoints.length}
+      data-tutorial-step={snapshot.tutorialStep}
+      data-tutorial-completed={snapshot.tutorialCompleted}
       className="min-h-[100svh] bg-background pt-16"
     >
       <h1 id="game-runtime-title" className="sr-only">
@@ -406,7 +450,17 @@ export function GameExperience({ onExit }: GameExperienceProps) {
               icon={<Pause aria-hidden="true" className="h-4 w-4" />}
               active={paused && !panelId}
               disabled={spawnPhase === "dropping" || paused || panelId !== null}
-              onClick={() => setPaused(true)}
+              onClick={() => {
+                gameHandleRef.current?.completeTutorialAction("pause");
+                setPaused(true);
+              }}
+            />
+            <HudButton
+              label="Open Story Log"
+              icon={<BookOpen aria-hidden="true" className="h-4 w-4" />}
+              active={panelId !== null}
+              disabled={spawnPhase === "dropping" || panelId !== null}
+              onClick={openStoryLog}
             />
             <HudButton
               label={soundEnabled ? "Mute sound" : "Enable sound"}
@@ -451,7 +505,12 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       </ol>
 
       <div ref={stageRef} className={styles.stage} tabIndex={-1}>
-        <GameCanvas controls={controlsRef} callbacks={callbacks} onReady={setGameHandle} />
+        <GameCanvas
+          controls={controlsRef}
+          callbacks={callbacks}
+          onReady={setGameHandle}
+          skipTutorial={skipTutorial}
+        />
         <div className={styles.scanlines} aria-hidden="true" />
 
         {spawnPhase === "dropping" ? (
@@ -471,11 +530,19 @@ export function GameExperience({ onExit }: GameExperienceProps) {
           </div>
         ) : null}
 
-        {snapshot.nearbyLabel && !panelId && !paused && spawnPhase === "landed" ? (
-          <div className={styles.interactionPrompt} role="status">
-            <span className="border border-primary bg-primary px-2 py-1 font-mono text-[0.625rem] font-bold text-primary-foreground">E</span>
-            <span>{snapshot.nearbyLabel}</span>
-          </div>
+        {tutorialStep && tutorialStep.id !== "complete" && !panelId ? (
+          <aside
+            className={styles.tutorialPrompt}
+            role="status"
+            aria-live="polite"
+            data-tutorial-prompt
+          >
+            <kbd>{tutorialStep.keyLabel}</kbd>
+            <span>
+              <strong>{tutorialStep.title}</strong>
+              <small>{tutorialStep.instruction}</small>
+            </span>
+          </aside>
         ) : null}
 
         {paused && !panelId ? (

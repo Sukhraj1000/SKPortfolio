@@ -1,3 +1,4 @@
+import type { ChronicleTutorialStepId } from "@/components/game/game-types";
 import {
   experience,
   portfolioProfile,
@@ -49,6 +50,13 @@ export interface ChronicleRecord {
   sourceId: string;
 }
 
+export interface ChronicleTutorialStep {
+  id: ChronicleTutorialStepId;
+  keyLabel: string;
+  title: string;
+  instruction: string;
+}
+
 export interface ChronicleProgress {
   version: typeof CHRONICLE_PROGRESS_VERSION;
   recoveredRecords: ChronicleRecordId[];
@@ -60,6 +68,63 @@ export interface ChronicleProgress {
 }
 
 export const CHRONICLE_PROGRESS_VERSION = 1 as const;
+
+export const chronicleTutorialSteps: readonly ChronicleTutorialStep[] = [
+  {
+    id: "auto-run",
+    keyLabel: "Forward",
+    title: "The route moves with you",
+    instruction: "No direction key is needed. Read the next obstacle.",
+  },
+  {
+    id: "jump",
+    keyLabel: "Space / ↑",
+    title: "Jump the route marker",
+    instruction: "Press once; a short input buffer protects close timing.",
+  },
+  {
+    id: "dash",
+    keyLabel: "Shift / D",
+    title: "Dash through a timing gate",
+    instruction: "Dash adds speed briefly, then enters a visible cooldown.",
+  },
+  {
+    id: "drop",
+    keyLabel: "S / ↓",
+    title: "Fast-drop back to the line",
+    instruction: "Jump, then drop while airborne to land sooner.",
+  },
+  {
+    id: "route",
+    keyLabel: "High route",
+    title: "Choose the optional upper line",
+    instruction: "Jump onto the raised route; the lower route remains safe.",
+  },
+  {
+    id: "pickup",
+    keyLabel: "Story node",
+    title: "Recover the route pickup",
+    instruction: "Cross the glowing node on the upper line.",
+  },
+  {
+    id: "pause",
+    keyLabel: "P / HUD",
+    title: "Pause whenever you need",
+    instruction: "Use Pause now; movement and hazards stop completely.",
+  },
+  {
+    id: "story-log",
+    keyLabel: "L / HUD",
+    title: "Open the Story Log",
+    instruction: "Recovered records stay available in a pause-safe log.",
+  },
+  {
+    id: "complete",
+    keyLabel: "Ready",
+    title: "Walkthrough complete",
+    instruction: "Normal scoring and route challenges are now active.",
+  },
+] as const;
 
 export const chronicleChapters: readonly ChronicleChapter[] = [
   {

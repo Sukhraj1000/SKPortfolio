@@ -107,16 +107,16 @@ function BriefingPanel() {
   return (
     <>
       <PanelHeader
-        label="Onboarding checkpoint"
-        title="Movement is the tutorial."
-        description="Cross the industrial route from left to right. Terminals reveal real portfolio evidence; four signal cores unlock the final Comms uplink."
+        label="Chronicle Run // Story Log preview"
+        title="The route keeps moving until you pause."
+        description="Auto-run carries the story forward. Use the three movement actions to read terrain and recover milestones; the full Story Log will preserve every record you unlock."
       />
       <dl className="mt-6 grid gap-px border border-border bg-border sm:grid-cols-2">
         {[
-          ["Move", "A / D or Left / Right"],
           ["Jump", "Space or Up"],
-          ["Interact", "E or Enter"],
-          ["Pause / Exit", "HUD controls or Escape"],
+          ["Dash", "Shift or D"],
+          ["Fast drop", "S or Down"],
+          ["Pause / Story Log", "P or L, plus HUD controls"],
         ].map(([term, detail]) => (
           <div key={term} className="bg-background p-4">
             <dt className="flex items-center gap-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.1em] text-primary">

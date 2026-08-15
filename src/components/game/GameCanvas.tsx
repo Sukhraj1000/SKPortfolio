@@ -12,10 +12,12 @@ export function GameCanvas({
   controls,
   callbacks,
   onReady,
+  skipTutorial,
 }: {
   controls: React.MutableRefObject<GameControlsState>;
   callbacks: SignalGameCallbacks;
   onReady: (handle: SignalGameHandle | null) => void;
+  skipTutorial: boolean;
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const callbacksRef = React.useRef(callbacks);
@@ -35,6 +37,7 @@ export function GameCanvas({
       handle = createSignalGame({
         parent: containerRef.current,
         controls,
+        skipTutorial,
         callbacks: {
           onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
           onOpenPanel: (panelId) => callbacksRef.current.onOpenPanel(panelId),
@@ -51,7 +54,7 @@ export function GameCanvas({
       onReady(null);
       handle?.destroy();
     };
-  }, [controls, onReady]);
+  }, [controls, onReady, skipTutorial]);
 
   return (
     <div

@@ -128,10 +128,11 @@ test.describe("Chronicle Run", () => {
 
     const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
     await stage.focus();
-    await page.keyboard.press("Space");
+    await page.keyboard.down("Space");
     await expect
       .poll(() => runtime.getAttribute("data-player-state"))
       .toMatch(/jumping|falling/);
+    await page.keyboard.up("Space");
 
     await page.keyboard.down("Shift");
     await expect
@@ -159,6 +160,136 @@ test.describe("Chronicle Run", () => {
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeLessThanOrEqual(4);
+  });
+
+  test("guides a first run through controls and stores tutorial completion", async ({
+    page,
+  }) => {
+    test.setTimeout(40_000);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Start Chronicle Run" }).click();
+
+    const runtime = page.locator("[data-tutorial-step]");
+    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await stage.focus();
+
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "auto-run");
+    await expect
+      .poll(() => runtime.getAttribute("data-tutorial-step"))
+      .toBe("jump");
+    await expect(page.locator("[data-tutorial-prompt]")).toContainText(
+      "Jump the route marker",
+    );
+
+    await page.keyboard.down("Space");
+    await page.waitForTimeout(100);
+    await page.keyboard.up("Space");
+    await expect
+      .poll(() => runtime.getAttribute("data-tutorial-step"))
+      .toBe("dash");
+
+    await page.keyboard.down("Shift");
+    await page.waitForTimeout(100);
+    await page.keyboard.up("Shift");
+    await expect
+      .poll(() => runtime.getAttribute("data-tutorial-step"))
+      .toBe("drop");
+
+    await page.keyboard.down("Space");
+    await expect
+      .poll(() => runtime.getAttribute("data-player-state"))
+      .toMatch(/jumping|falling/);
+    await page.keyboard.up("Space");
+    await page.keyboard.down("s");
+    await expect
+      .poll(() => runtime.getAttribute("data-tutorial-step"))
+      .toBe("route");
+    await page.keyboard.up("s");
+
+    for (let attempt = 0; attempt < 16; attempt += 1) {
+      if ((await runtime.getAttribute("data-tutorial-step")) === "pickup") break;
+      await page.keyboard.down("Space");
+      await page.waitForTimeout(90);
+      await page.keyboard.up("Space");
+      await page.waitForTimeout(240);
+    }
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "pickup");
+    await expect
+      .poll(() => runtime.getAttribute("data-tutorial-step"), {
+        timeout: 12_000,
+      })
+      .toBe("pause");
+
+    await page.getByRole("button", { name: "Pause", exact: true }).click();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "story-log");
+    await page.getByRole("button", { name: "Start or resume" }).click();
+    await page.getByRole("button", { name: "Open Story Log" }).click();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "complete");
+    await expect(runtime).toHaveAttribute("data-tutorial-completed", "true");
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return value?.tutorialCompleted;
+        }, progressKey),
+      )
+      .toBe(true);
+  });
+
+  test("lets returning players replay or skip the walkthrough", async ({ page }) => {
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 0,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.goto("/game/");
+
+    await expect(
+      page.getByRole("button", { name: "Replay guided run" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    await expect(page.locator("[data-tutorial-step]")).toHaveAttribute(
+      "data-tutorial-step",
+      "complete",
+    );
+    await expect(page.locator("[data-tutorial-prompt]")).toHaveCount(0);
+  });
+
+  test("keeps labelled touch actions large enough on compact screens", async ({
+    browser,
+    baseURL,
+  }) => {
+    const context = await browser.newContext({
+      baseURL: requireBaseURL(baseURL),
+      hasTouch: true,
+      isMobile: true,
+      viewport: { width: 390, height: 844 },
+    });
+    const page = await context.newPage();
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Start Chronicle Run" }).click();
+
+    for (const name of ["Jump", "Dash", "Fast drop"]) {
+      const control = page.getByRole("button", { name, exact: true });
+      await expect(control).toBeVisible();
+      const box = await control.boundingBox();
+      expect(box?.width).toBeGreaterThanOrEqual(44);
+      expect(box?.height).toBeGreaterThanOrEqual(44);
+    }
+
+    await context.close();
   });
 
   test("advances chapters and recovers quickly after a route impact", async ({

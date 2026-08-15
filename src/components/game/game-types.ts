@@ -24,6 +24,17 @@ export type ChroniclePlayerState =
   | "falling"
   | "dashing";
 
+export type ChronicleTutorialStepId =
+  | "auto-run"
+  | "jump"
+  | "dash"
+  | "drop"
+  | "route"
+  | "pickup"
+  | "pause"
+  | "story-log"
+  | "complete";
+
 export type GameAction = "jump" | "dash" | "drop";
 
 export interface GameControlsState {
@@ -39,6 +50,8 @@ export interface GameSnapshot {
   journeyProgress: number;
   playerState: ChroniclePlayerState;
   dashReady: boolean;
+  tutorialStep: ChronicleTutorialStepId;
+  tutorialCompleted: boolean;
   score: number;
   multiplier: number;
   signal: number;
@@ -67,6 +80,7 @@ export interface SignalGameHandle {
   destroy: () => void;
   setPaused: (paused: boolean) => void;
   setReducedMotion: (reduced: boolean) => void;
+  completeTutorialAction: (action: "pause" | "story-log") => void;
   restart: () => void;
   refreshTheme: () => void;
 }
@@ -78,6 +92,8 @@ export const initialGameSnapshot: GameSnapshot = {
   journeyProgress: 0,
   playerState: "grounded",
   dashReady: true,
+  tutorialStep: "auto-run",
+  tutorialCompleted: false,
   score: 0,
   multiplier: 1,
   signal: 100,

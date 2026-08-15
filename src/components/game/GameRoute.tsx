@@ -60,7 +60,9 @@ function readReadyProgress() {
 
 export function GameRoute() {
   const router = useRouter();
-  const [started, setStarted] = React.useState(false);
+  const [startMode, setStartMode] = React.useState<"guided" | "skip" | null>(
+    null,
+  );
   const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
     defaultPortfolioHref,
   );
@@ -76,10 +78,13 @@ export function GameRoute() {
     router.push(portfolioReturnHref);
   }, [portfolioReturnHref, router]);
 
-  if (started) {
+  if (startMode) {
     return (
       <React.Suspense fallback={<RuntimeLoading />}>
-        <GameExperience onExit={exitGame} />
+        <GameExperience
+          onExit={exitGame}
+          skipTutorial={startMode === "skip"}
+        />
       </React.Suspense>
     );
   }
@@ -109,10 +114,22 @@ export function GameRoute() {
           </p>
 
           <div className={styles.actions}>
-            <Button size="lg" onClick={() => setStarted(true)}>
+            <Button size="lg" onClick={() => setStartMode("guided")}>
               <Play aria-hidden="true" />
-              Start Chronicle Run
+              {savedProgress.tutorialCompleted
+                ? "Replay guided run"
+                : "Start Chronicle Run"}
             </Button>
+            {savedProgress.tutorialCompleted ? (
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={() => setStartMode("skip")}
+              >
+                <ArrowRight aria-hidden="true" />
+                Skip walkthrough
+              </Button>
+            ) : null}
             <Button variant="outline" size="lg" asChild>
               <Link href={portfolioReturnHref}>
                 <LogOut aria-hidden="true" />
