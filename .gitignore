@@ -15,6 +15,13 @@
 /playwright-report/
 /test-results/
 
+# local design exploration and scratch output
+/design-lab/
+/design-reference/
+/tests/ui/portfolio-theme-gallery.spec.ts
+/tmp/
+/.cache/
+
 # next.js
 /.next/
 /out/
@@ -24,6 +31,7 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 *.key
 *.p12

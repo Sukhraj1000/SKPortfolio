@@ -42,7 +42,6 @@ The gate performs the production TypeScript, lint, static-export, and route chec
 
 - The five Pixel Quest chapters and Game ready-state HTML export successfully.
 - Every local `href` and `src` in those documents resolves to exported output.
-- The approved `design-reference/` snapshot remains outside production output.
 - Game artwork and Phaser chunks are absent from the initial Portfolio request.
 - Phaser is also absent from the Game ready state and loads only after deployment starts.
 - Game mode does not create a canvas before the visitor presses Start.
@@ -99,7 +98,6 @@ Game-mode checks:
 - Added a portfolio-neutral sprite sheet and finite CSS scene choreography without importing Phaser or game modules.
 - Added one shared chapter observer for coherent header and desktop-rail state, including post-font direct-anchor correction.
 - Preserved complete no-JavaScript content and immediate reduced-motion final states.
-- Kept the approved standalone design reference outside application source and static export.
 - Converted large project PNGs to responsive WebP sources with stable dimensions.
 - Replaced the 1.8 MB favicon source with a 192×192, 34 kB export.
 - Self-hosted the Latin Geist variable fonts so clean production builds require no Google Fonts connection.

@@ -60,8 +60,6 @@ The release checklist and remaining real-device checks are documented in [`docs/
 - Pixel Quest composition styles are scoped under `pq-` selectors in [`src/app/pixel-quest.css`](src/app/pixel-quest.css).
 - Portfolio code does not import Phaser, game scenes, game state, or world artwork.
 
-The selected standalone design is retained for comparison at [`design-reference/pixel-quest/index.html`](design-reference/pixel-quest/index.html). It is not linked from or copied into the production export.
-
 ## Accessibility and motion
 
 The portfolio supports keyboard navigation, visible focus, semantic headings and landmarks, native disclosure controls, dark and light themes, widths from 320 pixels, 200% text sizing, no-JavaScript content, and `prefers-reduced-motion`. Decorative sprites are pointer-inert and excluded from the accessibility tree.

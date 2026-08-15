@@ -68,10 +68,6 @@ for (const [label, html] of [["Portfolio", rootHtml], ["Game ready state", gameH
   await assertLocalReferencesExist(html, label);
 }
 
-assert(
-  !(await pathExists(path.join(outputRoot, "design-reference"))),
-  "The approved design reference must remain outside production output.",
-);
 for (const requiredOutput of [".htaccess", "robots.txt", "404.html"]) {
   assert(
     await pathExists(path.join(outputRoot, requiredOutput)),
