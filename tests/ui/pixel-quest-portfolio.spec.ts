@@ -1,6 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const appURL = "http://127.0.0.1:4173";
+const releaseViewports = [
+  { width: 320, height: 568 },
+  { width: 390, height: 844 },
+  { width: 768, height: 1024 },
+  { width: 1024, height: 768 },
+  { width: 1440, height: 900 },
+] as const;
+
+function boxesOverlap(
+  first: { x: number; y: number; width: number; height: number },
+  second: { x: number; y: number; width: number; height: number },
+) {
+  return !(
+    first.x + first.width <= second.x ||
+    second.x + second.width <= first.x ||
+    first.y + first.height <= second.y ||
+    second.y + second.height <= first.y
+  );
+}
 
 async function readPixelQuestTokens(page: Page) {
   return page.locator(".pq-root").evaluate((element) => {
@@ -330,6 +349,124 @@ test.describe("Pixel Quest portfolio", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "reduced");
     await expect(page.locator('[data-motion]:not([data-motion-state="complete"])')).toHaveCount(0);
+  });
+
+  for (const theme of ["dark", "light"] as const) {
+    for (const viewport of releaseViewports) {
+      test(`contains the ${theme} journey at ${viewport.width}x${viewport.height}`, async ({
+        page,
+      }) => {
+        await page.addInitScript((nextTheme) => {
+          window.localStorage.setItem("theme", nextTheme);
+        }, theme);
+        await page.setViewportSize(viewport);
+        await page.goto("/");
+
+        await expect(page.locator("html")).toHaveClass(new RegExp(theme));
+        await expect(page.locator("[data-project-record]")).toHaveCount(4);
+        await expect(page.locator("[data-experience-record]")).toHaveCount(4);
+        await expect(page.locator("[data-capability-record]")).toHaveCount(5);
+        await expect(page.locator("#contact")).toContainText(
+          "The story is still being written.",
+        );
+
+        const overflow = await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        );
+        expect(overflow).toBeLessThanOrEqual(1);
+
+        const viewportWidth = viewport.width;
+        for (const control of await page.locator("header a, header button").all()) {
+          if (!(await control.isVisible())) continue;
+          const box = await control.boundingBox();
+          expect(box?.x).toBeGreaterThanOrEqual(-1);
+          expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
+            viewportWidth + 1,
+          );
+          expect(box?.height).toBeGreaterThanOrEqual(44);
+        }
+
+        for (const [copySelector, sceneSelector] of [
+          [".pq-hero-copy", ".pq-hero-scene"],
+          [".pq-ending-copy", ".pq-ending-scene"],
+        ] as const) {
+          const copy = await page.locator(copySelector).boundingBox();
+          const scene = await page.locator(sceneSelector).boundingBox();
+          expect(copy && scene ? boxesOverlap(copy, scene) : false).toBeFalsy();
+        }
+      });
+    }
+  }
+
+  test("keeps every direct chapter anchor below the fixed header", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const chapter of ["projects", "about", "loadout", "contact"]) {
+      await page.goto(`/#${chapter}`);
+      const target = page.locator(`#${chapter}`);
+      await expect
+        .poll(() => target.evaluate((element) => Math.round(element.getBoundingClientRect().top)))
+        .toBeGreaterThanOrEqual(70);
+      await expect
+        .poll(() => target.evaluate((element) => Math.round(element.getBoundingClientRect().top)))
+        .toBeLessThanOrEqual(90);
+    }
+  });
+
+  test("keeps the complete journey readable at 200 percent text", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/");
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+
+    await expect(page.getByRole("heading", { name: "Proof lives in what shipped." })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Every environment added a new constraint." }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Choose tools for the constraint." })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "The story is still being written." }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ),
+    ).toBeLessThanOrEqual(1);
+  });
+
+  test("keeps decorative scenes out of the semantic and focus order", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 2 })).toHaveCount(4);
+    await expect(page.locator('section[aria-labelledby]')).toHaveCount(5);
+    await expect(page.locator('[aria-hidden="true"] :is(a,button,input,select,textarea,[tabindex])')).toHaveCount(0);
+    await expect(page.locator(".pq-operator:not([aria-hidden='true'])")).toHaveCount(0);
+    for (const image of await page.locator("main img").all()) {
+      expect((await image.getAttribute("alt"))?.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  test("does not apply fine-pointer hover motion in a touch context", async ({ browser }) => {
+    const context = await browser.newContext({
+      baseURL: appURL,
+      hasTouch: true,
+      isMobile: true,
+      viewport: { width: 390, height: 844 },
+    });
+    const page = await context.newPage();
+    await page.goto("/#projects");
+    expect(
+      await page.evaluate(
+        () => window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+      ),
+    ).toBeFalsy();
+    await expect(page.locator(".pq-project-visual img").first()).toHaveCSS(
+      "transition-duration",
+      "0s",
+    );
+    await context.close();
   });
 
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {

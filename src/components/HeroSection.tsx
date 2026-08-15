@@ -20,7 +20,10 @@ export function HeroSection() {
         <QuestLabel>
           Player 01 / {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
-        <h1 id="hero-title">
+        <h1
+          id="hero-title"
+          aria-label={`${portfolioProfile.storyHeadline.before} ${portfolioProfile.storyHeadline.emphasis} ${portfolioProfile.storyHeadline.after}`}
+        >
           {portfolioProfile.storyHeadline.before}{" "}
           <em>{portfolioProfile.storyHeadline.emphasis}</em>{" "}
           {portfolioProfile.storyHeadline.after}

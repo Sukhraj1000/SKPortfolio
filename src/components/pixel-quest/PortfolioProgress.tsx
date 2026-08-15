@@ -72,6 +72,47 @@ export function PortfolioProgressProvider({
     return () => observer.disconnect();
   }, [pathname]);
 
+  React.useEffect(() => {
+    if (pathname !== "/") return;
+
+    const hash = window.location.hash.slice(1);
+    if (!portfolioStoryAnchors.includes(hash as PortfolioStoryAnchor)) return;
+    const sectionId = hash as PortfolioStoryAnchor;
+    let cancelled = false;
+    const timers: number[] = [];
+
+    const alignAnchor = () => {
+      if (cancelled || window.location.hash !== `#${sectionId}`) return;
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const top = section.getBoundingClientRect().top;
+      if (top >= 70 && top <= 90) return;
+
+      const previousBehavior = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = "auto";
+      section.scrollIntoView({ block: "start" });
+      document.documentElement.style.scrollBehavior = previousBehavior;
+      setActiveSection(sectionId);
+    };
+
+    const settleAnchor = async () => {
+      try {
+        await document.fonts?.ready;
+      } catch {
+        // Font loading must not block direct chapter navigation.
+      }
+      if (cancelled) return;
+      requestAnimationFrame(() => requestAnimationFrame(alignAnchor));
+      timers.push(window.setTimeout(alignAnchor, 250));
+    };
+
+    void settleAnchor();
+    return () => {
+      cancelled = true;
+      timers.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, [pathname]);
+
   const activeIndex = portfolioStoryAnchors.indexOf(activeSection);
 
   React.useEffect(() => {
