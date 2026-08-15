@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
+  chronicleJumpApex,
+  chronicleRouteReachability,
+} from "../../src/components/game/chronicle-route";
+import {
   CHRONICLE_PROGRESS_VERSION,
   chronicleChapterIds,
   chronicleChapters,
@@ -35,6 +39,16 @@ test.describe("Chronicle Run story foundation", () => {
       chronicleRecordIds,
     );
     expect(new Set(chronicleRecordIds).size).toBe(9);
+  });
+
+  test("keeps every optional-route entrance within a forgiving jump margin", () => {
+    expect(chronicleJumpApex).toBeGreaterThan(190);
+    expect(chronicleRouteReachability).toHaveLength(5);
+    for (const route of chronicleRouteReachability) {
+      expect(route.entryRise).toBeGreaterThan(0);
+      expect(route.reachRatio).toBeLessThanOrEqual(0.82);
+      expect(route.jumpApex - route.entryRise).toBeGreaterThanOrEqual(35);
+    }
   });
 
   test("adapts experience and project facts from canonical portfolio data", () => {

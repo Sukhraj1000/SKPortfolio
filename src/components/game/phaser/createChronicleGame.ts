@@ -7,6 +7,11 @@ import {
   type ChronicleRecordId,
   type ChronicleTutorialStepId,
 } from "@/components/game/chronicle-story";
+import {
+  chronicleFloorY,
+  chronicleRoutePhysics,
+  chronicleUpperRoutes,
+} from "@/components/game/chronicle-route";
 import type {
   ChronicleGameCallbacks,
   ChronicleGameHandle,
@@ -18,15 +23,15 @@ import type {
 const CHAPTER_WIDTH = 6_000;
 const WORLD_WIDTH = CHAPTER_WIDTH * 5;
 const WORLD_HEIGHT = 720;
-const FLOOR_Y = 664;
-const RUN_SPEED = 270;
-const DASH_SPEED = 455;
-const DASH_DURATION = 240;
-const DASH_COOLDOWN = 950;
-const JUMP_SPEED = 610;
-const DROP_SPEED = 820;
-const COYOTE_WINDOW = 120;
-const JUMP_BUFFER_WINDOW = 140;
+const FLOOR_Y = chronicleFloorY;
+const RUN_SPEED = chronicleRoutePhysics.runSpeed;
+const DASH_SPEED = chronicleRoutePhysics.dashSpeed;
+const DASH_DURATION = chronicleRoutePhysics.dashDurationMs;
+const DASH_COOLDOWN = chronicleRoutePhysics.dashCooldownMs;
+const JUMP_SPEED = chronicleRoutePhysics.jumpSpeed;
+const DROP_SPEED = chronicleRoutePhysics.dropSpeed;
+const COYOTE_WINDOW = chronicleRoutePhysics.coyoteWindowMs;
+const JUMP_BUFFER_WINDOW = chronicleRoutePhysics.jumpBufferWindowMs;
 
 interface ChapterDefinition {
   id: ChronicleChapterId;
@@ -105,19 +110,6 @@ const storyPickupPositions = [
   23_750,
   25_550,
   29_400,
-] as const;
-
-const upperRoutes: readonly {
-  start: number;
-  y: number;
-  tiles: number;
-  nodeOffsets: readonly number[];
-}[] = [
-  { start: 2_500, y: 535, tiles: 12, nodeOffsets: [4, 8] },
-  { start: 8_150, y: 510, tiles: 15, nodeOffsets: [3, 8, 12] },
-  { start: 13_950, y: 495, tiles: 14, nodeOffsets: [4, 10] },
-  { start: 19_750, y: 480, tiles: 16, nodeOffsets: [3, 8, 13] },
-  { start: 25_800, y: 465, tiles: 16, nodeOffsets: [4, 9, 14] },
 ] as const;
 
 const checkpointDefinitions = [
@@ -572,17 +564,21 @@ export function createChronicleGame({
         this.addWorldSprite(platforms, x, FLOOR_Y, 0, 0.5).setDepth(8);
       }
 
-      upperRoutes.forEach((route) => {
+      chronicleUpperRoutes.forEach((route) => {
         for (let index = 0; index < route.tiles; index += 1) {
           if (index === 6 || index === 7) continue;
           const frame = index === 0 || index === route.tiles - 1 ? 1 : 0;
-          this.addWorldSprite(
+          const platform = this.addWorldSprite(
             platforms,
             route.start + index * 64,
             route.y,
             frame,
             0.5,
           ).setDepth(9);
+          const body = platform.body as Phaser.Physics.Arcade.StaticBody;
+          body.checkCollision.left = false;
+          body.checkCollision.right = false;
+          body.checkCollision.down = false;
         }
       });
 
@@ -655,7 +651,7 @@ export function createChronicleGame({
     private createFlowNodes() {
       const nodes = this.physics.add.staticGroup();
 
-      upperRoutes.forEach((route) => {
+      chronicleUpperRoutes.forEach((route) => {
         route.nodeOffsets.forEach((offset) => {
           const node = this.addWorldSprite(
             nodes,
