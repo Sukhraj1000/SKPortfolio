@@ -96,14 +96,30 @@ function TouchButton({
   label,
   icon,
   controls,
+  onPress,
 }: {
   action: GameAction;
   label: string;
   icon: React.ReactNode;
   controls: React.MutableRefObject<GameControlsState>;
+  onPress?: () => void;
 }) {
+  const releaseTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(
+    () => () => {
+      if (releaseTimerRef.current) window.clearTimeout(releaseTimerRef.current);
+      controls.current[action] = false;
+    },
+    [action, controls],
+  );
+
   const release = () => {
-    controls.current[action] = false;
+    if (releaseTimerRef.current) window.clearTimeout(releaseTimerRef.current);
+    releaseTimerRef.current = window.setTimeout(() => {
+      controls.current[action] = false;
+      releaseTimerRef.current = null;
+    }, 50);
   };
 
   return (
@@ -114,8 +130,13 @@ function TouchButton({
       className={styles.touchButton}
       onPointerDown={(event) => {
         event.preventDefault();
+        if (releaseTimerRef.current) {
+          window.clearTimeout(releaseTimerRef.current);
+          releaseTimerRef.current = null;
+        }
         event.currentTarget.setPointerCapture(event.pointerId);
         controls.current[action] = true;
+        onPress?.();
       }}
       onPointerUp={release}
       onPointerCancel={release}
@@ -144,7 +165,9 @@ export function GameExperience({
   const reducedMotionRef = React.useRef(false);
   const [spawnCycle, setSpawnCycle] = React.useState(0);
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
+  const [runtimeReady, setRuntimeReady] = React.useState(false);
   const [paused, setPaused] = React.useState(false);
+  const [tutorialPauseArmed, setTutorialPauseArmed] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [reducedMotionActive, setReducedMotionActive] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
@@ -288,6 +311,24 @@ export function GameExperience({
       const key = event.key.toLowerCase();
       if (event.repeat && ["p", "l", "m", "r"].includes(key)) return;
 
+      const tutorialAction: GameAction | null =
+        event.code === "Space" || event.code === "ArrowUp"
+          ? "jump"
+          : event.code === "ShiftLeft" ||
+              event.code === "ShiftRight" ||
+              event.code === "KeyD"
+            ? "dash"
+            : event.code === "KeyS" || event.code === "ArrowDown"
+              ? "drop"
+              : null;
+      if (!snapshot.runStarted && !storyOverlay && tutorialAction) {
+        event.preventDefault();
+        if (snapshot.tutorialStep === tutorialAction) {
+          gameHandleRef.current?.performTutorialAction(tutorialAction);
+        }
+        return;
+      }
+
       if (key === "m" && !storyOverlay) {
         event.preventDefault();
         setSoundEnabled((current) => {
@@ -305,6 +346,7 @@ export function GameExperience({
       if (key === "r" && !storyOverlay) {
         event.preventDefault();
         completionShownRef.current = false;
+        setTutorialPauseArmed(false);
         setPaused(false);
         setSnapshot(initialGameSnapshot);
         setActiveUnlockId(null);
@@ -319,7 +361,19 @@ export function GameExperience({
 
       if (key === "p" && !storyOverlay && !snapshot.completed) {
         event.preventDefault();
-        if (!paused) gameHandleRef.current?.completeTutorialAction("pause");
+        if (!snapshot.runStarted) {
+          if (snapshot.tutorialStep !== "pause") return;
+          if (!tutorialPauseArmed) {
+            setTutorialPauseArmed(true);
+            setPaused(true);
+            showNotice("Training paused. Press P or Resume to continue.", "info");
+          } else {
+            setTutorialPauseArmed(false);
+            setPaused(false);
+            gameHandleRef.current?.completeTutorialAction("pause");
+          }
+          return;
+        }
         setPaused((current) => !current);
         return;
       }
@@ -327,7 +381,9 @@ export function GameExperience({
       if (key === "l" && !storyOverlay) {
         event.preventDefault();
         overlayTriggerRef.current = document.activeElement as HTMLElement | null;
-        gameHandleRef.current?.completeTutorialAction("story-log");
+        if (!snapshot.runStarted && snapshot.tutorialStep === "story-log") {
+          gameHandleRef.current?.completeTutorialAction("story-log");
+        }
         setStoryOverlay("story-log");
         setPaused(true);
         return;
@@ -354,7 +410,15 @@ export function GameExperience({
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [onExit, paused, showNotice, snapshot.completed, storyOverlay]);
+  }, [
+    onExit,
+    showNotice,
+    snapshot.completed,
+    snapshot.runStarted,
+    snapshot.tutorialStep,
+    storyOverlay,
+    tutorialPauseArmed,
+  ]);
 
   React.useEffect(() => {
     const observer = new MutationObserver(() => gameHandleRef.current?.refreshTheme());
@@ -384,7 +448,10 @@ export function GameExperience({
 
   const callbacks = React.useMemo(
     () => ({
-      onSnapshot: setSnapshot,
+      onSnapshot: (nextSnapshot: GameSnapshot) => {
+        setSnapshot(nextSnapshot);
+        setRuntimeReady(true);
+      },
       onUnlock: setActiveUnlockId,
       onNotice: showNotice,
     }),
@@ -393,10 +460,12 @@ export function GameExperience({
 
   const openStoryLog = React.useCallback(() => {
     overlayTriggerRef.current = document.activeElement as HTMLElement | null;
-    gameHandleRef.current?.completeTutorialAction("story-log");
+    if (!snapshot.runStarted && snapshot.tutorialStep === "story-log") {
+      gameHandleRef.current?.completeTutorialAction("story-log");
+    }
     setStoryOverlay("story-log");
     setPaused(true);
-  }, []);
+  }, [snapshot.runStarted, snapshot.tutorialStep]);
 
   const closeStoryOverlay = React.useCallback(() => {
     setStoryOverlay(null);
@@ -404,11 +473,23 @@ export function GameExperience({
     window.setTimeout(() => overlayTriggerRef.current?.focus(), 0);
   }, []);
 
-  const resumeFromStoryLog = React.useCallback(() => {
+  const beginNormalRun = React.useCallback((skipWalkthrough = false) => {
+    gameHandleRef.current?.beginRun(skipWalkthrough);
+    setTutorialPauseArmed(false);
     setStoryOverlay(null);
     setPaused(false);
     window.setTimeout(() => stageRef.current?.focus(), 0);
   }, []);
+
+  const resumeFromStoryLog = React.useCallback(() => {
+    if (!snapshot.runStarted && snapshot.tutorialCompleted) {
+      beginNormalRun();
+      return;
+    }
+    setStoryOverlay(null);
+    setPaused(false);
+    window.setTimeout(() => stageRef.current?.focus(), 0);
+  }, [beginNormalRun, snapshot.runStarted, snapshot.tutorialCompleted]);
 
   const toggleSound = () => {
     const nextSoundState = !soundEnabled;
@@ -422,6 +503,7 @@ export function GameExperience({
 
   const restartLevel = () => {
     setStoryOverlay(null);
+    setTutorialPauseArmed(false);
     completionShownRef.current = false;
     setPaused(false);
     setSnapshot(initialGameSnapshot);
@@ -440,11 +522,16 @@ export function GameExperience({
           ? "Paused"
           : snapshot.completed
             ? "Complete"
-            : "Running";
+            : snapshot.runStarted
+              ? "Running"
+              : "Training";
   const activeChapter =
     chronicleChapters[snapshot.chapterIndex] ?? chronicleChapters[0];
   const journeyProgress = snapshot.journeyProgress;
   const tutorialStep = chronicleTutorialSteps.find(
+    (step) => step.id === snapshot.tutorialStep,
+  );
+  const tutorialStepIndex = chronicleTutorialSteps.findIndex(
     (step) => step.id === snapshot.tutorialStep,
   );
 
@@ -461,6 +548,7 @@ export function GameExperience({
       data-checkpoints={snapshot.checkpoints.length}
       data-tutorial-step={snapshot.tutorialStep}
       data-tutorial-completed={snapshot.tutorialCompleted}
+      data-run-started={snapshot.runStarted}
       data-recovered-records={snapshot.recoveredRecords.length}
       data-latest-unlock={snapshot.latestUnlockId ?? ""}
       data-reduced-motion={reducedMotionActive}
@@ -500,6 +588,7 @@ export function GameExperience({
               icon={<Play aria-hidden="true" className="h-4 w-4" />}
               active={
                 spawnPhase === "landed" &&
+                snapshot.runStarted &&
                 !paused &&
                 !storyOverlay &&
                 !snapshot.completed
@@ -507,20 +596,46 @@ export function GameExperience({
               disabled={
                 spawnPhase === "dropping" ||
                 snapshot.completed ||
-                (!paused && !storyOverlay)
+                (!paused &&
+                  !storyOverlay &&
+                  !(snapshot.tutorialCompleted && !snapshot.runStarted))
               }
               onClick={() => {
-                setStoryOverlay(null);
-                setPaused(false);
+                if (tutorialPauseArmed) {
+                  setTutorialPauseArmed(false);
+                  setPaused(false);
+                  gameHandleRef.current?.completeTutorialAction("pause");
+                } else if (
+                  snapshot.tutorialCompleted &&
+                  !snapshot.runStarted
+                ) {
+                  beginNormalRun();
+                } else {
+                  setStoryOverlay(null);
+                  setPaused(false);
+                }
               }}
             />
             <HudButton
               label="Pause"
               icon={<Pause aria-hidden="true" className="h-4 w-4" />}
               active={paused && !storyOverlay}
-              disabled={spawnPhase === "dropping" || paused || storyOverlay !== null}
+              disabled={
+                spawnPhase === "dropping" ||
+                paused ||
+                storyOverlay !== null ||
+                (!snapshot.runStarted && snapshot.tutorialStep !== "pause")
+              }
               onClick={() => {
-                gameHandleRef.current?.completeTutorialAction("pause");
+                if (!snapshot.runStarted) {
+                  setTutorialPauseArmed(true);
+                  setPaused(true);
+                  showNotice(
+                    "Training paused. Select Resume to continue.",
+                    "info",
+                  );
+                  return;
+                }
                 setPaused(true);
               }}
             />
@@ -593,7 +708,7 @@ export function GameExperience({
           </div>
         ) : null}
 
-        {notice ? (
+        {notice && snapshot.runStarted ? (
           <div data-game-notice className={cn(styles.notice, styles[`notice${notice.tone[0].toUpperCase()}${notice.tone.slice(1)}`])} role="status" aria-live="polite">
             <RadioTower aria-hidden="true" className="h-4 w-4 shrink-0" />
             {notice.message}
@@ -613,12 +728,47 @@ export function GameExperience({
             role="status"
             aria-live="polite"
             data-tutorial-prompt
+            data-tutorial-position={tutorialStepIndex + 1}
           >
-            <kbd>{tutorialStep.keyLabel}</kbd>
-            <span>
-              <strong>{tutorialStep.title}</strong>
-              <small>{tutorialStep.instruction}</small>
-            </span>
+            <div className={styles.tutorialHeading}>
+              <span>
+                {savedProgress.tutorialCompleted
+                  ? "Replay walkthrough"
+                  : "Quick walkthrough"}
+              </span>
+              <b>{`${tutorialStepIndex + 1} / 5`}</b>
+            </div>
+            <div className={styles.tutorialAction}>
+              <kbd>{tutorialStep.keyLabel}</kbd>
+              <span>
+                <strong>{tutorialStep.title}</strong>
+                <small>{tutorialStep.instruction}</small>
+              </span>
+            </div>
+            <div className={styles.tutorialSteps} aria-hidden="true">
+              {chronicleTutorialSteps.slice(0, 5).map((step, index) => (
+                <i
+                  key={step.id}
+                  data-step-state={
+                    index < tutorialStepIndex
+                      ? "complete"
+                      : index === tutorialStepIndex
+                        ? "active"
+                        : "ahead"
+                  }
+                />
+              ))}
+            </div>
+            {savedProgress.tutorialCompleted ? (
+              <button
+                type="button"
+                className={styles.skipTutorial}
+                disabled={!runtimeReady}
+                onClick={() => beginNormalRun(true)}
+              >
+                Skip walkthrough
+              </button>
+            ) : null}
           </aside>
         ) : null}
 
@@ -632,12 +782,27 @@ export function GameExperience({
               onClick={() => {
                 if (snapshot.completed) {
                   setStoryOverlay("complete");
+                } else if (tutorialPauseArmed) {
+                  setTutorialPauseArmed(false);
+                  setPaused(false);
+                  gameHandleRef.current?.completeTutorialAction("pause");
+                } else if (
+                  snapshot.tutorialCompleted &&
+                  !snapshot.runStarted
+                ) {
+                  beginNormalRun();
                 } else {
                   setPaused(false);
                 }
               }}
             >
-              {snapshot.completed ? "View completion recap" : "Resume"}
+              {snapshot.completed
+                ? "View completion recap"
+                : tutorialPauseArmed
+                  ? "Resume training"
+                  : snapshot.tutorialCompleted && !snapshot.runStarted
+                    ? "Start run"
+                    : "Resume"}
             </button>
           </div>
         ) : null}
@@ -648,18 +813,33 @@ export function GameExperience({
             label="Jump"
             icon={<ArrowUp aria-hidden="true" />}
             controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted && snapshot.tutorialStep === "jump") {
+                gameHandleRef.current?.performTutorialAction("jump");
+              }
+            }}
           />
           <TouchButton
             action="dash"
             label="Dash"
             icon={<Zap aria-hidden="true" />}
             controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted && snapshot.tutorialStep === "dash") {
+                gameHandleRef.current?.performTutorialAction("dash");
+              }
+            }}
           />
           <TouchButton
             action="drop"
             label="Fast drop"
             icon={<ArrowDown aria-hidden="true" />}
             controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted && snapshot.tutorialStep === "drop") {
+                gameHandleRef.current?.performTutorialAction("drop");
+              }
+            }}
           />
         </div>
 

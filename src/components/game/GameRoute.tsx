@@ -3,51 +3,25 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import {
-  ArrowRight,
-  Gauge,
-  LogOut,
-  Play,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
-import {
-  chronicleChapters,
-  chronicleRecords,
   emptyChronicleProgress,
   parseChronicleProgress,
   type ChronicleProgress,
 } from "@/components/game/chronicle-story";
 import { Button } from "@/components/ui/button";
-import { PixelFrame } from "@/components/ui/pixel-frame";
-import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
 import {
   defaultPortfolioHref,
   gameProgressKey,
   readPortfolioReturnHref,
 } from "@/lib/game-mode";
-import styles from "./GameRoute.module.css";
 
 const GameExperience = React.lazy(() =>
   import("@/components/game/GameExperience").then((module) => ({
     default: module.GameExperience,
   })),
 );
-
-function RuntimeLoading() {
-  return (
-    <div
-      className="grid min-h-[calc(100svh-4rem)] place-items-center bg-background px-4 pt-16"
-      role="status"
-    >
-      <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.12em] text-primary">
-        <span className="status-pulse h-2.5 w-2.5 bg-primary" />
-        Building Chronicle Run
-      </div>
-    </div>
-  );
-}
 
 function readReadyProgress() {
   if (typeof window === "undefined") return emptyChronicleProgress;
@@ -58,11 +32,69 @@ function readReadyProgress() {
   }
 }
 
+function TrainingShellFallback({
+  portfolioReturnHref,
+}: {
+  portfolioReturnHref: string;
+}) {
+  return (
+    <section
+      aria-labelledby="game-training-title"
+      className="min-h-[100svh] bg-background px-4 pb-12 pt-28"
+    >
+      <div className="mx-auto grid max-w-3xl gap-6 border border-border-strong bg-surface p-5 shadow-[6px_6px_0_var(--shadow-strong)] sm:p-8">
+        <SystemLabel tone="cyan">Chronicle Run // Quick walkthrough</SystemLabel>
+        <div>
+          <h1
+            id="game-training-title"
+            className="text-4xl font-extrabold tracking-[-0.055em] text-foreground sm:text-6xl"
+          >
+            Five actions, then run.
+          </h1>
+          <p className="mt-4 max-w-2xl leading-7 text-ink-muted">
+            Game mode opens directly into a short input walkthrough. Complete
+            Jump, Dash, Fast Drop, Pause, and Story Log, then auto-run through
+            five chapters of Sukhraj&apos;s professional story.
+          </p>
+        </div>
+        <ol className="grid gap-px bg-border font-mono text-xs font-semibold uppercase tracking-[0.06em] sm:grid-cols-5">
+          {[
+            "Jump",
+            "Dash",
+            "Fast Drop",
+            "Pause",
+            "Story Log",
+          ].map((step, index) => (
+            <li key={step} className="bg-background p-3 text-foreground">
+              <span className="mr-2 text-primary">{index + 1}/5</span>
+              {step}
+            </li>
+          ))}
+        </ol>
+        <p className="font-mono text-xs uppercase tracking-[0.06em] text-ink-muted">
+          Loading the paused training stage. The run will not move until the
+          walkthrough is complete.
+        </p>
+        <Button variant="outline" asChild className="w-fit max-w-full">
+          <Link href={portfolioReturnHref}>
+            <LogOut aria-hidden="true" />
+            Exit to Portfolio
+          </Link>
+        </Button>
+        <noscript>
+          <p className="border-l-2 border-signal-yellow pl-3 text-sm text-foreground">
+            JavaScript is required for the optional game. The complete
+            professional portfolio remains available through the link above.
+          </p>
+        </noscript>
+      </div>
+    </section>
+  );
+}
+
 export function GameRoute() {
   const router = useRouter();
-  const [startMode, setStartMode] = React.useState<"guided" | "skip" | null>(
-    null,
-  );
+  const [hydrated, setHydrated] = React.useState(false);
   const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
     defaultPortfolioHref,
   );
@@ -72,170 +104,26 @@ export function GameRoute() {
   React.useEffect(() => {
     setPortfolioReturnHref(readPortfolioReturnHref());
     setSavedProgress(readReadyProgress());
+    setHydrated(true);
   }, []);
 
   const exitGame = React.useCallback(() => {
     router.push(portfolioReturnHref);
   }, [portfolioReturnHref, router]);
 
-  if (startMode) {
-    return (
-      <React.Suspense fallback={<RuntimeLoading />}>
-        <GameExperience
-          onExit={exitGame}
-          skipTutorial={startMode === "skip"}
-          initialProgress={savedProgress}
-        />
-      </React.Suspense>
-    );
+  if (!hydrated) {
+    return <TrainingShellFallback portfolioReturnHref={portfolioReturnHref} />;
   }
 
   return (
-    <section aria-labelledby="game-ready-title" className={styles.ready}>
-      <div className={styles.grid} aria-hidden="true" />
-      <div className={styles.horizon} aria-hidden="true" />
-      <div className={styles.track} aria-hidden="true" />
-
-      <div className={styles.layout}>
-        <div className={styles.copy}>
-          <div className="flex flex-wrap items-center gap-3">
-            <SystemLabel>{"Chronicle Run // Ready"}</SystemLabel>
-            <StatusIndicator tone="info">3–5 minute story</StatusIndicator>
-          </div>
-
-          <h1 id="game-ready-title" className={styles.title}>
-            Chronicle
-            <span>Run.</span>
-          </h1>
-
-          <p className={styles.lede}>
-            Keep moving through a short playable version of Sukhraj&apos;s story.
-            Read the route, choose your line, and recover real Education,
-            Experience, and Project milestones without stopping the run.
-          </p>
-
-          <div className={styles.actions}>
-            <Button size="lg" onClick={() => setStartMode("guided")}>
-              <Play aria-hidden="true" />
-              {savedProgress.tutorialCompleted
-                ? "Replay guided run"
-                : "Start Chronicle Run"}
-            </Button>
-            {savedProgress.tutorialCompleted ? (
-              <Button
-                variant="secondary"
-                size="lg"
-                onClick={() => setStartMode("skip")}
-              >
-                <ArrowRight aria-hidden="true" />
-                Skip walkthrough
-              </Button>
-            ) : null}
-            <Button variant="outline" size="lg" asChild>
-              <Link href={portfolioReturnHref}>
-                <LogOut aria-hidden="true" />
-                Exit to Portfolio
-              </Link>
-            </Button>
-          </div>
-
-          <p className={styles.assurance}>
-            <ShieldCheck
-              aria-hidden="true"
-              className="mt-0.5 h-4 w-4 shrink-0 text-signal-green"
-            />
-            Nothing starts automatically. Progress and sound stay on this
-            device, and the complete professional story remains available in
-            Portfolio mode.
-          </p>
-
-        </div>
-
-        <PixelFrame
-          tone="cyan"
-          raised
-          className={styles.panel}
-          data-ready-records={savedProgress.recoveredRecords.length}
-        >
-          <div className={styles.panelHeader}>
-            <SystemLabel tone="cyan">The route</SystemLabel>
-            <Sparkles aria-hidden="true" className="h-4 w-4 text-primary" />
-          </div>
-
-          <div className={styles.panelBody}>
-            <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
-              One finite run // Five chapters
-            </p>
-            <h2>The story is the reward. Movement is the game.</h2>
-            <p>
-              Auto-run forward, jump hazards, dash through timing gates, take
-              optional high routes, and keep momentum through every chapter.
-            </p>
-
-            <ol className={styles.chapterList} aria-label="Chronicle route">
-              {chronicleChapters.map((chapter) => (
-                <li key={chapter.id}>
-                  <span>{chapter.index}</span>
-                  <strong>{chapter.title}</strong>
-                  <small>
-                    {savedProgress.completedChapters.includes(chapter.id)
-                      ? "Complete"
-                      : "Ahead"}
-                  </small>
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5 text-ink-faint max-sm:hidden"
-                  />
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          <dl className={styles.summary} aria-label="Saved Chronicle progress">
-            <div>
-              <dt>Story records</dt>
-              <dd>
-                {savedProgress.recoveredRecords.length} / {chronicleRecords.length}
-              </dd>
-            </div>
-            <div>
-              <dt>High score</dt>
-              <dd>{savedProgress.highScore.toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt>Run state</dt>
-              <dd>{savedProgress.completed ? "Complete" : "Ready"}</dd>
-            </div>
-          </dl>
-
-          <div className={styles.controls} aria-label="Chronicle Run controls">
-            <div>
-              <strong>Space / ↑</strong>
-              <span>Jump and choose a higher route</span>
-            </div>
-            <div>
-              <strong>Shift / D</strong>
-              <span>Dash through a timing window</span>
-            </div>
-            <div>
-              <strong>S / ↓</strong>
-              <span>Drop quickly back to the route</span>
-            </div>
-          </div>
-
-          <div className={styles.utilityControls}>
-            <Gauge
-              aria-hidden="true"
-              className="h-4 w-4 shrink-0 text-signal-yellow"
-            />
-            <span>
-              A guided opening introduces each action before scoring begins.
-              Runtime shortcuts: P pause, L Story Log, R restart, M sound, and
-              Escape safely exits to Portfolio.
-            </span>
-          </div>
-        </PixelFrame>
-      </div>
-    </section>
+    <React.Suspense
+      fallback={<TrainingShellFallback portfolioReturnHref={portfolioReturnHref} />}
+    >
+      <GameExperience
+        onExit={exitGame}
+        skipTutorial={false}
+        initialProgress={savedProgress}
+      />
+    </React.Suspense>
   );
 }

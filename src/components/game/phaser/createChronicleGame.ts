@@ -167,6 +167,7 @@ export function createChronicleGame({
   recoveredRecords: readonly ChronicleRecordId[];
 }): ChronicleGameHandle {
   let pausedRequested = true;
+  let tutorialAlreadyCompleted = skipTutorial;
   let reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -200,9 +201,11 @@ export function createChronicleGame({
       initialRecoveredRecords,
     );
     private latestUnlockId: ChronicleRecordId | null = null;
-    private tutorialStepIndex = skipTutorial
+    private tutorialStepIndex = tutorialAlreadyCompleted
       ? chronicleTutorialSteps.length - 1
       : 0;
+    private runStarted = tutorialAlreadyCompleted;
+    private dropPracticePrepared = false;
     private chapterPanels: Phaser.GameObjects.Rectangle[] = [];
     private chapterLabels: Phaser.GameObjects.Text[] = [];
     private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
@@ -248,7 +251,9 @@ export function createChronicleGame({
 
       this.refreshTheme();
       callbacks.onNotice(
-        "Auto-run active. Space jumps, Shift dashes, and S drops.",
+        this.runStarted
+          ? "Auto-run active. Space jumps, Shift dashes, and S drops."
+          : "Quick walkthrough ready. Complete the five displayed actions.",
         "info",
       );
       this.emitSnapshot();
@@ -274,15 +279,71 @@ export function createChronicleGame({
         controls.current.drop;
       const previousState = this.playerState;
 
-      if (
-        this.currentTutorialStep() === "auto-run" &&
-        this.player.x >= 450
-      ) {
-        this.advanceTutorial("auto-run");
-      }
-
       if (grounded) this.lastGroundedAt = time;
       if (keyboardJump || touchJump) this.jumpBufferedAt = time;
+
+      if (!this.runStarted) {
+        this.player.setVelocityX(0);
+        const tutorialStep = this.currentTutorialStep();
+
+        if (
+          tutorialStep === "jump" &&
+          time - this.jumpBufferedAt <= JUMP_BUFFER_WINDOW &&
+          time - this.lastGroundedAt <= COYOTE_WINDOW
+        ) {
+          this.player.setVelocityY(-JUMP_SPEED);
+          this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
+          this.lastGroundedAt = Number.NEGATIVE_INFINITY;
+          this.advanceTutorial("jump");
+        }
+
+        if (
+          tutorialStep === "dash" &&
+          (keyboardDash || touchDash) &&
+          time >= this.dashReadyAt
+        ) {
+          this.dashEndsAt = time + DASH_DURATION;
+          this.dashReadyAt = time + DASH_COOLDOWN;
+          this.advanceTutorial("dash");
+        }
+
+        if (
+          tutorialStep === "drop" &&
+          grounded &&
+          !this.dropPracticePrepared
+        ) {
+          this.dropPracticePrepared = true;
+          this.player.setVelocityY(-420);
+        }
+
+        if (tutorialStep === "drop" && !grounded && dropHeld) {
+          this.player.setVelocityY(Math.max(520, body.velocity.y + 140));
+          this.advanceTutorial("drop");
+        }
+
+        const dashing = time < this.dashEndsAt;
+        if (dashing) {
+          this.playerState = "dashing";
+          this.player.play("sk-run-right", true);
+        } else if (!grounded) {
+          this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
+          this.player.play(body.velocity.y < 0 ? "sk-jump" : "sk-fall", true);
+        } else {
+          this.playerState = "grounded";
+          this.player.play("sk-idle", true);
+        }
+
+        this.lastTouchJump = controls.current.jump;
+        this.lastTouchDash = controls.current.dash;
+        if (
+          previousState !== this.playerState ||
+          time - this.lastSnapshotAt >= 250
+        ) {
+          this.lastSnapshotAt = time;
+          this.emitSnapshot();
+        }
+        return;
+      }
 
       if (
         time - this.jumpBufferedAt <= JUMP_BUFFER_WINDOW &&
@@ -291,16 +352,12 @@ export function createChronicleGame({
         this.player.setVelocityY(-JUMP_SPEED);
         this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
         this.lastGroundedAt = Number.NEGATIVE_INFINITY;
-        this.advanceTutorial("jump");
       }
 
       if ((keyboardDash || touchDash) && time >= this.dashReadyAt) {
         this.dashEndsAt = time + DASH_DURATION;
         this.dashReadyAt = time + DASH_COOLDOWN;
-        if (this.tutorialCompleted()) {
-          this.score += Math.round(30 * this.multiplier);
-        }
-        this.advanceTutorial("dash");
+        this.score += Math.round(30 * this.multiplier);
       }
 
       const dashing = time < this.dashEndsAt;
@@ -308,32 +365,6 @@ export function createChronicleGame({
 
       if (!grounded && dropHeld && body.velocity.y < DROP_SPEED) {
         this.player.setVelocityY(Math.max(380, body.velocity.y + 100));
-        this.advanceTutorial("drop");
-      }
-
-      if (
-        this.currentTutorialStep() === "route" &&
-        this.player.x >= 2_380 &&
-        grounded
-      ) {
-        this.player.setVelocityX(0);
-      }
-
-      if (
-        this.currentTutorialStep() === "route" &&
-        this.player.x >= 2_450 &&
-        this.player.y < 585
-      ) {
-        this.advanceTutorial("route");
-      }
-
-      if (
-        (this.currentTutorialStep() === "pause" ||
-          this.currentTutorialStep() === "story-log") &&
-        this.player.x >= 5_450 &&
-        grounded
-      ) {
-        this.player.setVelocityX(0);
       }
 
       if (dashing) {
@@ -385,9 +416,11 @@ export function createChronicleGame({
       this.lastScoredX = 150;
       this.playerState = "grounded";
       this.latestUnlockId = null;
-      this.tutorialStepIndex = skipTutorial
+      this.tutorialStepIndex = tutorialAlreadyCompleted
         ? chronicleTutorialSteps.length - 1
         : 0;
+      this.runStarted = tutorialAlreadyCompleted;
+      this.dropPracticePrepared = false;
       this.chapterPanels = [];
       this.chapterLabels = [];
       this.parallaxLayers = [];
@@ -639,7 +672,7 @@ export function createChronicleGame({
         const node = object as Phaser.Physics.Arcade.Sprite;
         if (!node.active) return;
         node.disableBody(true, true);
-        if (this.tutorialCompleted()) {
+        if (this.runStarted) {
           this.score += Math.round(125 * this.multiplier);
           this.multiplier = Math.min(5, this.multiplier + 0.25);
         }
@@ -670,9 +703,8 @@ export function createChronicleGame({
         const recordId = pickup.getData("recordId") as ChronicleRecordId;
         const isNew = !this.recoveredRecordIds.has(recordId);
         pickup.disableBody(true, true);
-        this.advanceTutorial("pickup");
 
-        if (this.tutorialCompleted()) {
+        if (this.runStarted) {
           this.score += Math.round((isNew ? 300 : 90) * this.multiplier);
           this.multiplier = Math.min(5, this.multiplier + (isNew ? 0.4 : 0.1));
         }
@@ -793,7 +825,7 @@ export function createChronicleGame({
       const nextStep = chronicleTutorialSteps[this.tutorialStepIndex];
       callbacks.onNotice(
         nextStep.id === "complete"
-          ? "Guided opening complete. Score and momentum are now active."
+          ? "Five actions complete. Resume from the Story Log when ready."
           : nextStep.title,
         nextStep.id === "complete" ? "success" : "info",
       );
@@ -801,12 +833,53 @@ export function createChronicleGame({
       this.emitSnapshot();
     }
 
+    performTutorialAction(action: "jump" | "dash" | "drop") {
+      if (this.runStarted || this.currentTutorialStep() !== action) return;
+      if (action === "jump") {
+        this.player.setVelocityY(-JUMP_SPEED);
+        this.lastGroundedAt = Number.NEGATIVE_INFINITY;
+        this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
+      } else if (action === "dash") {
+        this.dashEndsAt = this.time.now + DASH_DURATION;
+        this.dashReadyAt = this.time.now + DASH_COOLDOWN;
+      } else {
+        this.dropPracticePrepared = true;
+        this.player.setVelocityY(560);
+      }
+      this.advanceTutorial(action);
+    }
+
     completeTutorialAction(action: "pause" | "story-log") {
       this.advanceTutorial(action);
     }
 
+    beginRun(skipTutorialStep = false) {
+      if (skipTutorialStep) {
+        this.tutorialStepIndex = chronicleTutorialSteps.length - 1;
+      }
+      if (!this.tutorialCompleted()) return;
+
+      tutorialAlreadyCompleted = true;
+      this.runStarted = true;
+      this.dropPracticePrepared = false;
+      this.player.setPosition(150, 510);
+      this.player.setVelocity(0, 0);
+      this.player.clearTint();
+      this.playerState = "grounded";
+      this.dashEndsAt = 0;
+      this.dashReadyAt = 0;
+      this.lastScoredX = 150;
+      callbacks.onNotice(
+        skipTutorialStep
+          ? "Walkthrough skipped. Auto-run active."
+          : "Ready. Chronicle Run starts now.",
+        "success",
+      );
+      this.emitSnapshot();
+    }
+
     private addDistanceScore() {
-      if (!this.tutorialCompleted() || this.player.x <= this.lastScoredX + 24) {
+      if (!this.runStarted || this.player.x <= this.lastScoredX + 24) {
         return;
       }
       const distance = this.player.x - this.lastScoredX;
@@ -881,6 +954,7 @@ export function createChronicleGame({
         dashReady: this.time.now >= this.dashReadyAt,
         tutorialStep: this.currentTutorialStep(),
         tutorialCompleted: this.tutorialCompleted(),
+        runStarted: this.runStarted,
         recoveredRecords: chronicleRecords
           .map((record) => record.id)
           .filter((recordId) => this.recoveredRecordIds.has(recordId)),
@@ -961,8 +1035,14 @@ export function createChronicleGame({
     setReducedMotion(reduced) {
       getScene()?.setReducedMotion(reduced);
     },
+    performTutorialAction(action) {
+      getScene()?.performTutorialAction(action);
+    },
     completeTutorialAction(action) {
       getScene()?.completeTutorialAction(action);
+    },
+    beginRun(skipTutorialStep = false) {
+      getScene()?.beginRun(skipTutorialStep);
     },
     restart() {
       const scene = getScene();

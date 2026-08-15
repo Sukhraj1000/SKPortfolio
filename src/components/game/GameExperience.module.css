@@ -340,24 +340,48 @@
 
 .tutorialPrompt {
   position: absolute;
-  min-width: 0;
-  bottom: 5.25rem;
+  top: 1rem;
   left: 1rem;
   z-index: 15;
-  display: flex;
-  max-width: min(24rem, calc(100% - 2rem));
-  align-items: center;
-  gap: 0.8rem;
+  display: grid;
+  width: min(28rem, calc(100% - 2rem));
+  min-width: 0;
+  gap: 0.75rem;
+  border: 1px solid var(--border-strong);
   border-left: 3px solid var(--signal-yellow);
-  background: color-mix(in srgb, var(--surface) 95%, transparent);
-  padding: 0.75rem 0.9rem;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  padding: 0.85rem;
   color: var(--foreground);
   box-shadow: 4px 4px 0 var(--shadow-strong);
 }
 
-.tutorialPrompt kbd {
+.tutorialHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--primary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tutorialHeading b {
+  color: var(--signal-yellow);
+}
+
+.tutorialAction {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.tutorialAction kbd {
   display: grid;
-  min-width: 3.25rem;
+  min-width: 4rem;
   min-height: 2.75rem;
   place-items: center;
   border: 1px solid var(--signal-yellow);
@@ -367,24 +391,65 @@
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.625rem;
   font-weight: 750;
+  text-align: center;
   text-transform: uppercase;
 }
 
-.tutorialPrompt strong,
-.tutorialPrompt small {
+.tutorialAction > span {
+  min-width: 0;
+}
+
+.tutorialAction strong,
+.tutorialAction small {
   display: block;
   overflow-wrap: anywhere;
 }
 
-.tutorialPrompt strong {
-  font-size: 0.82rem;
+.tutorialAction strong {
+  font-size: 0.9rem;
 }
 
-.tutorialPrompt small {
+.tutorialAction small {
   margin-top: 0.2rem;
   color: var(--ink-muted);
-  font-size: 0.7rem;
-  line-height: 1.4;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.tutorialSteps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.tutorialSteps i {
+  height: 0.28rem;
+  background: var(--surface-high);
+}
+
+.tutorialSteps i[data-step-state="complete"] {
+  background: var(--signal-green);
+}
+
+.tutorialSteps i[data-step-state="active"] {
+  background: var(--signal-yellow);
+}
+
+.skipTutorial {
+  min-height: 44px;
+  border: 1px solid var(--border-strong);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.skipTutorial:hover {
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .pauseOverlay {
@@ -730,7 +795,7 @@
 
 
   .tutorialPrompt {
-    bottom: 5.5rem;
+    top: 0.75rem;
   }
 }
 
@@ -785,13 +850,13 @@
   }
 
   .tutorialPrompt {
+    top: 0.65rem;
     right: 0.65rem;
-    bottom: 5rem;
     left: 0.65rem;
     max-width: none;
   }
 
-  .tutorialPrompt > span {
+  .tutorialAction > span {
     min-width: 0;
   }
 

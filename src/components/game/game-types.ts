@@ -27,6 +27,7 @@ export interface GameSnapshot {
   dashReady: boolean;
   tutorialStep: ChronicleTutorialStepId;
   tutorialCompleted: boolean;
+  runStarted: boolean;
   recoveredRecords: readonly ChronicleRecordId[];
   latestUnlockId: ChronicleRecordId | null;
   score: number;
@@ -46,7 +47,9 @@ export interface ChronicleGameHandle {
   destroy: () => void;
   setPaused: (paused: boolean) => void;
   setReducedMotion: (reduced: boolean) => void;
+  performTutorialAction: (action: GameAction) => void;
   completeTutorialAction: (action: "pause" | "story-log") => void;
+  beginRun: (skipTutorial?: boolean) => void;
   restart: () => void;
   refreshTheme: () => void;
 }
@@ -58,8 +61,9 @@ export const initialGameSnapshot: GameSnapshot = {
   journeyProgress: 0,
   playerState: "grounded",
   dashReady: true,
-  tutorialStep: "auto-run",
+  tutorialStep: "jump",
   tutorialCompleted: false,
+  runStarted: false,
   recoveredRecords: [],
   latestUnlockId: null,
   score: 0,

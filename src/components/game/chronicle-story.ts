@@ -30,12 +30,9 @@ export type ChronicleRecordId = (typeof chronicleRecordIds)[number];
 export type ChronicleRecordKind = "education" | "experience" | "project";
 
 export type ChronicleTutorialStepId =
-  | "auto-run"
   | "jump"
   | "dash"
   | "drop"
-  | "route"
-  | "pickup"
   | "pause"
   | "story-log"
   | "complete";
@@ -81,58 +78,40 @@ export const CHRONICLE_PROGRESS_VERSION = 1 as const;
 
 export const chronicleTutorialSteps: readonly ChronicleTutorialStep[] = [
   {
-    id: "auto-run",
-    keyLabel: "Forward",
-    title: "The route moves with you",
-    instruction: "No direction key is needed. Read the next obstacle.",
-  },
-  {
     id: "jump",
     keyLabel: "Space / ↑",
-    title: "Jump the route marker",
-    instruction: "Press once; a short input buffer protects close timing.",
+    title: "Jump",
+    instruction: "The run moves forward automatically. Press Jump once.",
   },
   {
     id: "dash",
     keyLabel: "Shift / D",
-    title: "Dash through a timing gate",
-    instruction: "Dash adds speed briefly, then enters a visible cooldown.",
+    title: "Dash",
+    instruction: "Press Dash for a short burst through timing gates.",
   },
   {
     id: "drop",
     keyLabel: "S / ↓",
-    title: "Fast-drop back to the line",
-    instruction: "Jump, then drop while airborne to land sooner.",
-  },
-  {
-    id: "route",
-    keyLabel: "High route",
-    title: "Choose the optional upper line",
-    instruction: "Jump onto the raised route; the lower route remains safe.",
-  },
-  {
-    id: "pickup",
-    keyLabel: "Story node",
-    title: "Recover the route pickup",
-    instruction: "Cross the glowing node on the upper line.",
+    title: "Fast Drop",
+    instruction: "You are lifted safely for practice. Press Drop to land.",
   },
   {
     id: "pause",
     keyLabel: "P / HUD",
-    title: "Pause whenever you need",
-    instruction: "Use Pause now; movement and hazards stop completely.",
+    title: "Pause and resume",
+    instruction: "Pause the training, then resume when you are ready.",
   },
   {
     id: "story-log",
     keyLabel: "L / HUD",
-    title: "Open the Story Log",
-    instruction: "Recovered records stay available in a pause-safe log.",
+    title: "Story Log",
+    instruction: "Open the Story Log. Resume from it to start the run.",
   },
   {
     id: "complete",
     keyLabel: "Ready",
-    title: "Walkthrough complete",
-    instruction: "Normal scoring and route challenges are now active.",
+    title: "Ready to run",
+    instruction: "Five actions complete. The route starts from Origin.",
   },
 ] as const;
 
