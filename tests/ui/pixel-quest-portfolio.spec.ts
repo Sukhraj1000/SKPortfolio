@@ -527,7 +527,7 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(page.getByRole("link", { name: "Enter Game mode" })).toBeVisible();
   });
 
-  test("keeps Phaser and world assets behind the unchanged game Start action", async ({ page }) => {
+  test("keeps Phaser and world assets behind the explicit game Start action", async ({ page }) => {
     const rootRequests: string[] = [];
     page.on("request", (request) => rootRequests.push(request.url()));
     await page.goto("/");
@@ -541,7 +541,7 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(page.locator("canvas")).toHaveCount(0);
     expect(gameRequests.some((url) => url.includes("industrial-world-atlas"))).toBeFalsy();
 
-    await page.getByRole("button", { name: "Start deployment" }).click();
+    await page.getByRole("button", { name: "Start Chronicle Run" }).click();
     await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
     await expect
       .poll(() => gameRequests.some((url) => url.includes("industrial-world-atlas")))
@@ -553,7 +553,7 @@ test.describe("Pixel Quest portfolio", () => {
 
     await expect(page.locator("[data-portfolio-header]")).toHaveCount(0);
     await expect(page.getByText("Game route // isolated runtime")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Start deployment" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start Chronicle Run" })).toBeVisible();
     await expect(page.getByRole("group", { name: "Portfolio experience mode" })).toBeVisible();
   });
 });

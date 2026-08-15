@@ -3,8 +3,70 @@
   z-index: 22;
   min-height: 4.5rem;
   border-bottom: 1px solid var(--border-strong);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--signal-cyan) 5%, transparent), transparent 40%, color-mix(in srgb, var(--signal-red) 5%, transparent)),
+    var(--surface);
+  padding: 0.65rem 0.75rem 0;
+}
+
+.journeyMeter {
+  height: 0.25rem;
+  margin: 0.65rem -0.75rem 0;
+  overflow: hidden;
+  background: var(--surface-high);
+}
+
+.journeyMeter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--signal-cyan), var(--signal-yellow), var(--signal-red));
+}
+
+.chapterRail {
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid var(--border-strong);
   background: var(--surface);
-  padding: 0.65rem 0.75rem;
+  list-style: none;
+  padding: 0;
+}
+
+.chapterRail li {
+  min-width: 0;
+  border-right: 1px solid var(--border);
+  padding: 0.55rem 0.75rem;
+  color: var(--ink-faint);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.chapterRail li:last-child {
+  border-right: 0;
+}
+
+.chapterRail li[data-chapter-state="complete"] {
+  color: var(--signal-cyan);
+}
+
+.chapterRail li[data-chapter-state="active"] {
+  border-left: 0.25rem solid var(--signal-yellow);
+  background: color-mix(in srgb, var(--signal-yellow) 10%, var(--surface));
+  color: var(--signal-yellow);
+}
+
+.chapterRail strong {
+  display: block;
+  margin-top: 0.2rem;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 0.625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stage {
@@ -302,8 +364,19 @@
     min-height: 7.5rem;
   }
 
+  .chapterRail li {
+    min-height: 2.7rem;
+    padding: 0.45rem 0.3rem;
+    text-align: center;
+  }
+
+  .chapterRail strong {
+    font-size: 0.5rem;
+    white-space: normal;
+  }
+
   .stage {
-    min-height: calc(100svh - 14rem);
+    min-height: calc(100svh - 17rem);
   }
 
   .operator {

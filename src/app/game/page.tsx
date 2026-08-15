@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { GameRoute } from "@/components/game/GameRoute";
 
 export const metadata: Metadata = {
-  title: "Game Mode | Sukhraj Kalon",
+  title: "Chronicle Run | Sukhraj Kalon",
   description:
-    "Enter the optional IRON//SIGNAL interactive portfolio experience.",
+    "Play a short auto-running journey through Sukhraj Kalon's real education, experience, and project milestones.",
 };
 
 export default function GamePage() {

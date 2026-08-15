@@ -1,24 +1,33 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  Gamepad2,
-  Keyboard,
+  Gauge,
   LogOut,
-  MousePointer2,
   Play,
   ShieldCheck,
+  Sparkles,
 } from "lucide-react";
+import {
+  chronicleChapters,
+  chronicleRecords,
+  emptyChronicleProgress,
+  parseChronicleProgress,
+  type ChronicleProgress,
+} from "@/components/game/chronicle-story";
 import { Button } from "@/components/ui/button";
 import { PixelFrame } from "@/components/ui/pixel-frame";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
 import {
   defaultPortfolioHref,
+  gameProgressKey,
   readPortfolioReturnHref,
 } from "@/lib/game-mode";
+import styles from "./GameRoute.module.css";
 
 const GameExperience = React.lazy(() =>
   import("@/components/game/GameExperience").then((module) => ({
@@ -34,10 +43,19 @@ function RuntimeLoading() {
     >
       <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.12em] text-primary">
         <span className="status-pulse h-2.5 w-2.5 bg-primary" />
-        Linking isolated game runtime
+        Building Chronicle Run
       </div>
     </div>
   );
+}
+
+function readReadyProgress() {
+  if (typeof window === "undefined") return emptyChronicleProgress;
+  try {
+    return parseChronicleProgress(window.localStorage.getItem(gameProgressKey));
+  } catch {
+    return { ...emptyChronicleProgress };
+  }
 }
 
 export function GameRoute() {
@@ -46,9 +64,12 @@ export function GameRoute() {
   const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
     defaultPortfolioHref,
   );
+  const [savedProgress, setSavedProgress] =
+    React.useState<ChronicleProgress>(emptyChronicleProgress);
 
   React.useEffect(() => {
     setPortfolioReturnHref(readPortfolioReturnHref());
+    setSavedProgress(readReadyProgress());
   }, []);
 
   const exitGame = React.useCallback(() => {
@@ -64,109 +85,129 @@ export function GameRoute() {
   }
 
   return (
-    <section
-      aria-labelledby="game-ready-title"
-      className="relative isolate min-h-[100svh] overflow-hidden bg-background px-4 pb-10 pt-24 sm:px-6 sm:pb-14 sm:pt-28"
-    >
-      <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-60" />
-      <div className="dither-field pointer-events-none absolute inset-y-16 right-0 -z-10 w-1/2 opacity-30 [mask-image:linear-gradient(to_left,black,transparent)]" />
+    <section aria-labelledby="game-ready-title" className={styles.ready}>
+      <div className={styles.grid} aria-hidden="true" />
+      <div className={styles.horizon} aria-hidden="true" />
+      <div className={styles.track} aria-hidden="true" />
 
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:min-h-[calc(100svh-9rem)] lg:grid-cols-[minmax(0,1.08fr)_minmax(22rem,0.92fr)] lg:gap-14">
-        <div className="max-w-3xl">
+      <div className={styles.layout}>
+        <div className={styles.copy}>
           <div className="flex flex-wrap items-center gap-3">
-            <SystemLabel>{"Game route // Ready state"}</SystemLabel>
-            <StatusIndicator tone="info">Input idle</StatusIndicator>
+            <SystemLabel>{"Chronicle Run // Ready"}</SystemLabel>
+            <StatusIndicator tone="info">3–5 minute story</StatusIndicator>
           </div>
 
-          <h1
-            id="game-ready-title"
-            className="text-balance mt-6 text-5xl font-semibold uppercase leading-[0.88] tracking-[-0.06em] text-foreground sm:text-7xl lg:text-8xl"
-          >
-            Signal link
-            <span className="block text-primary">ready.</span>
+          <h1 id="game-ready-title" className={styles.title}>
+            Chronicle
+            <span>Run.</span>
           </h1>
 
-          <p className="text-pretty mt-6 max-w-2xl text-base leading-7 text-ink-muted sm:text-lg sm:leading-8">
-            Game mode is the optional second telling of the portfolio. Start when
-            you are ready to deploy SK into the spawn bay; nothing captures input
-            or begins automatically.
+          <p className={styles.lede}>
+            Keep moving through a short playable version of Sukhraj&apos;s story.
+            Read the route, choose your line, and recover real Education,
+            Experience, and Project milestones without stopping the run.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className={styles.actions}>
             <Button size="lg" onClick={() => setStarted(true)}>
               <Play aria-hidden="true" />
-              Start deployment
+              Start Chronicle Run
             </Button>
-            <Button variant="outline" size="lg" onClick={exitGame}>
-              <LogOut aria-hidden="true" />
-              Exit to Portfolio
+            <Button variant="outline" size="lg" asChild>
+              <Link href={portfolioReturnHref}>
+                <LogOut aria-hidden="true" />
+                Exit to Portfolio
+              </Link>
             </Button>
           </div>
 
-          <p className="mt-5 flex max-w-xl items-start gap-2.5 border-l border-border-strong pl-4 text-sm leading-6 text-ink-muted">
+          <p className={styles.assurance}>
             <ShieldCheck
               aria-hidden="true"
-              className="mt-1 h-4 w-4 shrink-0 text-signal-green"
+              className="mt-0.5 h-4 w-4 shrink-0 text-signal-green"
             />
-            Portfolio mode remains complete on its own. Game progress and sound
-            preference stay on this device and never require an account.
+            Nothing starts automatically. Progress and sound stay on this
+            device, and the complete professional story remains available in
+            Portfolio mode.
           </p>
+
         </div>
 
-        <PixelFrame tone="cyan" raised className="overflow-hidden bg-surface">
-          <div className="flex items-center justify-between gap-3 border-b border-border bg-surface-raised px-4 py-3">
-            <SystemLabel tone="cyan">Mission briefing</SystemLabel>
-            <Gamepad2 aria-hidden="true" className="h-4 w-4 text-primary" />
+        <PixelFrame
+          tone="cyan"
+          raised
+          className={styles.panel}
+          data-ready-records={savedProgress.recoveredRecords.length}
+        >
+          <div className={styles.panelHeader}>
+            <SystemLabel tone="cyan">The route</SystemLabel>
+            <Sparkles aria-hidden="true" className="h-4 w-4 text-primary" />
           </div>
 
-          <div className="micro-grid bg-background p-5 sm:p-6">
+          <div className={styles.panelBody}>
             <p className="font-mono text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-primary">
-              Primary objective
+              One finite run // Five chapters
             </p>
-            <p className="mt-3 text-xl font-semibold leading-8 text-foreground">
-              Trace the same engineering story through a playable industrial world.
+            <h2>The story is the reward. Movement is the game.</h2>
+            <p>
+              Auto-run forward, jump hazards, dash through timing gates, take
+              optional high routes, and keep momentum through every chapter.
             </p>
 
-            <ol className="mt-6 grid gap-px border border-border bg-border">
-              {[
-                "Deploy into the onboarding bay",
-                "Learn movement through play",
-                "Recover four story signals",
-                "Restore the final Comms uplink",
-              ].map((step, index) => (
-                <li
-                  key={step}
-                  className="grid min-h-12 grid-cols-[2.25rem_1fr_auto] items-center bg-surface px-3 text-sm text-foreground"
-                >
-                  <span className="font-mono text-[0.625rem] text-primary">
-                    0{index + 1}
-                  </span>
-                  {step}
-                  <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 text-ink-faint" />
+            <ol className={styles.chapterList} aria-label="Chronicle route">
+              {chronicleChapters.map((chapter) => (
+                <li key={chapter.id}>
+                  <span>{chapter.index}</span>
+                  <strong>{chapter.title}</strong>
+                  <small>
+                    {savedProgress.completedChapters.includes(chapter.id)
+                      ? "Complete"
+                      : "Ahead"}
+                  </small>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 text-ink-faint max-sm:hidden"
+                  />
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="grid gap-px border-t border-border bg-border sm:grid-cols-2">
-            <div className="bg-surface p-4">
-              <p className="flex items-center gap-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.1em] text-primary">
-                <Keyboard aria-hidden="true" className="h-4 w-4" />
-                Keyboard
-              </p>
-              <p className="mt-2 text-xs leading-5 text-ink-muted">
-                WASD, arrows, Space and E once the level is connected.
-              </p>
+          <dl className={styles.summary} aria-label="Saved Chronicle progress">
+            <div>
+              <dt>Story records</dt>
+              <dd>
+                {savedProgress.recoveredRecords.length} / {chronicleRecords.length}
+              </dd>
             </div>
-            <div className="bg-surface p-4">
-              <p className="flex items-center gap-2 font-mono text-[0.625rem] font-semibold uppercase tracking-[0.1em] text-primary">
-                <MousePointer2 aria-hidden="true" className="h-4 w-4" />
-                Pointer / touch
-              </p>
-              <p className="mt-2 text-xs leading-5 text-ink-muted">
-                Persistent HUD controls keep Start, Pause and Exit within reach.
-              </p>
+            <div>
+              <dt>High score</dt>
+              <dd>{savedProgress.highScore.toLocaleString()}</dd>
             </div>
+            <div>
+              <dt>Run state</dt>
+              <dd>{savedProgress.completed ? "Complete" : "Ready"}</dd>
+            </div>
+          </dl>
+
+          <div className={styles.controls} aria-label="Chronicle Run controls">
+            <div>
+              <strong>Space / ↑</strong>
+              <span>Jump and choose a higher route</span>
+            </div>
+            <div>
+              <strong>Shift / D</strong>
+              <span>Dash through a timing window</span>
+            </div>
+            <div>
+              <strong>S / ↓</strong>
+              <span>Drop quickly back to the route</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 border-t border-border bg-surface px-4 py-3 text-xs leading-5 text-ink-muted">
+            <Gauge aria-hidden="true" className="h-4 w-4 shrink-0 text-signal-yellow" />
+            A guided opening introduces each action before scoring begins.
           </div>
         </PixelFrame>
       </div>

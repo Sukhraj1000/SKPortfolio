@@ -16,6 +16,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import { GameCanvas } from "@/components/game/GameCanvas";
+import { chronicleChapters } from "@/components/game/chronicle-story";
 import { SignalPanel } from "@/components/game/SignalPanel";
 import {
   initialGameSnapshot,
@@ -329,29 +330,40 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     spawnPhase === "dropping"
       ? "Deploying"
       : panelId
-        ? "Terminal"
+        ? "Story"
         : paused
           ? "Paused"
           : snapshot.completed
             ? "Complete"
             : "Running";
+  const legacyChapterIndex = Math.max(
+    0,
+    ["onboarding", "mission-archive", "field-log", "loadout", "comms"].indexOf(
+      snapshot.zone,
+    ),
+  );
+  const activeChapter = chronicleChapters[legacyChapterIndex] ?? chronicleChapters[0];
+  const journeyProgress = Math.round(
+    (legacyChapterIndex / (chronicleChapters.length - 1)) * 100,
+  );
 
   return (
     <section
       aria-labelledby="game-runtime-title"
       data-game-state={gameStatus.toLowerCase()}
+      data-chronicle-chapter={activeChapter.id}
       className="min-h-[100svh] bg-background pt-16"
     >
       <h1 id="game-runtime-title" className="sr-only">
-        IRON//SIGNAL playable portfolio
+        Chronicle Run playable story
       </h1>
 
       <div className={styles.hudBar}>
         <div className="mx-auto flex max-w-[96rem] flex-wrap items-center justify-between gap-2.5">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <SystemLabel>{snapshot.zoneLabel}</SystemLabel>
+            <SystemLabel>{`Chapter ${activeChapter.index} // ${activeChapter.title}`}</SystemLabel>
             <StatusIndicator
-              tone={gameStatus === "Paused" || gameStatus === "Terminal" ? "idle" : gameStatus === "Complete" ? "active" : "info"}
+              tone={gameStatus === "Paused" || gameStatus === "Story" ? "idle" : gameStatus === "Complete" ? "active" : "info"}
               pulse={gameStatus === "Running"}
             >
               {gameStatus}
@@ -360,9 +372,9 @@ export function GameExperience({ onExit }: GameExperienceProps) {
 
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-muted sm:text-xs">
             <div><dt className="sr-only">Signal</dt><dd>Signal {snapshot.signal}%</dd></div>
-            <div><dt className="sr-only">Cores</dt><dd className="text-primary">Cores {snapshot.cores.length}/4</dd></div>
+            <div><dt className="sr-only">Story records</dt><dd className="text-primary">Records {snapshot.discovered.length}/9</dd></div>
             <div><dt className="sr-only">Score</dt><dd>Score {snapshot.score.toLocaleString()}</dd></div>
-            <div><dt className="sr-only">Multiplier</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
+            <div><dt className="sr-only">Momentum</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
             <div className="hidden md:block"><dt className="sr-only">High score</dt><dd>High {savedProgress.highScore.toLocaleString()}</dd></div>
           </dl>
 
@@ -403,7 +415,28 @@ export function GameExperience({ onExit }: GameExperienceProps) {
             />
           </div>
         </div>
+        <div className={styles.journeyMeter} aria-label={`Journey progress: ${journeyProgress} percent`}>
+          <span style={{ width: `${journeyProgress}%` }} />
+        </div>
       </div>
+
+      <ol className={styles.chapterRail} aria-label="Chronicle chapters">
+        {chronicleChapters.map((chapter, index) => (
+          <li
+            key={chapter.id}
+            data-chapter-state={
+              index < legacyChapterIndex
+                ? "complete"
+                : index === legacyChapterIndex
+                  ? "active"
+                  : "ahead"
+            }
+          >
+            <span>{chapter.index}</span>
+            <strong>{chapter.title}</strong>
+          </li>
+        ))}
+      </ol>
 
       <div ref={stageRef} className={styles.stage} tabIndex={-1}>
         <GameCanvas controls={controlsRef} callbacks={callbacks} onReady={setGameHandle} />
@@ -466,9 +499,9 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       <div className={styles.gameFooter}>
         <p className="flex items-center gap-2 font-mono uppercase tracking-[0.08em]">
           <Gamepad2 aria-hidden="true" className="h-4 w-4 text-primary" />
-          WASD / arrows move · Space jumps · E interacts
+          Auto-run active · Space jumps · Shift dashes · S drops
         </p>
-        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">Escape exits safely</p>
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">Pause or Escape exits safely</p>
       </div>
     </section>
   );
