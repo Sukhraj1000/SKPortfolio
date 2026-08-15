@@ -201,6 +201,16 @@ export function createChronicleGame({
     private chapterPanels: Phaser.GameObjects.Rectangle[] = [];
     private chapterLabels: Phaser.GameObjects.Text[] = [];
     private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
+    private rewardMotions: Array<{
+      target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc;
+      tween: Phaser.Tweens.Tween;
+      baseY: number;
+      baseAlpha: number;
+      baseScaleX: number;
+      baseScaleY: number;
+    }> = [];
+    private landingEndsAt = 0;
+    private lastDashTrailAt = 0;
 
     constructor() {
       super("chronicle-run");
@@ -314,16 +324,13 @@ export function createChronicleGame({
         }
 
         const dashing = time < this.dashEndsAt;
-        if (dashing) {
-          this.playerState = "dashing";
-          this.player.play("sk-run-right", true);
-        } else if (!grounded) {
-          this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
-          this.player.play(body.velocity.y < 0 ? "sk-jump" : "sk-fall", true);
-        } else {
-          this.playerState = "grounded";
-          this.player.play("sk-idle", true);
-        }
+        this.updatePlayerPresentation(
+          time,
+          grounded,
+          dashing,
+          dropHeld,
+          previousState,
+        );
 
         this.lastTouchJump = controls.current.jump;
         this.lastTouchDash = controls.current.dash;
@@ -359,16 +366,13 @@ export function createChronicleGame({
         this.player.setVelocityY(Math.max(380, body.velocity.y + 100));
       }
 
-      if (dashing) {
-        this.playerState = "dashing";
-        this.player.play("sk-run-right", true);
-      } else if (!grounded) {
-        this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
-        this.player.play(body.velocity.y < 0 ? "sk-jump" : "sk-fall", true);
-      } else {
-        this.playerState = "grounded";
-        this.player.play("sk-run-right", true);
-      }
+      this.updatePlayerPresentation(
+        time,
+        grounded,
+        dashing,
+        dropHeld,
+        previousState,
+      );
 
       this.addDistanceScore();
       if (this.player.y > WORLD_HEIGHT + 48) {
@@ -416,6 +420,9 @@ export function createChronicleGame({
       this.chapterPanels = [];
       this.chapterLabels = [];
       this.parallaxLayers = [];
+      this.rewardMotions = [];
+      this.landingEndsAt = 0;
+      this.lastDashTrailAt = 0;
     }
 
     private createAtmosphereTextures() {
@@ -541,6 +548,8 @@ export function createChronicleGame({
         { key: "sk-run-right", frames: [2, 3], frameRate: 9, repeat: -1 },
         { key: "sk-jump", frames: [6], frameRate: 1, repeat: 0 },
         { key: "sk-fall", frames: [7], frameRate: 1, repeat: 0 },
+        { key: "sk-land", frames: [8], frameRate: 1, repeat: 0 },
+        { key: "sk-drop", frames: [12], frameRate: 1, repeat: 0 },
         { key: "sk-glitch", frames: [11], frameRate: 1, repeat: 0 },
       ];
 
@@ -648,25 +657,103 @@ export function createChronicleGame({
       });
     }
 
+    private registerRewardMotion(
+      target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc,
+      yOffset: number,
+      scaleBoost: number,
+      duration: number,
+    ) {
+      const motion = {
+        target,
+        baseY: target.y,
+        baseAlpha: target.alpha,
+        baseScaleX: target.scaleX,
+        baseScaleY: target.scaleY,
+        tween: this.tweens.add({
+          targets: target,
+          y: target.y - yOffset,
+          scaleX: target.scaleX * scaleBoost,
+          scaleY: target.scaleY * scaleBoost,
+          alpha: Math.min(1, target.alpha + 0.2),
+          duration,
+          ease: "Sine.InOut",
+          yoyo: true,
+          repeat: -1,
+          paused: reducedMotion,
+        }),
+      };
+      if (reducedMotion) {
+        target.setY(motion.baseY);
+        target.setScale(motion.baseScaleX, motion.baseScaleY);
+        target.setAlpha(motion.baseAlpha);
+      }
+      this.rewardMotions.push(motion);
+    }
+
+    private stopRewardMotion(
+      target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc,
+    ) {
+      this.rewardMotions
+        .filter((motion) => motion.target === target)
+        .forEach((motion) => motion.tween.stop());
+    }
+
+    private createCatchEffect(x: number, y: number, color: number) {
+      const ring = this.add
+        .circle(x, y, 26)
+        .setStrokeStyle(4, color, 0.9)
+        .setDepth(15);
+      if (reducedMotion) {
+        this.time.delayedCall(140, () => ring.destroy());
+        return;
+      }
+      this.tweens.add({
+        targets: ring,
+        scale: 2.1,
+        alpha: 0,
+        duration: 260,
+        ease: "Quad.Out",
+        onComplete: () => ring.destroy(),
+      });
+    }
+
     private createFlowNodes() {
       const nodes = this.physics.add.staticGroup();
 
       chronicleUpperRoutes.forEach((route) => {
         route.nodeOffsets.forEach((offset) => {
+          const x = route.start + offset * 64;
+          const y = route.y - 96;
+          const halo = this.add
+            .circle(x, y, 31)
+            .setStrokeStyle(3, 0x78b8cf, 0.72)
+            .setDepth(11);
           const node = this.addWorldSprite(
             nodes,
-            route.start + offset * 64,
-            route.y - 94,
+            x,
+            y,
             11 + (offset % 3),
-            0.3,
+            0.42,
           );
+          node.setDataEnabled();
+          node.setData("halo", halo);
+          node.setTint(0x9bd9ea);
           node.setDepth(12);
+          this.registerRewardMotion(node, 7, 1.05, 720 + offset * 18);
+          this.registerRewardMotion(halo, 7, 1.16, 720 + offset * 18);
         });
       });
 
       this.physics.add.overlap(this.player, nodes, (_player, object) => {
         const node = object as Phaser.Physics.Arcade.Sprite;
         if (!node.active) return;
+        const halo = node.getData("halo") as Phaser.GameObjects.Arc | undefined;
+        this.stopRewardMotion(node);
+        if (halo) {
+          this.stopRewardMotion(halo);
+          halo.destroy();
+        }
+        this.createCatchEffect(node.x, node.y, 0x78b8cf);
         node.disableBody(true, true);
         if (this.runStarted) {
           this.score += Math.round(125 * this.multiplier);
@@ -680,17 +767,34 @@ export function createChronicleGame({
     private createStoryPickups() {
       const pickups = this.physics.add.staticGroup();
       chronicleRecords.forEach((record, index) => {
+        const x = storyPickupPositions[index];
+        const y = FLOOR_Y - 94;
+        const color =
+          record.kind === "education"
+            ? 0xc79b2e
+            : record.kind === "experience"
+              ? 0x78b8cf
+              : 0xa94743;
+        const halo = this.add
+          .circle(x, y, 43)
+          .setStrokeStyle(4, color, 0.82)
+          .setDepth(11);
         const pickup = this.addWorldSprite(
           pickups,
-          storyPickupPositions[index],
-          FLOOR_Y - 86,
+          x,
+          y,
           10 + (index % 4),
-          0.34,
+          0.52,
         );
         pickup.setDataEnabled();
         pickup.setData("recordId", record.id);
-        pickup.setAlpha(this.recoveredRecordIds.has(record.id) ? 0.56 : 1);
+        pickup.setData("halo", halo);
+        pickup.setData("rewardColor", color);
+        pickup.setTint(color);
+        pickup.setAlpha(this.recoveredRecordIds.has(record.id) ? 0.66 : 1);
         pickup.setDepth(13);
+        this.registerRewardMotion(pickup, 9, 1.06, 820 + index * 24);
+        this.registerRewardMotion(halo, 9, 1.18, 820 + index * 24);
       });
 
       this.physics.add.overlap(this.player, pickups, (_player, object) => {
@@ -698,6 +802,14 @@ export function createChronicleGame({
         if (!pickup.active) return;
         const recordId = pickup.getData("recordId") as ChronicleRecordId;
         const isNew = !this.recoveredRecordIds.has(recordId);
+        const halo = pickup.getData("halo") as Phaser.GameObjects.Arc | undefined;
+        const color = pickup.getData("rewardColor") as number;
+        this.stopRewardMotion(pickup);
+        if (halo) {
+          this.stopRewardMotion(halo);
+          halo.destroy();
+        }
+        this.createCatchEffect(pickup.x, pickup.y, color);
         pickup.disableBody(true, true);
 
         if (this.runStarted) {
@@ -797,6 +909,104 @@ export function createChronicleGame({
     private configureParallax() {
       this.parallaxLayers.forEach((layer, index) => {
         layer.setScrollFactor(reducedMotion ? 1 : index === 0 ? 0.1 : 0.28);
+      });
+    }
+
+    private updatePlayerPresentation(
+      time: number,
+      grounded: boolean,
+      dashing: boolean,
+      dropHeld: boolean,
+      previousState: ChroniclePlayerState,
+    ) {
+      const body = this.player.body as Phaser.Physics.Arcade.Body;
+      const landed =
+        grounded &&
+        (previousState === "jumping" || previousState === "falling");
+      if (landed) {
+        this.landingEndsAt = time + 150;
+        this.createLandingDust();
+      }
+
+      this.player.anims.timeScale = dashing && !reducedMotion ? 1.65 : 1;
+      if (dashing) {
+        this.playerState = "dashing";
+        this.player.play("sk-run-right", true);
+        this.player.setAngle(reducedMotion ? 0 : -4);
+        if (!reducedMotion && time - this.lastDashTrailAt >= 80) {
+          this.lastDashTrailAt = time;
+          this.createDashTrail();
+        }
+      } else if (!grounded) {
+        this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
+        const fastDropping = dropHeld || body.velocity.y > 500;
+        this.player.play(
+          fastDropping
+            ? "sk-drop"
+            : body.velocity.y < 0
+              ? "sk-jump"
+              : "sk-fall",
+          true,
+        );
+        this.player.setAngle(
+          reducedMotion ? 0 : fastDropping ? 0 : body.velocity.y < 0 ? -5 : 4,
+        );
+      } else {
+        this.playerState = "grounded";
+        this.player.setAngle(0);
+        this.player.play(
+          time < this.landingEndsAt
+            ? "sk-land"
+            : this.runStarted
+              ? "sk-run-right"
+              : "sk-idle",
+          true,
+        );
+      }
+    }
+
+    private createDashTrail() {
+      const trail = this.add
+        .sprite(
+          this.player.x - 14,
+          this.player.y,
+          "sk-character",
+          this.player.frame.name,
+        )
+        .setScale(1.15)
+        .setDepth(13)
+        .setAlpha(0.34)
+        .setTint(0x78b8cf);
+      this.tweens.add({
+        targets: trail,
+        x: trail.x - 24,
+        alpha: 0,
+        duration: 170,
+        onComplete: () => trail.destroy(),
+      });
+    }
+
+    private createLandingDust() {
+      if (reducedMotion) return;
+      [-1, 1].forEach((direction) => {
+        const dust = this.add
+          .circle(
+            this.player.x + direction * 10,
+            this.player.y + 28,
+            4,
+            0xc79b2e,
+            0.46,
+          )
+          .setDepth(13);
+        this.tweens.add({
+          targets: dust,
+          x: dust.x + direction * 24,
+          y: dust.y - 9,
+          scale: 0.35,
+          alpha: 0,
+          duration: 220,
+          onComplete: () => dust.destroy(),
+        });
       });
     }
 
@@ -968,6 +1178,21 @@ export function createChronicleGame({
       reducedMotion = reduced;
       this.configureCamera();
       this.configureParallax();
+      this.rewardMotions.forEach((motion) => {
+        if (!motion.target.active) return;
+        if (reduced) {
+          motion.tween.pause();
+          motion.target.setY(motion.baseY);
+          motion.target.setScale(motion.baseScaleX, motion.baseScaleY);
+          motion.target.setAlpha(motion.baseAlpha);
+        } else {
+          motion.tween.restart();
+        }
+      });
+      if (reduced) {
+        this.player?.setAngle(0);
+        if (this.player) this.player.anims.timeScale = 1;
+      }
     }
 
     refreshTheme() {

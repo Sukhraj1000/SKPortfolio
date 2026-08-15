@@ -585,6 +585,7 @@ test.describe("Chronicle Run", () => {
     const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
     await stage.focus();
     await expect(runtime).toHaveAttribute("data-reduced-motion", "false");
+    await expect(runtime).toHaveAttribute("data-reward-motion", "animated");
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThan(1);
@@ -610,6 +611,7 @@ test.describe("Chronicle Run", () => {
     );
     await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
     await expect(runtime).toHaveAttribute("data-reduced-motion", "true");
+    await expect(runtime).toHaveAttribute("data-reward-motion", "settled");
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThanOrEqual(progressBeforeMotion);

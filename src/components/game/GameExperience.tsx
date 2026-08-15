@@ -552,6 +552,7 @@ export function GameExperience({
       data-recovered-records={snapshot.recoveredRecords.length}
       data-latest-unlock={snapshot.latestUnlockId ?? ""}
       data-reduced-motion={reducedMotionActive}
+      data-reward-motion={reducedMotionActive ? "settled" : "animated"}
       className="min-h-[100svh] bg-background pt-[64px]"
     >
       <h1 id="game-runtime-title" className="sr-only">
