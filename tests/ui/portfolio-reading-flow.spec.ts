@@ -195,63 +195,48 @@ test.describe("portfolio reading flow", () => {
     }
   });
 
-  test("keeps project evidence comparable and disclosures keyboard operable", async ({
+  test("keeps featured project evidence visible and supporting notes keyboard operable", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#projects");
 
     const projectRecords = page.locator("[data-project-record]");
+    const featuredProjects = page.locator('[data-project-tier="featured"]');
+    const supportingProjects = page.locator('[data-project-tier="supporting"]');
     await expect(projectRecords).toHaveCount(4);
+    await expect(featuredProjects).toHaveCount(2);
+    await expect(supportingProjects).toHaveCount(2);
 
     for (const record of await projectRecords.all()) {
-      await expect(record.locator("summary h3")).toBeVisible();
-      await expect(record.locator("summary [data-project-kind]")).toBeVisible();
-      await expect(record.locator("summary [data-project-status]")).toBeVisible();
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.locator("[data-project-kind]")).toBeVisible();
+      await expect(record.locator("[data-project-status]")).toBeVisible();
       await expect(record.locator("[data-project-outcome]")).toBeVisible();
-      await expect(
-        record.locator("summary [data-disclosure-action]"),
-      ).toBeVisible();
     }
 
-    const firstRecord = projectRecords.first();
-    const summary = firstRecord.locator("summary");
-    await summary.focus();
-
-    if (await firstRecord.evaluate((element) => (element as HTMLDetailsElement).open)) {
-      await page.keyboard.press("Enter");
+    for (const record of await featuredProjects.all()) {
+      await expect(record.locator("[data-project-overview]")).toBeVisible();
+      await expect(record.locator("[data-project-media]")).toBeVisible();
+      await expect(record.locator(".pq-story-beats > div")).toHaveCount(3);
     }
 
-    await expect(firstRecord).not.toHaveAttribute("open", "");
-    await expect(summary.getByText("View case study")).toBeVisible();
+    const firstSupporting = supportingProjects.first();
+    const notes = firstSupporting.locator("details");
+    const notesSummary = notes.locator("summary");
+    await notesSummary.focus();
     await page.keyboard.press("Enter");
-    await expect(firstRecord).toHaveAttribute("open", "");
-    await expect(summary.getByText("Hide case study")).toBeVisible();
-    await expect(summary).toBeFocused();
+    await expect(notes).toHaveAttribute("open", "");
+    await expect(notesSummary).toBeFocused();
 
-    const secondRecord = projectRecords.nth(1);
-    const secondSummary = secondRecord.locator("summary");
-    await expect(secondRecord).not.toHaveAttribute("open", "");
-    await secondSummary.click();
-    await expect(secondRecord).toHaveAttribute("open", "");
-    await expect(secondSummary.getByText("Hide case study")).toBeVisible();
-    await secondSummary.click();
-    await expect(secondRecord).not.toHaveAttribute("open", "");
-    await expect(secondSummary.getByText("View case study")).toBeVisible();
-
-    await summary.click();
-    await expect(firstRecord).toHaveAttribute("open", "");
-
-    const overview = firstRecord.locator("[data-project-overview]");
-    const media = firstRecord.locator("[data-project-media]");
-    await expect(overview).toBeVisible();
-    await expect(media).toBeVisible();
-
+    const firstFeatured = featuredProjects.first();
+    const overview = firstFeatured.locator("[data-project-overview]");
+    const media = firstFeatured.locator("[data-project-media]");
     const [overviewBox, mediaBox] = await Promise.all([
       overview.boundingBox(),
       media.boundingBox(),
     ]);
-    expect(overviewBox?.y).toBeLessThan(mediaBox?.y ?? Number.POSITIVE_INFINITY);
+    expect(mediaBox?.y).toBeLessThan(overviewBox?.y ?? Number.POSITIVE_INFINITY);
   });
 
   test("keeps experience and skills readable with native disclosure controls", async ({

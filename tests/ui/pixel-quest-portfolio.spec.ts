@@ -91,6 +91,59 @@ test.describe("Pixel Quest portfolio", () => {
     expect(requests.some((url) => url.includes("phaser"))).toBeFalsy();
   });
 
+  test("presents two featured project quests and two supporting builds", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/#projects");
+
+    const featured = page.locator('[data-project-tier="featured"]');
+    const supporting = page.locator('[data-project-tier="supporting"]');
+    await expect(featured).toHaveCount(2);
+    await expect(supporting).toHaveCount(2);
+
+    const tymaura = page.locator('[data-project-record="tymaura"]');
+    await expect(tymaura.getByRole("heading", { name: "Tymaura" })).toBeVisible();
+    await expect(tymaura.getByText("Problem", { exact: true })).toBeVisible();
+    await expect(tymaura.getByText("My role", { exact: true })).toBeVisible();
+    await expect(tymaura.getByText("Outcome", { exact: true })).toBeVisible();
+    await expect(tymaura.getByRole("link", { name: "Visit Tymaura" })).toHaveAttribute(
+      "href",
+      "https://tymaura.app",
+    );
+
+    const skaltek = page.locator('[data-project-record="skaltek"]');
+    await expect(skaltek.getByRole("heading", { name: "Skaltek" })).toBeVisible();
+    await expect(skaltek.getByRole("link", { name: "Visit Skaltek" })).toHaveAttribute(
+      "href",
+      "https://skaltek.co.uk",
+    );
+
+    await expect(
+      page.locator('[data-project-record="solana-contract-generator"]'),
+    ).toContainText("82%");
+    await expect(page.locator('[data-project-record="crypto-portfolio"]')).toContainText(
+      "80%",
+    );
+
+    for (const record of await page.locator("[data-project-record]").all()) {
+      await expect(record.locator(".pq-tech-list li").first()).toBeVisible();
+    }
+
+    for (const image of await featured.locator("img").all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => image.evaluate((element) => {
+        const media = element as HTMLImageElement;
+        return media.complete && media.naturalWidth > 0;
+      })).toBeTruthy();
+    }
+
+    const firstMedia = await featured.first().locator("[data-project-media]").boundingBox();
+    const firstStory = await featured.first().locator("[data-project-overview]").boundingBox();
+    const secondMedia = await featured.nth(1).locator("[data-project-media]").boundingBox();
+    const secondStory = await featured.nth(1).locator("[data-project-overview]").boundingBox();
+    expect(firstMedia?.x).toBeLessThan(firstStory?.x ?? Number.POSITIVE_INFINITY);
+    expect(secondMedia?.x).toBeGreaterThan(secondStory?.x ?? Number.NEGATIVE_INFINITY);
+  });
+
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");

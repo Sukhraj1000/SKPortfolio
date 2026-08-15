@@ -43,6 +43,34 @@ export function QuestFrame({
   return <div className={cn("pq-frame", className)} {...props} />;
 }
 
+interface QuestChapterHeadingProps extends React.ComponentProps<"header"> {
+  index: string;
+  label: string;
+  title: string;
+  description: string;
+  headingId: string;
+}
+
+export function QuestChapterHeading({
+  className,
+  index,
+  label,
+  title,
+  description,
+  headingId,
+  ...props
+}: QuestChapterHeadingProps) {
+  return (
+    <header className={cn("pq-chapter-heading", className)} {...props}>
+      <QuestLabel>
+        Chapter {index} / {label}
+      </QuestLabel>
+      <h2 id={headingId}>{title}</h2>
+      <p>{description}</p>
+    </header>
+  );
+}
+
 type OperatorPose = "idle" | "run" | "interact" | "arrive";
 type OperatorSize = "small" | "medium" | "large";
 

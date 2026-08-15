@@ -1,277 +1,200 @@
-import Link from "next/link";
 import {
-  ArrowDown,
-  ExternalLink,
-  Github,
-  Layers3,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { PixelFrame } from "@/components/ui/pixel-frame";
-import { SectionHeading } from "@/components/ui/section-heading";
-import { StatusIndicator } from "@/components/ui/status-indicator";
-import { SystemLabel } from "@/components/ui/system-label";
+  QuestChapterHeading,
+  QuestChip,
+  QuestLink,
+} from "@/components/pixel-quest/QuestPrimitives";
 import {
   portfolioProjects,
-  socialLinks,
   storyChapters,
   type PortfolioProject,
 } from "@/data/portfolio";
 import { cn } from "@/lib/utils";
 
 const projectsChapter = storyChapters[1];
-const githubProfile = socialLinks.find((social) => social.id === "github");
-
-function ProjectMedia({ project }: { project: PortfolioProject }) {
-  return (
-    <PixelFrame
-      data-project-media
-      tone="primary"
-      raised
-      className="project-media-frame order-2 overflow-hidden bg-surface-raised md:order-1"
-    >
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-surface px-3 py-2.5">
-        <SystemLabel marker={false} tone="neutral">
-          Project preview
-        </SystemLabel>
-        <span className="font-mono text-xs uppercase tracking-[0.08em] text-ink-faint">
-          {project.id}
-        </span>
-      </div>
-
-      <div className="micro-grid relative aspect-[16/10] overflow-hidden bg-background">
-        {/* The explicit dimensions reserve space; srcSet keeps raster transfers proportional to the viewport. */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- Static export uses a hand-authored responsive srcSet. */}
-        <img
-          src={project.image}
-          srcSet={project.imageSrcSet}
-          alt={project.imageAlt}
-          width={project.imageWidth}
-          height={project.imageHeight}
-          sizes="(min-width: 1024px) 42vw, (min-width: 768px) 46vw, 100vw"
-          loading="lazy"
-          decoding="async"
-          className={cn(
-            "project-media-image absolute inset-0 h-full w-full object-contain p-6 sm:p-8",
-            project.id === "crypto-portfolio" && "p-4 sm:p-5",
-          )}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-[linear-gradient(to_top,var(--surface-raised),transparent)] opacity-40"
-        />
-      </div>
-    </PixelFrame>
-  );
-}
+const featuredProjects = portfolioProjects.slice(0, 2);
+const supportingProjects = portfolioProjects.slice(2);
 
 function ProjectLinks({ project }: { project: PortfolioProject }) {
   return (
-    <div className="flex flex-wrap gap-2.5">
-      {project.links.map((link) => {
-        const Icon = link.kind === "source" ? Github : ExternalLink;
-
-        return (
-          <Button
-            key={`${project.id}-${link.kind}`}
-            variant={link.kind === "live" ? "default" : "outline"}
-            size="sm"
-            asChild
-          >
-            <Link href={link.href} target="_blank" rel="noopener noreferrer">
-              <Icon aria-hidden="true" />
-              {link.label}
-            </Link>
-          </Button>
-        );
-      })}
+    <div className="pq-project-links">
+      {project.links.map((link) => (
+        <QuestLink
+          key={`${project.id}-${link.kind}`}
+          href={link.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          variant={link.kind === "live" ? "primary" : "secondary"}
+        >
+          {link.label} <span aria-hidden="true">↗</span>
+        </QuestLink>
+      ))}
     </div>
   );
 }
 
-function ProjectRecord({
+function TechnologyList({ project }: { project: PortfolioProject }) {
+  return (
+    <ul className="pq-tech-list" aria-label={`${project.title} technologies`}>
+      {project.technologies.map((technology) => (
+        <QuestChip key={technology}>{technology}</QuestChip>
+      ))}
+    </ul>
+  );
+}
+
+function FeaturedProject({
   project,
   index,
 }: {
   project: PortfolioProject;
   index: number;
 }) {
-  const recordNumber = String(index + 1).padStart(2, "0");
+  const questNumber = String(index + 1).padStart(2, "0");
 
   return (
-    <details
+    <article
       id={`project-${project.id}`}
-      name="projects"
-      open={index === 0}
       data-project-record={project.id}
-      className="story-disclosure group/mission scroll-mt-24 border-t border-border-strong bg-background last:border-b open:bg-surface/70"
+      data-project-tier="featured"
+      className={cn("pq-project-quest", index % 2 === 1 && "is-reverse")}
+      aria-labelledby={`project-${project.id}-title`}
     >
-      <summary className="grid min-h-28 cursor-pointer items-center gap-4 px-3 py-5 transition-colors hover:bg-surface-raised focus-visible:outline-offset-[-3px] sm:px-5 lg:grid-cols-[8rem_minmax(0,1fr)_auto] lg:gap-7">
-        <div className="flex items-center justify-between gap-3 lg:block">
-          <span className="font-mono text-xs font-semibold text-primary">
-            {recordNumber}
-          </span>
-          <span
-            data-project-kind
-            className="font-mono text-sm font-medium text-ink-muted lg:mt-2 lg:block"
-          >
-            {project.kind}
-          </span>
+      <div className={cn("pq-project-visual", `pq-project-visual-${project.id}`)} data-project-media>
+        <div className="pq-visual-hud">
+          <span>Quest {questNumber}</span>
+          <strong data-project-status>{project.status}</strong>
         </div>
-
-        <div className="min-w-0">
-          <h3
-            id={`project-${project.id}-title`}
-            className="text-xl font-semibold leading-tight text-foreground transition-colors group-hover/mission:text-primary sm:text-2xl"
-          >
-            {project.title}
-          </h3>
-          <p
-            data-project-outcome
-            className="text-pretty mt-2 max-w-3xl text-base leading-7 text-ink-muted"
-          >
-            <span className="font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
-              Outcome: {" "}
-            </span>
-            {project.outcome}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 lg:justify-end">
-          <div className="flex flex-wrap items-center gap-2">
-            <StatusIndicator
-              data-project-status
-              tone={project.status === "Live" ? "active" : "info"}
-            >
-              {project.status}
-            </StatusIndicator>
-            {project.grade ? (
-              <span className="border border-border-strong bg-surface px-2 py-1 font-mono text-sm font-bold text-primary">
-                Grade {project.grade}
-              </span>
-            ) : null}
+        {/* Static export uses the explicit dimensions and optional responsive raster sources below. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={project.image}
+          srcSet={project.imageSrcSet}
+          alt={project.imageAlt}
+          width={project.imageWidth}
+          height={project.imageHeight}
+          sizes="(min-width: 1152px) 36vw, (min-width: 768px) 60vw, 100vw"
+          loading="lazy"
+          decoding="async"
+        />
+        {project.id === "skaltek" ? (
+          <div className="pq-signal-orbits" aria-hidden="true">
+            <i />
+            <i />
+            <i />
           </div>
-          <span
-            data-disclosure-action
-            className="font-mono text-sm font-semibold text-foreground"
-          >
-            <span className="group-open/mission:hidden">View case study</span>
-            <span className="hidden group-open/mission:inline">Hide case study</span>
-          </span>
-          <ArrowDown
-            aria-hidden="true"
-            className="h-4 w-4 shrink-0 text-primary transition-transform duration-200 group-open/mission:rotate-180 motion-reduce:transition-none"
-          />
-        </div>
-      </summary>
-
-      <div className="story-disclosure-panel border-t border-border px-3 py-6 sm:px-5 sm:py-8">
-        <div className="grid items-start gap-7 md:grid-cols-[minmax(18rem,0.85fr)_minmax(0,1.15fr)] lg:gap-10">
-          <div data-project-overview className="order-1 min-w-0 md:order-2">
-            <div className="flex items-center gap-2.5">
-              <Layers3 aria-hidden="true" className="h-4 w-4 text-primary" />
-              <SystemLabel marker={false}>Project overview</SystemLabel>
-            </div>
-            <p className="text-pretty mt-3 text-base leading-7 text-ink-muted">
-              {project.summary}
-            </p>
-
-            <div className="mt-5">
-              <ProjectLinks project={project} />
-            </div>
-
-            <div className="mt-6 grid gap-5 border-t border-border pt-5 sm:grid-cols-2">
-              <div>
-                <h4 className="font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
-                  01 / Problem
-                </h4>
-                <p className="mt-2 text-base leading-7 text-ink-muted">
-                  {project.problem}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
-                  02 / Ownership
-                </h4>
-                <p className="mt-2 text-base leading-7 text-ink-muted">
-                  {project.contribution}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
-                  03 / Result
-                </h4>
-                <p className="mt-2 text-base leading-7 text-ink-muted">
-                  {project.outcome}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-mono text-sm font-semibold uppercase tracking-[0.04em] text-primary">
-                  04 / Technical approach
-                </h4>
-                <ul
-                  aria-label={`${project.title} technologies`}
-                  className="mt-2 flex flex-wrap gap-1.5"
-                >
-                  {project.technologies.map((technology) => (
-                    <li
-                      key={technology}
-                      className="border border-border bg-background px-2 py-1 font-mono text-sm text-foreground"
-                    >
-                      {technology}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <ProjectMedia project={project} />
-        </div>
+        ) : (
+          <div className="pq-pixel-corners" aria-hidden="true" />
+        )}
       </div>
-    </details>
+
+      <div className="pq-project-story" data-project-overview>
+        <p className="pq-project-type" data-project-kind>
+          {project.kind} / {project.status}
+        </p>
+        <h3 id={`project-${project.id}-title`}>{project.title}</h3>
+        <p className="pq-project-summary">{project.summary}</p>
+
+        <dl className="pq-story-beats">
+          <div>
+            <dt>Problem</dt>
+            <dd>{project.problem}</dd>
+          </div>
+          <div>
+            <dt>My role</dt>
+            <dd>{project.contribution}</dd>
+          </div>
+          <div>
+            <dt>Outcome</dt>
+            <dd data-project-outcome>{project.outcome}</dd>
+          </div>
+        </dl>
+
+        <TechnologyList project={project} />
+        <ProjectLinks project={project} />
+      </div>
+    </article>
+  );
+}
+
+function SupportingProject({
+  project,
+  index,
+}: {
+  project: PortfolioProject;
+  index: number;
+}) {
+  const questNumber = String(index + 3).padStart(2, "0");
+
+  return (
+    <article
+      id={`project-${project.id}`}
+      data-project-record={project.id}
+      data-project-tier="supporting"
+      className="pq-side-quest"
+      aria-labelledby={`project-${project.id}-title`}
+    >
+      <span className="pq-side-quest-number" aria-hidden="true">
+        {questNumber}
+      </span>
+      <p className="pq-project-type" data-project-kind data-project-status>
+        {project.status}{project.grade ? ` · ${project.grade}` : ""}
+      </p>
+      <h3 id={`project-${project.id}-title`}>{project.title}</h3>
+      <p className="pq-project-summary">{project.summary}</p>
+      <p className="pq-side-outcome" data-project-outcome>
+        <strong>Outcome:</strong> {project.outcome}
+      </p>
+      <TechnologyList project={project} />
+
+      <details className="pq-build-notes">
+        <summary data-disclosure-action>Read build notes</summary>
+        <dl>
+          <div>
+            <dt>Problem</dt>
+            <dd>{project.problem}</dd>
+          </div>
+          <div>
+            <dt>Ownership</dt>
+            <dd>{project.contribution}</dd>
+          </div>
+        </dl>
+      </details>
+
+      <ProjectLinks project={project} />
+    </article>
   );
 }
 
 export function ProjectsSection() {
   return (
-    <section id="projects" aria-labelledby="projects-title" className="relative py-16 sm:py-20 lg:py-24">
-      <div className="site-grid pointer-events-none absolute inset-0 -z-20 opacity-35" />
-      <div className="section-shell">
-        <SectionHeading
-          label={projectsChapter.portfolioLabel}
-          index={projectsChapter.index}
-          headingId="projects-title"
-          title={projectsChapter.title}
-          description={projectsChapter.summary}
-        />
+    <section
+      id="projects"
+      data-chapter="02"
+      aria-labelledby="projects-title"
+      className="pq-chapter pq-projects-chapter"
+    >
+      <QuestChapterHeading
+        index={projectsChapter.index}
+        label="Builds / Projects"
+        headingId="projects-title"
+        title="Proof lives in what shipped."
+        description="Two live products lead the story. Supporting builds show range without competing for the same attention."
+      />
 
-        <div className="mt-10 sm:mt-12">
-          {portfolioProjects.map((project, index) => (
-            <ProjectRecord key={project.id} project={project} index={index} />
-          ))}
-        </div>
+      <div className="pq-featured-quests">
+        {featuredProjects.map((project, index) => (
+          <FeaturedProject key={project.id} project={project} index={index} />
+        ))}
+      </div>
 
-        {githubProfile ? (
-          <div className="mt-8 flex flex-col items-start justify-between gap-5 border-l-2 border-primary bg-surface px-5 py-5 sm:flex-row sm:items-center sm:px-6">
-            <div>
-              <SystemLabel tone="neutral">More projects</SystemLabel>
-              <p className="mt-2 max-w-2xl text-base leading-7 text-ink-muted">
-                These are selected examples. More experiments and repositories are
-                available on GitHub.
-              </p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link
-                href={githubProfile.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Github aria-hidden="true" />
-                View GitHub
-              </Link>
-            </Button>
-          </div>
-        ) : null}
+      <div className="pq-side-quest-heading">
+        <span>Optional paths</span>
+        <p>Technical builds that expanded the toolkit.</p>
+      </div>
+      <div className="pq-side-quest-grid">
+        {supportingProjects.map((project, index) => (
+          <SupportingProject key={project.id} project={project} index={index} />
+        ))}
       </div>
     </section>
   );
