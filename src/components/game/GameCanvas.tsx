@@ -3,9 +3,9 @@
 import * as React from "react";
 import type { ChronicleRecordId } from "@/components/game/chronicle-story";
 import type {
+  ChronicleGameCallbacks,
+  ChronicleGameHandle,
   GameControlsState,
-  SignalGameCallbacks,
-  SignalGameHandle,
 } from "@/components/game/game-types";
 import styles from "./GameExperience.module.css";
 
@@ -17,8 +17,8 @@ export function GameCanvas({
   recoveredRecords,
 }: {
   controls: React.MutableRefObject<GameControlsState>;
-  callbacks: SignalGameCallbacks;
-  onReady: (handle: SignalGameHandle | null) => void;
+  callbacks: ChronicleGameCallbacks;
+  onReady: (handle: ChronicleGameHandle | null) => void;
   skipTutorial: boolean;
   recoveredRecords: readonly ChronicleRecordId[];
 }) {
@@ -29,23 +29,22 @@ export function GameCanvas({
 
   React.useEffect(() => {
     let disposed = false;
-    let handle: SignalGameHandle | null = null;
+    let handle: ChronicleGameHandle | null = null;
 
     const boot = async () => {
       if (!containerRef.current) return;
-      const { createSignalGame } = await import(
-        "@/components/game/phaser/createSignalGame"
+      const { createChronicleGame } = await import(
+        "@/components/game/phaser/createChronicleGame"
       );
       if (disposed || !containerRef.current) return;
 
-      handle = createSignalGame({
+      handle = createChronicleGame({
         parent: containerRef.current,
         controls,
         skipTutorial,
         recoveredRecords: initialRecoveredRecordsRef.current,
         callbacks: {
           onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
-          onOpenPanel: (panelId) => callbacksRef.current.onOpenPanel(panelId),
           onUnlock: (recordId) => callbacksRef.current.onUnlock(recordId),
           onNotice: (message, tone) => callbacksRef.current.onNotice(message, tone),
         },

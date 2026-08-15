@@ -60,7 +60,10 @@ assert(rootHtml.includes("Every environment added a new constraint."), "Portfoli
 assert(rootHtml.includes("Choose tools for the constraint."), "Portfolio export is missing the Skills story heading.");
 assert(rootHtml.includes("The story is still being written."), "Portfolio export is missing the Contact story heading.");
 assert(gameHtml.includes('id="game-ready-title"'), "Game export is missing its ready-state heading.");
-assert(!gameHtml.includes("<canvas"), "Game canvas must not boot before Start deployment.");
+assert(gameHtml.includes("Chronicle"), "Game export is missing the Chronicle Run premise.");
+assert(gameHtml.includes("Start Chronicle Run"), "Game export is missing its explicit Start action.");
+assert(gameHtml.includes("Exit to Portfolio"), "Game export is missing its direct Portfolio return.");
+assert(!gameHtml.includes("<canvas"), "Game canvas must not boot before Start.");
 assert(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(rootHtml), "Portfolio still depends on remote fonts.");
 
 for (const [label, html] of [["Portfolio", rootHtml], ["Game ready state", gameHtml]]) {
@@ -68,7 +71,14 @@ for (const [label, html] of [["Portfolio", rootHtml], ["Game ready state", gameH
   await assertLocalReferencesExist(html, label);
 }
 
-for (const requiredOutput of [".htaccess", "robots.txt", "404.html"]) {
+for (const requiredOutput of [
+  ".htaccess",
+  "robots.txt",
+  "404.html",
+  "game/assets/sk-character-sheet.png",
+  "game/assets/industrial-world-atlas.png",
+  "game/assets/inventory.json",
+]) {
   assert(
     await pathExists(path.join(outputRoot, requiredOutput)),
     `Static export is missing ${requiredOutput}.`,
@@ -90,11 +100,24 @@ for (const chunk of phaserChunks) {
   assert(!gameHtml.includes(chunk), `Game ready state eagerly loads Phaser chunk ${chunk}.`);
 }
 
+const portfolioScripts = localReferences(rootHtml).filter((reference) =>
+  reference.endsWith(".js"),
+);
+for (const reference of portfolioScripts) {
+  const source = await readFile(outputPathFor(reference), "utf8");
+  assert(
+    !/industrial-world-atlas|sk-character-sheet|Guided opening complete/i.test(source),
+    `Portfolio script ${reference} contains Chronicle runtime code.`,
+  );
+}
+
 const assetBudgets = [
   ["sk-icon.png", 64_000],
   ["skaltek-logo-card.webp", 100_000],
   ["cryptoapp.webp", 100_000],
   ["sk-operator-sheet.png", 60_000],
+  ["game/assets/sk-character-sheet.png", 64_000],
+  ["game/assets/industrial-world-atlas.png", 500_000],
 ];
 
 for (const [asset, maximumBytes] of assetBudgets) {

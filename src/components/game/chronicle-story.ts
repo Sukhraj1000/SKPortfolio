@@ -1,4 +1,3 @@
-import type { ChronicleTutorialStepId } from "@/components/game/game-types";
 import {
   experience,
   portfolioProfile,
@@ -29,6 +28,17 @@ export const chronicleRecordIds = [
 
 export type ChronicleRecordId = (typeof chronicleRecordIds)[number];
 export type ChronicleRecordKind = "education" | "experience" | "project";
+
+export type ChronicleTutorialStepId =
+  | "auto-run"
+  | "jump"
+  | "dash"
+  | "drop"
+  | "route"
+  | "pickup"
+  | "pause"
+  | "story-log"
+  | "complete";
 
 export interface ChronicleChapter {
   id: ChronicleChapterId;

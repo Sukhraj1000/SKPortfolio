@@ -3,16 +3,16 @@ import type { MutableRefObject } from "react";
 import {
   chronicleRecords,
   chronicleTutorialSteps,
+  type ChronicleChapterId,
   type ChronicleRecordId,
+  type ChronicleTutorialStepId,
 } from "@/components/game/chronicle-story";
 import type {
+  ChronicleGameCallbacks,
+  ChronicleGameHandle,
   ChroniclePlayerState,
-  ChronicleTutorialStepId,
   GameControlsState,
   GameSnapshot,
-  GameZoneId,
-  SignalGameCallbacks,
-  SignalGameHandle,
 } from "@/components/game/game-types";
 
 const CHAPTER_WIDTH = 6_000;
@@ -29,7 +29,7 @@ const COYOTE_WINDOW = 120;
 const JUMP_BUFFER_WINDOW = 140;
 
 interface ChapterDefinition {
-  id: GameZoneId;
+  id: ChronicleChapterId;
   index: string;
   label: string;
   start: number;
@@ -39,7 +39,7 @@ interface ChapterDefinition {
 
 const chapters: readonly ChapterDefinition[] = [
   {
-    id: "onboarding",
+    id: "origin",
     index: "00",
     label: "Origin",
     start: 0,
@@ -47,7 +47,7 @@ const chapters: readonly ChapterDefinition[] = [
     tint: 0x315f78,
   },
   {
-    id: "mission-archive",
+    id: "live-systems",
     index: "01",
     label: "Live Systems",
     start: CHAPTER_WIDTH,
@@ -55,7 +55,7 @@ const chapters: readonly ChapterDefinition[] = [
     tint: 0xc79b2e,
   },
   {
-    id: "field-log",
+    id: "secure-engineering",
     index: "02",
     label: "Secure Engineering",
     start: CHAPTER_WIDTH * 2,
@@ -63,7 +63,7 @@ const chapters: readonly ChapterDefinition[] = [
     tint: 0x315f78,
   },
   {
-    id: "loadout",
+    id: "build-lab",
     index: "03",
     label: "Build Lab",
     start: CHAPTER_WIDTH * 3,
@@ -71,7 +71,7 @@ const chapters: readonly ChapterDefinition[] = [
     tint: 0xa94743,
   },
   {
-    id: "comms",
+    id: "present-day",
     index: "04",
     label: "Present Day",
     start: CHAPTER_WIDTH * 4,
@@ -153,7 +153,7 @@ function readThemePalette() {
   };
 }
 
-export function createSignalGame({
+export function createChronicleGame({
   parent,
   controls,
   callbacks,
@@ -162,10 +162,10 @@ export function createSignalGame({
 }: {
   parent: HTMLElement;
   controls: MutableRefObject<GameControlsState>;
-  callbacks: SignalGameCallbacks;
+  callbacks: ChronicleGameCallbacks;
   skipTutorial: boolean;
   recoveredRecords: readonly ChronicleRecordId[];
-}): SignalGameHandle {
+}): ChronicleGameHandle {
   let pausedRequested = true;
   let reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
@@ -184,10 +184,10 @@ export function createSignalGame({
     private multiplier = 1;
     private signal = 100;
     private completed = false;
-    private checkpointIds = new Set<GameZoneId>();
+    private checkpointIds = new Set<ChronicleChapterId>();
     private respawnX = 150;
     private respawnY = 510;
-    private lastChapter: GameZoneId = "onboarding";
+    private lastChapter: ChronicleChapterId = "origin";
     private damageReadyAt = 0;
     private lastGroundedAt = 0;
     private jumpBufferedAt = Number.NEGATIVE_INFINITY;
@@ -372,10 +372,10 @@ export function createSignalGame({
       this.signal = 100;
       this.completed = false;
       this.checkpointIds.clear();
-      this.checkpointIds.add("onboarding");
+      this.checkpointIds.add("origin");
       this.respawnX = 150;
       this.respawnY = 510;
-      this.lastChapter = "onboarding";
+      this.lastChapter = "origin";
       this.damageReadyAt = 0;
       this.lastGroundedAt = 0;
       this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
@@ -708,7 +708,7 @@ export function createSignalGame({
 
       this.physics.add.overlap(this.player, checkpoints, (_player, object) => {
         const beacon = object as Phaser.Physics.Arcade.Sprite;
-        const zone = beacon.getData("zone") as GameZoneId;
+        const zone = beacon.getData("zone") as ChronicleChapterId;
         const isNew = !this.checkpointIds.has(zone);
         this.checkpointIds.add(zone);
         if (beacon.x >= this.respawnX) {
@@ -737,7 +737,7 @@ export function createSignalGame({
         if (this.completed) return;
         this.completed = true;
         this.score += Math.round(2_000 * this.multiplier);
-        this.checkpointIds.add("comms");
+        this.checkpointIds.add("present-day");
         this.emitSnapshot();
         callbacks.onNotice("Present Day reached. Chronicle Run complete.", "success");
         this.scene.pause();
@@ -858,7 +858,7 @@ export function createSignalGame({
       );
     }
 
-    private chapterLabel(zoneId: GameZoneId) {
+    private chapterLabel(zoneId: ChronicleChapterId) {
       return chapters.find((chapter) => chapter.id === zoneId)?.label ?? "Chapter";
     }
 
@@ -888,10 +888,7 @@ export function createSignalGame({
         score: this.score,
         multiplier: this.multiplier,
         signal: this.signal,
-        cores: [],
-        discovered: [],
         checkpoints: [...this.checkpointIds],
-        nearbyLabel: null,
         completed: this.completed,
       };
       callbacks.onSnapshot(snapshot);

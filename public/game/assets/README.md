@@ -1,14 +1,12 @@
-# IRON//SIGNAL game asset kit
+# Chronicle Run game asset kit
 
-This directory contains the normalized runtime exports for the character, industrial-world, collectible, hazard, and HUD artwork prepared for the optional Game mode. The generated source sheets are preserved outside the public bundle under `assets/game/source/` so they do not ship with the static site.
+This directory contains the normalized runtime exports for the character, industrial-world, story-pickup, hazard, and HUD artwork used by the optional Chronicle Run mode. The generated source sheets are preserved outside the public bundle under `assets/game/source/` so they do not ship with the static site.
 
 ## Runtime contract
 
 - `sk-character-sheet.png`: 192 × 256 pixels, arranged as 4 × 4 frames of 48 × 64 pixels.
 - `industrial-world-atlas.png`: 640 × 640 pixels, arranged as 5 × 5 cells of 128 × 128 pixels.
 - `inventory.json`: machine-readable coordinates, animation timing, semantic IDs, and intended use for every frame.
-- `/game/preview.html`: standalone animation and theme-contrast preview.
-
 Use nearest-neighbour rendering (`image-rendering: pixelated`) and crop with the coordinates in `inventory.json`. Physics, hitboxes, level design, scoring, and portfolio panels intentionally remain outside this kit.
 
 ## Visual contract

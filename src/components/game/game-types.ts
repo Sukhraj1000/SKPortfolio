@@ -1,41 +1,14 @@
-import type { ChronicleRecordId } from "@/components/game/chronicle-story";
-
-export type GameZoneId =
-  | "onboarding"
-  | "mission-archive"
-  | "field-log"
-  | "loadout"
-  | "comms";
-
-export type SignalCoreId = Exclude<GameZoneId, "onboarding">;
-
-export type GamePanelId =
-  | "briefing"
-  | "project:tymaura"
-  | "project:skaltek"
-  | "project:solana-contract-generator"
-  | "project:crypto-portfolio"
-  | "field-log"
-  | "loadout"
-  | "comms"
-  | "uplink";
+import type {
+  ChronicleChapterId,
+  ChronicleRecordId,
+  ChronicleTutorialStepId,
+} from "@/components/game/chronicle-story";
 
 export type ChroniclePlayerState =
   | "grounded"
   | "jumping"
   | "falling"
   | "dashing";
-
-export type ChronicleTutorialStepId =
-  | "auto-run"
-  | "jump"
-  | "dash"
-  | "drop"
-  | "route"
-  | "pickup"
-  | "pause"
-  | "story-log"
-  | "complete";
 
 export type GameAction = "jump" | "dash" | "drop";
 
@@ -46,7 +19,7 @@ export interface GameControlsState {
 }
 
 export interface GameSnapshot {
-  zone: GameZoneId;
+  zone: ChronicleChapterId;
   zoneLabel: string;
   chapterIndex: number;
   journeyProgress: number;
@@ -59,29 +32,17 @@ export interface GameSnapshot {
   score: number;
   multiplier: number;
   signal: number;
-  cores: readonly SignalCoreId[];
-  discovered: readonly GamePanelId[];
-  checkpoints: readonly GameZoneId[];
-  nearbyLabel: string | null;
+  checkpoints: readonly ChronicleChapterId[];
   completed: boolean;
 }
 
-export interface SavedGameProgress {
-  completed: boolean;
-  highScore: number;
-  discovered: readonly GamePanelId[];
-  checkpoints: readonly GameZoneId[];
-  completedAt?: string;
-}
-
-export interface SignalGameCallbacks {
+export interface ChronicleGameCallbacks {
   onSnapshot: (snapshot: GameSnapshot) => void;
-  onOpenPanel: (panelId: GamePanelId) => void;
   onUnlock: (recordId: ChronicleRecordId) => void;
   onNotice: (message: string, tone?: "info" | "success" | "warning") => void;
 }
 
-export interface SignalGameHandle {
+export interface ChronicleGameHandle {
   destroy: () => void;
   setPaused: (paused: boolean) => void;
   setReducedMotion: (reduced: boolean) => void;
@@ -91,7 +52,7 @@ export interface SignalGameHandle {
 }
 
 export const initialGameSnapshot: GameSnapshot = {
-  zone: "onboarding",
+  zone: "origin",
   zoneLabel: "Origin",
   chapterIndex: 0,
   journeyProgress: 0,
@@ -104,9 +65,6 @@ export const initialGameSnapshot: GameSnapshot = {
   score: 0,
   multiplier: 1,
   signal: 100,
-  cores: [],
-  discovered: [],
   checkpoints: [],
-  nearbyLabel: null,
   completed: false,
 };

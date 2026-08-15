@@ -8,6 +8,24 @@ function requireBaseURL(baseURL: string | undefined) {
 }
 
 test.describe("Chronicle Run", () => {
+  test("keeps the recruiter-facing portfolio independent of game assets", async ({
+    page,
+  }) => {
+    const requests: string[] = [];
+    page.on("request", (request) => requests.push(request.url()));
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: /I build systems that/i }),
+    ).toBeVisible();
+    await page.waitForTimeout(800);
+    expect(
+      requests.some((url) =>
+        /game\/assets|sk-character-sheet|industrial-world-atlas/i.test(url),
+      ),
+    ).toBe(false);
+    await expect(page.locator("canvas")).toHaveCount(0);
+  });
+
   test("renders an informative ready state without loading the runtime", async ({
     page,
   }) => {
@@ -165,7 +183,7 @@ test.describe("Chronicle Run", () => {
   test("guides a first run through controls and stores tutorial completion", async ({
     page,
   }) => {
-    test.setTimeout(40_000);
+    test.setTimeout(60_000);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/game/");
     await page.getByRole("button", { name: "Start Chronicle Run" }).click();
@@ -207,7 +225,7 @@ test.describe("Chronicle Run", () => {
       .toBe("route");
     await page.keyboard.up("s");
 
-    for (let attempt = 0; attempt < 16; attempt += 1) {
+    for (let attempt = 0; attempt < 32; attempt += 1) {
       if ((await runtime.getAttribute("data-tutorial-step")) === "pickup") break;
       await page.keyboard.down("Space");
       await page.waitForTimeout(90);

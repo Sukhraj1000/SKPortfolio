@@ -61,7 +61,7 @@
           "frames": [9, 10],
           "fps": 3,
           "loop": true,
-          "intendedUse": "Terminal or checkpoint interaction"
+          "intendedUse": "Story pickup or checkpoint interaction"
         },
         "glitch": {
           "frames": [11],
@@ -121,32 +121,32 @@
           "intendedUse": "Visible spawn landing target"
         },
         {
-          "id": "project-terminal",
+          "id": "live-systems-beacon",
           "index": 5,
           "category": "checkpoint",
           "frame": { "x": 0, "y": 128, "width": 128, "height": 128 },
-          "intendedUse": "Mission Archive project checkpoint"
+          "intendedUse": "Live Systems chapter checkpoint"
         },
         {
-          "id": "field-log-console",
+          "id": "secure-engineering-beacon",
           "index": 6,
           "category": "checkpoint",
           "frame": { "x": 128, "y": 128, "width": 128, "height": 128 },
-          "intendedUse": "Field Log experience checkpoint"
+          "intendedUse": "Secure Engineering chapter checkpoint"
         },
         {
-          "id": "loadout-station",
+          "id": "build-lab-beacon",
           "index": 7,
           "category": "checkpoint",
           "frame": { "x": 256, "y": 128, "width": 128, "height": 128 },
-          "intendedUse": "Loadout capabilities checkpoint"
+          "intendedUse": "Build Lab chapter checkpoint"
         },
         {
-          "id": "communications-uplink",
+          "id": "present-day-beacon",
           "index": 8,
           "category": "checkpoint",
           "frame": { "x": 384, "y": 128, "width": 128, "height": 128 },
-          "intendedUse": "Contact objective and final uplink"
+          "intendedUse": "Present Day finish marker"
         },
         {
           "id": "checkpoint-beacon",
@@ -156,32 +156,32 @@
           "intendedUse": "Progress save or respawn point"
         },
         {
-          "id": "signal-core-origin",
+          "id": "story-pickup-education",
           "index": 10,
           "category": "collectible",
           "frame": { "x": 0, "y": 256, "width": 128, "height": 128 },
-          "intendedUse": "Briefing or Origin chapter signal core"
+          "intendedUse": "Education milestone pickup"
         },
         {
-          "id": "signal-core-build",
+          "id": "story-pickup-project",
           "index": 11,
           "category": "collectible",
           "frame": { "x": 128, "y": 256, "width": 128, "height": 128 },
-          "intendedUse": "Mission Archive or Selected Work signal core"
+          "intendedUse": "Project milestone pickup"
         },
         {
-          "id": "signal-core-progress",
+          "id": "story-pickup-experience",
           "index": 12,
           "category": "collectible",
           "frame": { "x": 256, "y": 256, "width": 128, "height": 128 },
-          "intendedUse": "Field Log or Experience signal core"
+          "intendedUse": "Experience milestone pickup"
         },
         {
-          "id": "signal-core-method",
+          "id": "story-pickup-present",
           "index": 13,
           "category": "collectible",
           "frame": { "x": 384, "y": 256, "width": 128, "height": 128 },
-          "intendedUse": "Loadout or Capabilities signal core"
+          "intendedUse": "Present Day milestone pickup"
         },
         {
           "id": "exit-marker",
@@ -219,11 +219,11 @@
           "intendedUse": "Health or signal-strength HUD indicator"
         },
         {
-          "id": "hud-cores",
+          "id": "hud-records",
           "index": 19,
           "category": "hud",
           "frame": { "x": 512, "y": 384, "width": 128, "height": 128 },
-          "intendedUse": "Collected signal-core HUD indicator"
+          "intendedUse": "Recovered story-record HUD indicator"
         },
         {
           "id": "hud-score",

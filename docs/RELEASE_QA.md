@@ -1,116 +1,165 @@
-# IRON//SIGNAL release QA
+# Pixel Quest and Chronicle Run release QA
 
-Validated against issue #9 on 13 August 2026, with the reading-flow suite
-expanded on 14 August and the Pixel Quest portfolio redesign reviewed on
-15 August 2026. This document separates reproducible automated evidence from
-checks that still require a real browser, device, or assistive-technology
-session before production deployment.
+This checklist separates reproducible automated evidence from checks that still
+require a deployment preview, physical device, or real assistive technology.
+The recruiter-facing Pixel Quest portfolio and optional Chronicle Run game are
+validated as independent routes.
 
-## Automated evidence
+## Automated release gates
 
-Run the complete local release gate with:
+Install dependencies and Chromium once, then run:
 
 ```bash
+npm ci
+npm run qa:ui:install
+npm run qa:ui
 npm run qa
 ```
 
-Run the recruiter-facing browser regression suite with:
+`npm run qa:ui` covers:
 
-```bash
-npm run qa:ui:install # first run on a machine
-npm run qa:ui
-```
+- The complete five-chapter portfolio, canonical evidence, stable anchors, CV
+  flow, contact actions, no-JavaScript content, themes, reduced motion, 320px
+  layout, 200% text, keyboard operation, and coarse-pointer targets.
+- The server-rendered Chronicle ready state, explicit Start boundary, saved
+  progress summary, and absence of a canvas or game-world requests before Start.
+- Auto-run, jump, dash, fast-drop, onboarding, safe and optional routes,
+  momentum, hazards, checkpoints, quick recovery, and chronological chapters.
+- Nine canonical story pickups, non-blocking unlock delivery, replay-safe
+  deduplication, local persistence, empty/partial Story Log states, completion,
+  recap, Story Log review, high score, and replay.
+- Focus containment and return, explicit resume behavior, keyboard and touch
+  parity, visibility pause, safe Escape exit, live theme changes, live
+  reduced-motion changes, 320px/200% reflow, and unlock/control non-overlap.
+- A complete finite run through Present Day using the public Start flow. Tests
+  do not use query parameters, debug APIs, or production gameplay bypasses.
 
-To capture full-page images for the five-size dark/light visual matrix on macOS
-or Linux, run:
+`npm run qa` runs strict ESLint, TypeScript, a production static export, and
+`scripts/validate-static-export.mjs`. Static validation confirms:
 
-```bash
-CAPTURE_UI_MATRIX=1 npm run qa:ui -- --grep "renders the"
-```
+- `/index.html`, `/game/index.html`, `404.html`, `.htaccess`, and `robots.txt`
+  are exported.
+- Portfolio chapters and the Chronicle premise, Start action, and direct
+  Portfolio return are present in server-rendered HTML.
+- Local `href` and `src` references resolve to exported files.
+- The Chronicle character sheet, world atlas, and inventory exist and remain
+  within explicit transfer budgets.
+- Neither the Portfolio nor the Game ready state eagerly references a canvas,
+  Phaser chunk, game-world artwork, or Chronicle scene code.
+- A separate lazy Phaser chunk exists and is available only after Start.
 
-The ignored `test-results/` directory keeps these review artifacts local.
+## Current production bundle
 
-`qa:ui` uses Playwright against the local portfolio and covers the five-chapter
-Pixel Quest hierarchy, complete professional evidence, narrow-screen overflow,
-sticky-anchor clearance, scene containment, touch targets, text metrics,
-keyboard and native-disclosure behavior, direct chapter state, representative
-dark/light contrast pairs, no-JavaScript content, coarse pointers, finite
-one-shot motion, and load-time and live reduced-motion fallbacks. It is
-development-only and does not add JavaScript to the production route.
-
-The gate performs the production TypeScript, lint, static-export, and route checks. `scripts/validate-static-export.mjs` verifies that:
-
-- The five Pixel Quest chapters and Game ready-state HTML export successfully.
-- Every local `href` and `src` in those documents resolves to exported output.
-- Game artwork and Phaser chunks are absent from the initial Portfolio request.
-- Phaser is also absent from the Game ready state and loads only after deployment starts.
-- Game mode does not create a canvas before the visitor presses Start.
-- The favicon, responsive project images, and neutral portfolio operator sheet remain within explicit transfer budgets.
-
-Production bundle result after the Pixel Quest redesign:
+Record these values from the final `npm run qa` output whenever dependencies or
+route composition changes:
 
 | Route | Route JS | First-load JS |
 | --- | ---: | ---: |
-| Portfolio `/` | 4.05 kB | 138 kB |
-| Game ready state `/game/` | 4.17 kB | 118 kB |
+| Portfolio `/` | 4.41 kB | 137 kB |
+| Chronicle ready state `/game/` | 5.13 kB | 126 kB |
 
-The merged reading-flow baseline was 3.71 kB / 137 kB for Portfolio and
-4.23 kB / 118 kB for the Game ready state. Pixel Quest therefore adds only
-0.34 kB of route JavaScript and approximately 1 kB first-load JavaScript while
-introducing no animation dependency. The Phaser runtime remains a separate
-lazy chunk of approximately 1.19 MB uncompressed and is requested only after
-Start deployment.
+Phaser remains a separate lazy chunk and does not affect either initial route.
+The world atlas is approximately 466 kB and the character sheet approximately
+56 kB; both are requested only after Start.
 
-## Manual browser and assistive-technology matrix
+## Local responsive and accessibility matrix
 
-Complete these checks on the deployment preview before production approval.
-They cover visual judgment, real-device behavior, and assistive-technology
-quality that the automated suite cannot prove. Record browser/device and result
-alongside each row.
+Automated Chromium checks cover the following dimensions. Local screenshots are
+review artifacts under the ignored `test-results/` or `/tmp` directories and
+must not be committed.
 
-| Flow | 320×568 | 390×844 | 768×1024 | 1024×768 | 1440×900 |
-| --- | --- | --- | --- | --- | --- |
-| Local Chromium Pixel Quest layout, chapter navigation, disclosures, CV dialog and links | Pass | Pass | Pass | Pass | Pass |
-| Local dark/light theme, refresh persistence and visible focus | Pass | Pass | Pass | Pass | Pass |
-| Local clipping, scene overlap, horizontal overflow and direct-anchor review | Pass | Pass | Pass | Pass | Pass |
-| Local standard and reduced-motion settled-state review | Pass | Pass | Pass | Pass | Pass |
+| Surface | 320px | 390px | 768px | 1440px | 200% text | Dark/light | Reduced motion |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Portfolio reading flow | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Chronicle ready state | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Runtime HUD and controls | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Unlock card | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Story Log | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Completion recap | — | — | — | Pass | Shared responsive dialog rules | Pass | Pass |
 
-The local results combine Playwright assertions, Chrome accessibility-tree
-inspection, and full-page dark/light visual review. A real-device deployment
-preview and a real VoiceOver or NVDA reading-flow session are still required
-before production approval; automated semantics are not recorded as a real
-screen-reader pass.
+The matrix demonstrates DOM reflow, semantics, and browser behavior. It is not a
+substitute for the real-device and screen-reader checks below.
 
-Game-mode checks:
+## Manual gameplay review on deployment preview
 
-- Desktop keyboard: complete a run with arrows/WASD, Space/Up, E/Enter, pause, restart and exit.
-- Mobile touch: move, jump, interact, open and close a terminal, pause, restart and exit.
-- Confirm the canvas is nonblank and only one canvas exists after repeated enter/exit and restart cycles.
-- Confirm all four cores are reachable and the final Comms uplink unlocks.
-- Refresh `/game/`, use browser Back/Forward, and return to the remembered Portfolio chapter.
-- Inspect the console throughout both primary flows; no uncaught errors are acceptable.
-- Check header, navigation, sections, disclosures, dialogs, game controls and terminal panels with a screen reader.
-- Repeat both modes with reduced motion enabled; the spawn drop, scan, status pulse, camera easing and core bobbing must not loop or move continuously.
+Complete every unchecked item before production approval and record the device,
+browser, preview URL, reviewer, and result.
 
-## Targeted release changes
+### Desktop keyboard
 
-- Rebuilt the recruiter-facing route as the selected Pixel Quest five-chapter journey while retaining all canonical evidence.
-- Added a portfolio-neutral sprite sheet and finite CSS scene choreography without importing Phaser or game modules.
-- Added one shared chapter observer for coherent header and desktop-rail state, including post-font direct-anchor correction.
-- Preserved complete no-JavaScript content and immediate reduced-motion final states.
-- Converted large project PNGs to responsive WebP sources with stable dimensions.
-- Replaced the 1.8 MB favicon source with a 192×192, 34 kB export.
-- Self-hosted the Latin Geist variable fonts so clean production builds require no Google Fonts connection.
-- Removed unused legacy motion components, Framer Motion, obsolete public scripts and unused public starter assets.
-- Increased practical icon controls and dialog close buttons to at least 44×44 CSS pixels.
-- Raised essential Day-theme faint, green, cyan and warning text tokens to WCAG AA contrast.
-- Added a trailing-slash static export so direct `/game/` refreshes resolve without server-side application routing.
-- Limited decorative status/scan animations and disabled camera smoothing and collectible bobbing under reduced motion.
+- [ ] Complete a fresh guided run and confirm auto-run, Space/Up jump, Shift/D
+  dash, S/Down fast-drop, P pause, L Story Log, R restart, M sound, and Escape
+  exit all match their visible labels.
+- [ ] Take at least one safe route and one optional upper route; confirm the
+  harder line rewards score or momentum without becoming mandatory.
+- [ ] Hit a hazard and fall from an upper route; confirm recovery is quick, uses
+  the latest checkpoint, and retains recovered story records.
+- [ ] Recover representative Education, Experience, and Project cards; compare
+  title, organisation/project, period/status, summary, and technologies with the
+  recruiter-facing portfolio.
+- [ ] Keep each unlock visible through the next route segment and confirm it does
+  not hide the player, next hazard, critical HUD, or controls.
+- [ ] Finish Present Day, review score and records, open the Story Log from the
+  recap, replay, restart, refresh, and confirm durable records/completion/high
+  score while transient score and position reset.
 
-## Known limitations before deployment
+### Mobile and touch
 
-- Local Chromium automation, accessibility-tree inspection, and visual capture are available. Real-device, cross-browser, console, and a real VoiceOver or NVDA pass must still be completed on the PR deployment preview.
-- `npm audit --omit=dev` still reports two high-severity findings through Next.js's bundled Sharp/image build path. This deployment is a static export, has no Next server, Server Actions, or image-optimisation endpoint, and project images use static responsive files. Next was patched within the 15.5 line; removing the remaining transitive alert currently requires a breaking Next 16 upgrade and is deferred to a dedicated framework migration.
-- Phaser is intentionally large but isolated: it does not affect the initial recruiter-facing Portfolio or Game ready-state requests.
+- [ ] Repeat the route on a physical phone near 320–390 CSS pixels using only
+  labelled Jump, Dash, and Drop press/release controls.
+- [ ] Confirm all touch targets are at least 44px, the page does not move during
+  gameplay gestures, orientation changes do not lose progress, and unlock cards
+  remain outside the active lane and controls.
+- [ ] Confirm the Story Log and recap scroll internally, actions remain reachable,
+  and returning to gameplay restores focus and requires explicit Resume.
 
-Production deployment remains out of scope until the preview matrix is signed off.
+### Themes and motion
+
+- [ ] Switch Day/Night during active play, during an unlock, and in the Story Log;
+  confirm the world and DOM remain legible without restart or progress loss.
+- [ ] Start with reduced motion enabled, then toggle it live. Confirm deployment
+  travel, camera easing, parallax differentiation, flashes, shakes, and spatial
+  UI motion stop while route timing, controls, score, records, and completion stay
+  equivalent.
+- [ ] Background and restore the tab on desktop and mobile; confirm movement,
+  scoring, hazards, and input stop until explicit Resume.
+
+## Assistive-technology review
+
+- [ ] Complete the Portfolio reading flow with current VoiceOver/Safari and
+  NVDA/Firefox or NVDA/Chrome.
+- [ ] On `/game/`, verify the ready-state premise, duration, controls, Start, and
+  direct Portfolio return are understandable before starting.
+- [ ] Verify chapter/status changes and a recovered record's type and title are
+  announced politely without repeated or competing announcements.
+- [ ] Open an empty and partial Story Log, traverse all recovered/locked entries,
+  verify focus remains contained, close with Escape and the close button, and
+  confirm focus returns logically while gameplay remains paused.
+- [ ] Verify completion recap actions and visible focus at 200% text and with a
+  high-contrast user configuration.
+
+## Deployment and repository checks
+
+- [ ] Exercise direct `/`, `/game/`, and chapter-anchor refreshes on the actual
+  static host, plus browser Back/Forward and remembered Portfolio return.
+- [ ] Inspect network requests: Portfolio and pre-Start `/game/` must not request
+  Phaser, the character sheet, or the industrial world atlas.
+- [ ] Inspect the console throughout ready, active, paused, unlock, Story Log,
+  completion, replay, refresh, and exit flows; no uncaught errors are acceptable.
+- [ ] Confirm private CV files, environment files, credentials, certificates,
+  local design studies, traces, screenshots, and temporary artifacts are absent
+  from the release archive.
+
+## Known release constraints
+
+- Real-device, cross-browser, deployment-preview, and VoiceOver/NVDA checks
+  remain manual approval gates even when local automation passes.
+- `npm audit --omit=dev` reports two high-severity advisories through Next.js and
+  its Sharp build dependency. This is a static export with no Next server,
+  Server Actions, or image optimisation endpoint; the available automated fix
+  requires a separate semver-major Next 16 migration.
+- Phaser is intentionally substantial but isolated behind Start. It must remain
+  absent from the initial recruiter-facing and Game ready-state requests.
+
+Production deployment remains out of scope until the preview matrix is signed
+off.

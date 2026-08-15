@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { GameCanvas } from "@/components/game/GameCanvas";
 import {
+  chronicleChapterIds,
   chronicleChapters,
   chronicleTutorialSteps,
   emptyChronicleProgress,
@@ -28,10 +29,10 @@ import { StoryLogDialog } from "@/components/game/StoryLogDialog";
 import { StoryUnlockCard } from "@/components/game/StoryUnlockCard";
 import {
   initialGameSnapshot,
+  type ChronicleGameHandle,
   type GameAction,
   type GameControlsState,
   type GameSnapshot,
-  type SignalGameHandle,
 } from "@/components/game/game-types";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
@@ -42,14 +43,6 @@ import styles from "./GameExperience.module.css";
 type SpawnPhase = "dropping" | "landed";
 type NoticeTone = "info" | "success" | "warning";
 type StoryOverlay = "story-log" | "complete";
-
-const gameZoneOrder = [
-  "onboarding",
-  "mission-archive",
-  "field-log",
-  "loadout",
-  "comms",
-] as const;
 
 interface GameExperienceProps {
   onExit: () => void;
@@ -143,7 +136,7 @@ export function GameExperience({
     dash: false,
     drop: false,
   });
-  const gameHandleRef = React.useRef<SignalGameHandle | null>(null);
+  const gameHandleRef = React.useRef<ChronicleGameHandle | null>(null);
   const stageRef = React.useRef<HTMLDivElement>(null);
   const noticeTimerRef = React.useRef<number | null>(null);
   const audioContextRef = React.useRef<AudioContext | null>(null);
@@ -241,11 +234,9 @@ export function GameExperience({
   }, [paused, spawnPhase, storyOverlay]);
 
   React.useEffect(() => {
-    const completedChapters = snapshot.checkpoints.flatMap((zone) => {
-      const index = gameZoneOrder.indexOf(zone);
-      const chapter = chronicleChapters[index];
-      return chapter ? [chapter.id] : [];
-    });
+    const completedChapters = chronicleChapterIds.filter((chapterId) =>
+      snapshot.checkpoints.includes(chapterId),
+    );
     const nextProgress = mergeChronicleProgress(savedProgress, {
       completed: snapshot.completed,
       completedChapters,
@@ -383,7 +374,7 @@ export function GameExperience({
     return () => motionQuery.removeEventListener("change", syncMotion);
   }, []);
 
-  const setGameHandle = React.useCallback((handle: SignalGameHandle | null) => {
+  const setGameHandle = React.useCallback((handle: ChronicleGameHandle | null) => {
     gameHandleRef.current = handle;
     if (handle) {
       handle.setReducedMotion(reducedMotionRef.current);
@@ -394,7 +385,6 @@ export function GameExperience({
   const callbacks = React.useMemo(
     () => ({
       onSnapshot: setSnapshot,
-      onOpenPanel: () => undefined,
       onUnlock: setActiveUnlockId,
       onNotice: showNotice,
     }),

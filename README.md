@@ -7,7 +7,7 @@ Production site: [sukhrajkalon.info](https://sukhrajkalon.info)
 ## Routes
 
 - `/` — recruiter-facing portfolio: Profile, Projects, Experience, Skills, and Contact.
-- `/game/` — separate optional Phaser experience. The game runtime and world assets stay lazy-loaded until the visitor explicitly selects **Start deployment**.
+- `/game/` — optional **Chronicle Run** auto-runner through five chronological professional chapters. Phaser and world assets stay lazy-loaded until the visitor explicitly selects **Start Chronicle Run**.
 
 No portfolio evidence is gated behind the game.
 
@@ -59,10 +59,14 @@ The release checklist and remaining real-device checks are documented in [`docs/
 - [`PortfolioMotion.tsx`](src/components/pixel-quest/PortfolioMotion.tsx) progressively enhances visible-by-default content without an animation dependency or permanent frame loop.
 - Pixel Quest composition styles are scoped under `pq-` selectors in [`src/app/pixel-quest.css`](src/app/pixel-quest.css).
 - Portfolio code does not import Phaser, game scenes, game state, or world artwork.
+- Chronicle records in [`chronicle-story.ts`](src/components/game/chronicle-story.ts) adapt facts from the canonical portfolio data; the Phaser scene emits stable record IDs rather than copied professional text.
+- Chronicle progress is versioned, validated, and merged locally. Recovered records and high scores survive replay, while malformed or legacy values fail open.
 
 ## Accessibility and motion
 
 The portfolio supports keyboard navigation, visible focus, semantic headings and landmarks, native disclosure controls, dark and light themes, widths from 320 pixels, 200% text sizing, no-JavaScript content, and `prefers-reduced-motion`. Decorative sprites are pointer-inert and excluded from the accessibility tree.
+
+Chronicle Run adds labelled keyboard and touch controls, a guided opening, non-blocking DOM unlock cards, a focus-contained pause-safe Story Log, live theme and reduced-motion updates, and a direct Portfolio exit. The server-rendered ready state remains useful when JavaScript is unavailable.
 
 Automated accessibility checks supplement rather than replace real assistive-technology review.
 
