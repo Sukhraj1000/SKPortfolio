@@ -25,6 +25,7 @@ import {
   type ChronicleProgress,
 } from "@/components/game/chronicle-story";
 import { SignalPanel } from "@/components/game/SignalPanel";
+import { StoryUnlockCard } from "@/components/game/StoryUnlockCard";
 import {
   initialGameSnapshot,
   type GameAction,
@@ -53,6 +54,7 @@ const gameZoneOrder = [
 interface GameExperienceProps {
   onExit: () => void;
   skipTutorial: boolean;
+  initialProgress: ChronicleProgress;
 }
 
 interface HudButtonProps extends React.ComponentProps<"button"> {
@@ -134,6 +136,7 @@ function TouchButton({
 export function GameExperience({
   onExit,
   skipTutorial,
+  initialProgress,
 }: GameExperienceProps) {
   const controlsRef = React.useRef<GameControlsState>({
     jump: false,
@@ -152,8 +155,11 @@ export function GameExperience({
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
   const [panelId, setPanelId] = React.useState<GamePanelId | null>(null);
+  const [activeUnlockId, setActiveUnlockId] = React.useState<
+    GameSnapshot["latestUnlockId"]
+  >(null);
   const [savedProgress, setSavedProgress] =
-    React.useState<ChronicleProgress>(emptyChronicleProgress);
+    React.useState<ChronicleProgress>(initialProgress);
   const [notice, setNotice] = React.useState<{
     message: string;
     tone: NoticeTone;
@@ -239,6 +245,7 @@ export function GameExperience({
     const nextProgress = mergeChronicleProgress(savedProgress, {
       completed: snapshot.completed,
       completedChapters,
+      recoveredRecords: [...snapshot.recoveredRecords],
       tutorialCompleted: snapshot.tutorialCompleted,
       highScore: snapshot.completed ? snapshot.score : savedProgress.highScore,
       completedAt:
@@ -252,6 +259,8 @@ export function GameExperience({
       nextProgress.highScore !== savedProgress.highScore ||
       nextProgress.completedAt !== savedProgress.completedAt ||
       nextProgress.tutorialCompleted !== savedProgress.tutorialCompleted ||
+      nextProgress.recoveredRecords.join("|") !==
+        savedProgress.recoveredRecords.join("|") ||
       nextProgress.completedChapters.join("|") !==
         savedProgress.completedChapters.join("|");
 
@@ -342,6 +351,7 @@ export function GameExperience({
         setPanelId(nextPanelId);
         setPaused(true);
       },
+      onUnlock: setActiveUnlockId,
       onNotice: showNotice,
     }),
     [showNotice],
@@ -367,6 +377,7 @@ export function GameExperience({
     setPanelId(null);
     setPaused(false);
     setSnapshot(initialGameSnapshot);
+    setActiveUnlockId(null);
     setSpawnCycle((cycle) => cycle + 1);
     gameHandleRef.current?.restart();
     showNotice("Transient level state reset. High score preserved.", "info");
@@ -408,6 +419,8 @@ export function GameExperience({
       data-checkpoints={snapshot.checkpoints.length}
       data-tutorial-step={snapshot.tutorialStep}
       data-tutorial-completed={snapshot.tutorialCompleted}
+      data-recovered-records={snapshot.recoveredRecords.length}
+      data-latest-unlock={snapshot.latestUnlockId ?? ""}
       className="min-h-[100svh] bg-background pt-16"
     >
       <h1 id="game-runtime-title" className="sr-only">
@@ -428,7 +441,7 @@ export function GameExperience({
 
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-muted sm:text-xs">
             <div><dt className="sr-only">Signal</dt><dd>Signal {snapshot.signal}%</dd></div>
-            <div><dt className="sr-only">Story records</dt><dd className="text-primary">Records {snapshot.discovered.length}/9</dd></div>
+            <div><dt className="sr-only">Story records</dt><dd className="text-primary">Records {snapshot.recoveredRecords.length}/9</dd></div>
             <div><dt className="sr-only">Score</dt><dd>Score {snapshot.score.toLocaleString()}</dd></div>
             <div><dt className="sr-only">Momentum</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
             <div className="hidden md:block"><dt className="sr-only">High score</dt><dd>High {savedProgress.highScore.toLocaleString()}</dd></div>
@@ -510,6 +523,7 @@ export function GameExperience({
           callbacks={callbacks}
           onReady={setGameHandle}
           skipTutorial={skipTutorial}
+          recoveredRecords={initialProgress.recoveredRecords}
         />
         <div className={styles.scanlines} aria-hidden="true" />
 
@@ -528,6 +542,13 @@ export function GameExperience({
             <RadioTower aria-hidden="true" className="h-4 w-4 shrink-0" />
             {notice.message}
           </div>
+        ) : null}
+
+        {activeUnlockId && !panelId ? (
+          <StoryUnlockCard
+            recordId={activeUnlockId}
+            onDismiss={() => setActiveUnlockId(null)}
+          />
         ) : null}
 
         {tutorialStep && tutorialStep.id !== "complete" && !panelId ? (

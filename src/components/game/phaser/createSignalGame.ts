@@ -1,6 +1,10 @@
 import * as Phaser from "phaser";
 import type { MutableRefObject } from "react";
-import { chronicleTutorialSteps } from "@/components/game/chronicle-story";
+import {
+  chronicleRecords,
+  chronicleTutorialSteps,
+  type ChronicleRecordId,
+} from "@/components/game/chronicle-story";
 import type {
   ChroniclePlayerState,
   ChronicleTutorialStepId,
@@ -91,6 +95,18 @@ const hazardPositions = [
   29_020,
 ] as const;
 
+const storyPickupPositions = [
+  3_800,
+  7_600,
+  13_800,
+  19_250,
+  20_950,
+  22_450,
+  23_750,
+  25_550,
+  29_400,
+] as const;
+
 const upperRoutes: readonly {
   start: number;
   y: number;
@@ -142,11 +158,13 @@ export function createSignalGame({
   controls,
   callbacks,
   skipTutorial,
+  recoveredRecords: initialRecoveredRecords,
 }: {
   parent: HTMLElement;
   controls: MutableRefObject<GameControlsState>;
   callbacks: SignalGameCallbacks;
   skipTutorial: boolean;
+  recoveredRecords: readonly ChronicleRecordId[];
 }): SignalGameHandle {
   let pausedRequested = true;
   let reducedMotion = window.matchMedia(
@@ -178,6 +196,10 @@ export function createSignalGame({
     private lastSnapshotAt = 0;
     private lastScoredX = 150;
     private playerState: ChroniclePlayerState = "grounded";
+    private recoveredRecordIds = new Set<ChronicleRecordId>(
+      initialRecoveredRecords,
+    );
+    private latestUnlockId: ChronicleRecordId | null = null;
     private tutorialStepIndex = skipTutorial
       ? chronicleTutorialSteps.length - 1
       : 0;
@@ -214,6 +236,7 @@ export function createSignalGame({
       this.createPlayer(platforms);
       this.createHazards();
       this.createFlowNodes();
+      this.createStoryPickups();
       this.createCheckpoints();
       this.createFinish();
       this.configureCamera();
@@ -361,6 +384,7 @@ export function createSignalGame({
       this.lastSnapshotAt = 0;
       this.lastScoredX = 150;
       this.playerState = "grounded";
+      this.latestUnlockId = null;
       this.tutorialStepIndex = skipTutorial
         ? chronicleTutorialSteps.length - 1
         : 0;
@@ -597,14 +621,6 @@ export function createSignalGame({
 
     private createFlowNodes() {
       const nodes = this.physics.add.staticGroup();
-      const tutorialNode = this.addWorldSprite(
-        nodes,
-        3_800,
-        FLOOR_Y - 82,
-        10,
-        0.32,
-      );
-      tutorialNode.setDepth(12);
 
       upperRoutes.forEach((route) => {
         route.nodeOffsets.forEach((offset) => {
@@ -627,8 +643,48 @@ export function createSignalGame({
           this.score += Math.round(125 * this.multiplier);
           this.multiplier = Math.min(5, this.multiplier + 0.25);
         }
-        this.advanceTutorial("pickup");
         callbacks.onNotice("High route flow node recovered.", "success");
+        this.emitSnapshot();
+      });
+    }
+
+    private createStoryPickups() {
+      const pickups = this.physics.add.staticGroup();
+      chronicleRecords.forEach((record, index) => {
+        const pickup = this.addWorldSprite(
+          pickups,
+          storyPickupPositions[index],
+          FLOOR_Y - 86,
+          10 + (index % 4),
+          0.34,
+        );
+        pickup.setDataEnabled();
+        pickup.setData("recordId", record.id);
+        pickup.setAlpha(this.recoveredRecordIds.has(record.id) ? 0.56 : 1);
+        pickup.setDepth(13);
+      });
+
+      this.physics.add.overlap(this.player, pickups, (_player, object) => {
+        const pickup = object as Phaser.Physics.Arcade.Sprite;
+        if (!pickup.active) return;
+        const recordId = pickup.getData("recordId") as ChronicleRecordId;
+        const isNew = !this.recoveredRecordIds.has(recordId);
+        pickup.disableBody(true, true);
+        this.advanceTutorial("pickup");
+
+        if (this.tutorialCompleted()) {
+          this.score += Math.round((isNew ? 300 : 90) * this.multiplier);
+          this.multiplier = Math.min(5, this.multiplier + (isNew ? 0.4 : 0.1));
+        }
+
+        if (isNew) {
+          this.recoveredRecordIds.add(recordId);
+          this.latestUnlockId = recordId;
+          callbacks.onUnlock(recordId);
+          callbacks.onNotice("New story record saved to the Story Log.", "success");
+        } else {
+          callbacks.onNotice("Story record already stored. Replay score added.", "info");
+        }
         this.emitSnapshot();
       });
     }
@@ -825,6 +881,10 @@ export function createSignalGame({
         dashReady: this.time.now >= this.dashReadyAt,
         tutorialStep: this.currentTutorialStep(),
         tutorialCompleted: this.tutorialCompleted(),
+        recoveredRecords: chronicleRecords
+          .map((record) => record.id)
+          .filter((recordId) => this.recoveredRecordIds.has(recordId)),
+        latestUnlockId: this.latestUnlockId,
         score: this.score,
         multiplier: this.multiplier,
         signal: this.signal,
@@ -908,7 +968,6 @@ export function createSignalGame({
       getScene()?.completeTutorialAction(action);
     },
     restart() {
-      pausedRequested = true;
       const scene = getScene();
       if (!scene) return;
       if (scene.scene.isPaused()) scene.scene.resume();

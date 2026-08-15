@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import type { ChronicleRecordId } from "@/components/game/chronicle-story";
 import type {
   GameControlsState,
   SignalGameCallbacks,
@@ -13,13 +14,16 @@ export function GameCanvas({
   callbacks,
   onReady,
   skipTutorial,
+  recoveredRecords,
 }: {
   controls: React.MutableRefObject<GameControlsState>;
   callbacks: SignalGameCallbacks;
   onReady: (handle: SignalGameHandle | null) => void;
   skipTutorial: boolean;
+  recoveredRecords: readonly ChronicleRecordId[];
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const initialRecoveredRecordsRef = React.useRef(recoveredRecords);
   const callbacksRef = React.useRef(callbacks);
   callbacksRef.current = callbacks;
 
@@ -38,9 +42,11 @@ export function GameCanvas({
         parent: containerRef.current,
         controls,
         skipTutorial,
+        recoveredRecords: initialRecoveredRecordsRef.current,
         callbacks: {
           onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
           onOpenPanel: (panelId) => callbacksRef.current.onOpenPanel(panelId),
+          onUnlock: (recordId) => callbacksRef.current.onUnlock(recordId),
           onNotice: (message, tone) => callbacksRef.current.onNotice(message, tone),
         },
       });

@@ -1,3 +1,5 @@
+import type { ChronicleRecordId } from "@/components/game/chronicle-story";
+
 export type GameZoneId =
   | "onboarding"
   | "mission-archive"
@@ -52,6 +54,8 @@ export interface GameSnapshot {
   dashReady: boolean;
   tutorialStep: ChronicleTutorialStepId;
   tutorialCompleted: boolean;
+  recoveredRecords: readonly ChronicleRecordId[];
+  latestUnlockId: ChronicleRecordId | null;
   score: number;
   multiplier: number;
   signal: number;
@@ -73,6 +77,7 @@ export interface SavedGameProgress {
 export interface SignalGameCallbacks {
   onSnapshot: (snapshot: GameSnapshot) => void;
   onOpenPanel: (panelId: GamePanelId) => void;
+  onUnlock: (recordId: ChronicleRecordId) => void;
   onNotice: (message: string, tone?: "info" | "success" | "warning") => void;
 }
 
@@ -94,6 +99,8 @@ export const initialGameSnapshot: GameSnapshot = {
   dashReady: true,
   tutorialStep: "auto-run",
   tutorialCompleted: false,
+  recoveredRecords: [],
+  latestUnlockId: null,
   score: 0,
   multiplier: 1,
   signal: 100,

@@ -228,6 +228,133 @@
   transform: translateX(-50%);
 }
 
+.unlockCard {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 24;
+  width: min(25rem, calc(100% - 2rem));
+  overflow: hidden;
+  border: 1px solid var(--signal-cyan);
+  background: color-mix(in srgb, var(--surface) 97%, transparent);
+  color: var(--foreground);
+  box-shadow: 7px 7px 0 var(--shadow-strong);
+}
+
+.unlockStripe {
+  height: 0.3rem;
+  background: linear-gradient(
+    90deg,
+    var(--signal-cyan) 0 62%,
+    var(--signal-yellow) 62% 82%,
+    var(--signal-red) 82%
+  );
+}
+
+.unlockHeader {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-left: 1rem;
+  color: var(--signal-cyan);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.unlockHeader button {
+  display: grid;
+  width: 3.25rem;
+  min-height: 3.25rem;
+  place-items: center;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+}
+
+.unlockHeader button:hover {
+  background: var(--surface-raised);
+  color: var(--signal-red);
+}
+
+.unlockHeader svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.unlockBody {
+  padding: 1rem;
+}
+
+.unlockBody > p:first-child {
+  margin: 0;
+  color: var(--signal-yellow);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.unlockBody h2 {
+  margin: 0.55rem 0 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.unlockBody > strong {
+  display: block;
+  margin-top: 0.4rem;
+  color: var(--signal-cyan);
+  font-size: 0.8rem;
+}
+
+.unlockBody > p:nth-of-type(2) {
+  margin: 0.8rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.unlockBody ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.unlockBody li {
+  border: 1px solid var(--border-strong);
+  padding: 0.3rem 0.45rem;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.55rem;
+}
+
+.unlockCard footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem 1rem;
+  border-top: 1px solid var(--border);
+  padding: 0.65rem 1rem;
+  color: var(--ink-muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .tutorialPrompt {
   position: absolute;
   bottom: 5.25rem;
@@ -438,6 +565,21 @@
 
   .notice {
     top: 0.65rem;
+  }
+
+  .unlockCard {
+    top: 0.65rem;
+    right: 0.65rem;
+    left: 0.65rem;
+    width: auto;
+  }
+
+  .unlockBody {
+    padding: 0.85rem;
+  }
+
+  .unlockBody h2 {
+    font-size: 1.3rem;
   }
 
   .tutorialPrompt {

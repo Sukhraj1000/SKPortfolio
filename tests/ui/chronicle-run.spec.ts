@@ -267,6 +267,88 @@ test.describe("Chronicle Run", () => {
     await expect(page.locator("[data-tutorial-prompt]")).toHaveCount(0);
   });
 
+  test("unlocks a factual record without pausing and deduplicates it on replay", async ({
+    page,
+  }) => {
+    test.setTimeout(65_000);
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 0,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    await page.getByRole("application").focus();
+
+    const runtime = page.locator("[data-recovered-records]");
+    const unlockCard = page.locator("[data-unlock-card]");
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      if ((await unlockCard.count()) > 0) break;
+      await page.keyboard.down("Shift");
+      await page.waitForTimeout(70);
+      await page.keyboard.up("Shift");
+      await page.waitForTimeout(300);
+    }
+
+    await expect(unlockCard).toHaveAttribute(
+      "data-record-id",
+      "education:first-class-computer-science",
+    );
+    await expect(unlockCard).toContainText(
+      "First-Class Computer Science graduate",
+    );
+    await expect(unlockCard).toContainText(
+      "generates, compiles, tests, and analyses Solana smart contracts",
+    );
+    await expect(
+      page.locator('[role="status"]').filter({ hasText: "Education unlocked" }),
+    ).toBeAttached();
+    await expect(runtime).toHaveAttribute("data-game-state", "running");
+    const progressWithCard = Number(
+      await runtime.getAttribute("data-journey-progress"),
+    );
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThan(progressWithCard);
+    await expect(runtime).toHaveAttribute("data-recovered-records", "1");
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return value?.recoveredRecords;
+        }, progressKey),
+      )
+      .toContain("education:first-class-computer-science");
+
+    await page
+      .getByRole("button", {
+        name: "Dismiss First-Class Computer Science graduate unlock card",
+      })
+      .click();
+    await expect(unlockCard).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Restart level" }).click();
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
+        timeout: 25_000,
+      })
+      .toBeGreaterThanOrEqual(13);
+    await expect(unlockCard).toHaveCount(0);
+    await expect(runtime).toHaveAttribute("data-recovered-records", "1");
+  });
+
   test("keeps labelled touch actions large enough on compact screens", async ({
     browser,
     baseURL,

@@ -84,6 +84,7 @@ export function GameRoute() {
         <GameExperience
           onExit={exitGame}
           skipTutorial={startMode === "skip"}
+          initialProgress={savedProgress}
         />
       </React.Suspense>
     );
