@@ -267,6 +267,94 @@ test.describe("Chronicle Run", () => {
     await expect(page.locator("[data-tutorial-prompt]")).toHaveCount(0);
   });
 
+  test("keeps the Story Log focus-contained and paused for empty and partial progress", async ({
+    page,
+  }) => {
+    await page.addInitScript(
+      ({ key }) => {
+        if (window.localStorage.getItem(key)) return;
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 4200,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    const runtime = page.locator("[data-recovered-records]");
+    const storyLogButton = page.getByRole("button", { name: "Open Story Log" });
+    const dialog = page.getByRole("dialog", { name: "Recovered milestones." });
+    await storyLogButton.click();
+    await expect(dialog).toContainText("No records recovered yet");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+
+    await page.evaluate(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [
+              "education:first-class-computer-science",
+              "experience:techfront-led-technician",
+            ],
+            completedChapters: ["origin"],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 4200,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.reload();
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    await storyLogButton.click();
+
+    await expect(dialog).toBeVisible();
+    await expect(runtime).toHaveAttribute("data-game-state", "story");
+    await expect(dialog).toContainText("2 of 9 factual records recovered");
+    await expect(dialog).toContainText("First-Class Computer Science graduate");
+    await expect(dialog).toContainText("Techfront UK");
+    await expect(dialog).toContainText("Undiscovered record");
+    await expect(dialog.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "2",
+    );
+    const pausedProgress = await runtime.getAttribute("data-journey-progress");
+    await page.waitForTimeout(500);
+    await expect(runtime).toHaveAttribute(
+      "data-journey-progress",
+      pausedProgress ?? "0",
+    );
+
+    await page.keyboard.press("Shift+Tab");
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const overlay = document.querySelector('[data-story-overlay="story-log"]');
+          return Boolean(overlay?.contains(document.activeElement));
+        }),
+      )
+      .toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(runtime).toHaveAttribute("data-game-state", "paused");
+    await expect(storyLogButton).toBeFocused();
+    await page.getByRole("button", { name: "Start or resume" }).click();
+    await expect(runtime).toHaveAttribute("data-game-state", "running");
+  });
+
   test("unlocks a factual record without pausing and deduplicates it on replay", async ({
     page,
   }) => {
@@ -347,6 +435,84 @@ test.describe("Chronicle Run", () => {
       .toBeGreaterThanOrEqual(13);
     await expect(unlockCard).toHaveCount(0);
     await expect(runtime).toHaveAttribute("data-recovered-records", "1");
+  });
+
+  test("persists completion and supports Story Log review and replay", async ({
+    page,
+  }) => {
+    test.setTimeout(150_000);
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: [],
+            completedChapters: [],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 0,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Skip walkthrough" }).click();
+    await page.getByRole("application").focus();
+
+    const completion = page.locator('[data-story-overlay="complete"]');
+    for (let attempt = 0; attempt < 175; attempt += 1) {
+      if ((await completion.count()) > 0) break;
+      await page.keyboard.down("Shift");
+      await page.waitForTimeout(70);
+      await page.keyboard.up("Shift");
+      await page.waitForTimeout(600);
+    }
+
+    await expect(completion).toBeVisible();
+    await expect(completion).toContainText(
+      "Run complete. The next chapter is open.",
+    );
+    await expect(completion).toContainText("9 / 9");
+    await expect(completion).toContainText("5 / 5");
+    const runtime = page.locator("[data-recovered-records]");
+    await expect(runtime).toHaveAttribute("data-game-state", "story");
+    await expect(runtime).toHaveAttribute("data-recovered-records", "9");
+    const completedScore = Number(await runtime.getAttribute("data-score"));
+    expect(completedScore).toBeGreaterThan(0);
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return {
+            completed: value?.completed,
+            chapters: value?.completedChapters?.length,
+            records: value?.recoveredRecords?.length,
+            highScore: value?.highScore,
+          };
+        }, progressKey),
+      )
+      .toEqual({
+        completed: true,
+        chapters: 5,
+        records: 9,
+        highScore: completedScore,
+      });
+
+    await completion.getByRole("button", { name: "Open Story Log" }).click();
+    const storyLog = page.locator('[data-story-overlay="story-log"]');
+    await expect(storyLog).toContainText("9 of 9 factual records recovered");
+    await expect(storyLog.locator('[data-record-state="recovered"]')).toHaveCount(9);
+    await expect(storyLog.locator('[data-record-state="locked"]')).toHaveCount(0);
+    await page.getByRole("button", { name: "Back to recap" }).click();
+    await page.getByRole("button", { name: "Replay run" }).click();
+    await expect(completion).toHaveCount(0);
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeLessThanOrEqual(4);
+    await expect(runtime).toHaveAttribute("data-recovered-records", "9");
   });
 
   test("keeps labelled touch actions large enough on compact screens", async ({

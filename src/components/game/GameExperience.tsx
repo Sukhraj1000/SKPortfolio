@@ -24,13 +24,12 @@ import {
   parseChronicleProgress,
   type ChronicleProgress,
 } from "@/components/game/chronicle-story";
-import { SignalPanel } from "@/components/game/SignalPanel";
+import { StoryLogDialog } from "@/components/game/StoryLogDialog";
 import { StoryUnlockCard } from "@/components/game/StoryUnlockCard";
 import {
   initialGameSnapshot,
   type GameAction,
   type GameControlsState,
-  type GamePanelId,
   type GameSnapshot,
   type SignalGameHandle,
 } from "@/components/game/game-types";
@@ -42,6 +41,7 @@ import styles from "./GameExperience.module.css";
 
 type SpawnPhase = "dropping" | "landed";
 type NoticeTone = "info" | "success" | "warning";
+type StoryOverlay = "story-log" | "complete";
 
 const gameZoneOrder = [
   "onboarding",
@@ -154,7 +154,9 @@ export function GameExperience({
   const [paused, setPaused] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
-  const [panelId, setPanelId] = React.useState<GamePanelId | null>(null);
+  const [storyOverlay, setStoryOverlay] = React.useState<StoryOverlay | null>(null);
+  const overlayTriggerRef = React.useRef<HTMLElement | null>(null);
+  const completionShownRef = React.useRef(false);
   const [activeUnlockId, setActiveUnlockId] = React.useState<
     GameSnapshot["latestUnlockId"]
   >(null);
@@ -228,13 +230,14 @@ export function GameExperience({
   }, [spawnCycle]);
 
   React.useEffect(() => {
-    const shouldPause = paused || panelId !== null || spawnPhase === "dropping";
+    const shouldPause =
+      paused || storyOverlay !== null || spawnPhase === "dropping";
     shouldPauseRef.current = shouldPause;
     gameHandleRef.current?.setPaused(shouldPause);
     if (shouldPause) {
       controlsRef.current = { jump: false, dash: false, drop: false };
     }
-  }, [panelId, paused, spawnPhase]);
+  }, [paused, spawnPhase, storyOverlay]);
 
   React.useEffect(() => {
     const completedChapters = snapshot.checkpoints.flatMap((zone) => {
@@ -274,6 +277,15 @@ export function GameExperience({
   }, [savedProgress, snapshot]);
 
   React.useEffect(() => {
+    if (snapshot.completed && !completionShownRef.current) {
+      completionShownRef.current = true;
+      overlayTriggerRef.current = stageRef.current;
+      setPaused(true);
+      setStoryOverlay("complete");
+    }
+  }, [snapshot.completed]);
+
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
@@ -281,27 +293,28 @@ export function GameExperience({
         return;
       }
 
-      if (event.key.toLowerCase() === "p" && !panelId) {
+      if (event.key.toLowerCase() === "p" && !storyOverlay) {
         event.preventDefault();
         if (!paused) gameHandleRef.current?.completeTutorialAction("pause");
         setPaused((current) => !current);
         return;
       }
 
-      if (event.key.toLowerCase() === "l" && !panelId) {
+      if (event.key.toLowerCase() === "l" && !storyOverlay) {
         event.preventDefault();
+        overlayTriggerRef.current = document.activeElement as HTMLElement | null;
         gameHandleRef.current?.completeTutorialAction("story-log");
-        setPanelId("briefing");
+        setStoryOverlay("story-log");
         setPaused(true);
         return;
       }
 
       if (event.key !== "Escape") return;
       event.preventDefault();
-      if (panelId) {
-        setPanelId(null);
-        setPaused(false);
-        window.setTimeout(() => stageRef.current?.focus(), 0);
+      if (storyOverlay) {
+        setStoryOverlay(null);
+        setPaused(true);
+        window.setTimeout(() => overlayTriggerRef.current?.focus(), 0);
       } else {
         onExit();
       }
@@ -317,7 +330,7 @@ export function GameExperience({
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [onExit, panelId, paused]);
+  }, [onExit, paused, storyOverlay]);
 
   React.useEffect(() => {
     const observer = new MutationObserver(() => gameHandleRef.current?.refreshTheme());
@@ -347,10 +360,7 @@ export function GameExperience({
   const callbacks = React.useMemo(
     () => ({
       onSnapshot: setSnapshot,
-      onOpenPanel: (nextPanelId: GamePanelId) => {
-        setPanelId(nextPanelId);
-        setPaused(true);
-      },
+      onOpenPanel: () => undefined,
       onUnlock: setActiveUnlockId,
       onNotice: showNotice,
     }),
@@ -358,9 +368,22 @@ export function GameExperience({
   );
 
   const openStoryLog = React.useCallback(() => {
+    overlayTriggerRef.current = document.activeElement as HTMLElement | null;
     gameHandleRef.current?.completeTutorialAction("story-log");
-    setPanelId("briefing");
+    setStoryOverlay("story-log");
     setPaused(true);
+  }, []);
+
+  const closeStoryOverlay = React.useCallback(() => {
+    setStoryOverlay(null);
+    setPaused(true);
+    window.setTimeout(() => overlayTriggerRef.current?.focus(), 0);
+  }, []);
+
+  const resumeFromStoryLog = React.useCallback(() => {
+    setStoryOverlay(null);
+    setPaused(false);
+    window.setTimeout(() => stageRef.current?.focus(), 0);
   }, []);
 
   const toggleSound = () => {
@@ -374,25 +397,20 @@ export function GameExperience({
   };
 
   const restartLevel = () => {
-    setPanelId(null);
+    setStoryOverlay(null);
+    completionShownRef.current = false;
     setPaused(false);
     setSnapshot(initialGameSnapshot);
     setActiveUnlockId(null);
     setSpawnCycle((cycle) => cycle + 1);
     gameHandleRef.current?.restart();
-    showNotice("Transient level state reset. High score preserved.", "info");
-  };
-
-  const closePanel = () => {
-    setPanelId(null);
-    setPaused(false);
-    window.setTimeout(() => stageRef.current?.focus(), 0);
+    showNotice("Transient run state reset. Story records and high score preserved.", "info");
   };
 
   const gameStatus =
     spawnPhase === "dropping"
       ? "Deploying"
-      : panelId
+      : storyOverlay
         ? "Story"
         : paused
           ? "Paused"
@@ -451,18 +469,27 @@ export function GameExperience({
             <HudButton
               label="Start or resume"
               icon={<Play aria-hidden="true" className="h-4 w-4" />}
-              active={spawnPhase === "landed" && !paused && !panelId}
-              disabled={spawnPhase === "dropping" || (!paused && !panelId)}
+              active={
+                spawnPhase === "landed" &&
+                !paused &&
+                !storyOverlay &&
+                !snapshot.completed
+              }
+              disabled={
+                spawnPhase === "dropping" ||
+                snapshot.completed ||
+                (!paused && !storyOverlay)
+              }
               onClick={() => {
-                setPanelId(null);
+                setStoryOverlay(null);
                 setPaused(false);
               }}
             />
             <HudButton
               label="Pause"
               icon={<Pause aria-hidden="true" className="h-4 w-4" />}
-              active={paused && !panelId}
-              disabled={spawnPhase === "dropping" || paused || panelId !== null}
+              active={paused && !storyOverlay}
+              disabled={spawnPhase === "dropping" || paused || storyOverlay !== null}
               onClick={() => {
                 gameHandleRef.current?.completeTutorialAction("pause");
                 setPaused(true);
@@ -471,8 +498,8 @@ export function GameExperience({
             <HudButton
               label="Open Story Log"
               icon={<BookOpen aria-hidden="true" className="h-4 w-4" />}
-              active={panelId !== null}
-              disabled={spawnPhase === "dropping" || panelId !== null}
+              active={storyOverlay === "story-log"}
+              disabled={spawnPhase === "dropping" || storyOverlay !== null}
               onClick={openStoryLog}
             />
             <HudButton
@@ -544,14 +571,14 @@ export function GameExperience({
           </div>
         ) : null}
 
-        {activeUnlockId && !panelId ? (
+        {activeUnlockId && !storyOverlay ? (
           <StoryUnlockCard
             recordId={activeUnlockId}
             onDismiss={() => setActiveUnlockId(null)}
           />
         ) : null}
 
-        {tutorialStep && tutorialStep.id !== "complete" && !panelId ? (
+        {tutorialStep && tutorialStep.id !== "complete" && !storyOverlay ? (
           <aside
             className={styles.tutorialPrompt}
             role="status"
@@ -566,16 +593,22 @@ export function GameExperience({
           </aside>
         ) : null}
 
-        {paused && !panelId ? (
+        {paused && !storyOverlay ? (
           <div className={styles.pauseOverlay} role="status">
             <Pause aria-hidden="true" className="h-7 w-7 text-primary" />
             <p className="mt-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Simulation paused</p>
             <button
               type="button"
               className="mt-4 border border-primary bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground"
-              onClick={() => setPaused(false)}
+              onClick={() => {
+                if (snapshot.completed) {
+                  setStoryOverlay("complete");
+                } else {
+                  setPaused(false);
+                }
+              }}
             >
-              Resume
+              {snapshot.completed ? "View completion recap" : "Resume"}
             </button>
           </div>
         ) : null}
@@ -601,8 +634,20 @@ export function GameExperience({
           />
         </div>
 
-        {panelId ? (
-          <SignalPanel panelId={panelId} snapshot={snapshot} onClose={closePanel} onExit={onExit} />
+        {storyOverlay ? (
+          <StoryLogDialog
+            mode={storyOverlay}
+            recoveredRecords={snapshot.recoveredRecords}
+            score={snapshot.score}
+            highScore={savedProgress.highScore}
+            runCompleted={snapshot.completed}
+            onClose={closeStoryOverlay}
+            onResume={resumeFromStoryLog}
+            onReplay={restartLevel}
+            onShowLog={() => setStoryOverlay("story-log")}
+            onShowRecap={() => setStoryOverlay("complete")}
+            onExit={onExit}
+          />
         ) : null}
       </div>
 

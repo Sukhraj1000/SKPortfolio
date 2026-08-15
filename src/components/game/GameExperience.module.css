@@ -449,6 +449,229 @@
   transform: translate(2px, 2px);
 }
 
+.storyBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--background) 76%, transparent);
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.storyDialog {
+  width: min(70rem, 100%);
+  max-height: calc(100% - 1rem);
+  overflow: auto;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  box-shadow: 8px 8px 0 var(--shadow-strong);
+}
+
+.storyDialogHeader {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+  padding-left: 1rem;
+}
+
+.storyDialogHeader > button {
+  display: grid;
+  width: 3.5rem;
+  min-height: 3.5rem;
+  place-items: center;
+  border: 0;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.storyDialogHeader > button:hover {
+  color: var(--signal-red);
+}
+
+.storyDialogHeader svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.storyLogBody,
+.recapBody {
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.storyLogBody > h2,
+.recapBody > h2 {
+  max-width: 18ch;
+  margin: 0.75rem 0 0;
+  color: var(--foreground);
+  font-size: clamp(2rem, 4vw, 4rem);
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+}
+
+.storyLogBody > p,
+.recapBody > p {
+  max-width: 48rem;
+  margin: 1rem 0 0;
+  color: var(--ink-muted);
+  line-height: 1.65;
+}
+
+.storyProgress {
+  height: 0.45rem;
+  margin-top: 1.25rem;
+  overflow: hidden;
+  background: var(--surface-high);
+}
+
+.storyProgress span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--signal-cyan), var(--signal-yellow));
+}
+
+.storyRecords {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 1.25rem 0 0;
+  border: 1px solid var(--border);
+  background: var(--border);
+  padding: 0;
+  list-style: none;
+}
+
+.storyRecords li {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  gap: 0.8rem;
+  background: var(--background);
+  padding: 1rem;
+}
+
+.storyRecords li[data-record-state="locked"] {
+  color: var(--ink-faint);
+}
+
+.recordIndex {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: var(--primary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+}
+
+.recordIndex svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.storyRecords li > div:last-child > p:first-child {
+  margin: 0;
+  color: var(--primary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.storyRecords h3 {
+  margin: 0.45rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.storyRecords strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--signal-cyan);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.storyRecords li > div:last-child > p:last-child {
+  margin: 0.5rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.recapStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border);
+  background: var(--border);
+}
+
+.recapStats div {
+  min-width: 0;
+  background: var(--background);
+  padding: 1rem;
+}
+
+.recapStats dt {
+  color: var(--primary);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recapStats dd {
+  margin: 0.45rem 0 0;
+  color: var(--foreground);
+  font-size: clamp(1.25rem, 2.5vw, 2rem);
+  font-weight: 750;
+}
+
+.recapSignal {
+  display: flex;
+  max-width: 48rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  border-left: 3px solid var(--signal-green);
+  background: var(--background);
+  padding: 1rem;
+  color: var(--foreground);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.recapSignal svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  color: var(--signal-green);
+}
+
+.storyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+}
+
 .panelBackdrop {
   position: absolute;
   inset: 0;
@@ -589,8 +812,21 @@
     max-width: none;
   }
 
+  .storyBackdrop,
   .panelBackdrop {
     padding: 0.5rem;
+  }
+
+  .storyDialog {
+    max-height: calc(100% - 0.5rem);
+  }
+
+  .storyRecords {
+    grid-template-columns: 1fr;
+  }
+
+  .recapStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .signalPanel {
