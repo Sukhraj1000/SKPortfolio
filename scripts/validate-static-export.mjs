@@ -59,14 +59,16 @@ assert(rootHtml.includes("Proof lives in what shipped."), "Portfolio export is m
 assert(rootHtml.includes("Every environment added a new constraint."), "Portfolio export is missing the Experience story heading.");
 assert(rootHtml.includes("Choose tools for the constraint."), "Portfolio export is missing the Skills story heading.");
 assert(rootHtml.includes("The story is still being written."), "Portfolio export is missing the Contact story heading.");
-assert(gameHtml.includes('id="game-ready-title"'), "Game export is missing its ready-state heading.");
-assert(gameHtml.includes("Chronicle"), "Game export is missing the Chronicle Run premise.");
-assert(gameHtml.includes("Start Chronicle Run"), "Game export is missing its explicit Start action.");
+assert(gameHtml.includes('id="game-training-title"'), "Game export is missing its training-shell heading.");
+assert(gameHtml.includes("Five actions, then run."), "Game export is missing its five-step walkthrough premise.");
+for (const action of ["Jump", "Dash", "Fast Drop", "Pause", "Story Log"]) {
+  assert(gameHtml.includes(action), `Game training fallback is missing ${action}.`);
+}
 assert(gameHtml.includes("Exit to Portfolio"), "Game export is missing its direct Portfolio return.");
-assert(!gameHtml.includes("<canvas"), "Game canvas must not boot before Start.");
+assert(!gameHtml.includes("<canvas"), "Server-rendered training fallback must not contain a canvas.");
 assert(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(rootHtml), "Portfolio still depends on remote fonts.");
 
-for (const [label, html] of [["Portfolio", rootHtml], ["Game ready state", gameHtml]]) {
+for (const [label, html] of [["Portfolio", rootHtml], ["Game training fallback", gameHtml]]) {
   assert(!/game\/assets|sk-character-sheet|industrial-world-atlas/i.test(html), `${label} eagerly requests game artwork.`);
   await assertLocalReferencesExist(html, label);
 }
@@ -97,7 +99,7 @@ for (const file of chunkFiles) {
 assert(phaserChunks.length > 0, "Expected a lazy Phaser runtime chunk in the game build.");
 for (const chunk of phaserChunks) {
   assert(!rootHtml.includes(chunk), `Portfolio eagerly loads Phaser chunk ${chunk}.`);
-  assert(!gameHtml.includes(chunk), `Game ready state eagerly loads Phaser chunk ${chunk}.`);
+  assert(!gameHtml.includes(chunk), `Server-rendered Game fallback eagerly loads Phaser chunk ${chunk}.`);
 }
 
 const portfolioScripts = localReferences(rootHtml).filter((reference) =>
@@ -106,7 +108,7 @@ const portfolioScripts = localReferences(rootHtml).filter((reference) =>
 for (const reference of portfolioScripts) {
   const source = await readFile(outputPathFor(reference), "utf8");
   assert(
-    !/industrial-world-atlas|sk-character-sheet|Guided opening complete/i.test(source),
+    !/industrial-world-atlas|sk-character-sheet|Five actions complete/i.test(source),
     `Portfolio script ${reference} contains Chronicle runtime code.`,
   );
 }

@@ -21,32 +21,38 @@ npm run qa
 - The complete five-chapter portfolio, canonical evidence, stable anchors, CV
   flow, contact actions, no-JavaScript content, themes, reduced motion, 320px
   layout, 200% text, keyboard operation, and coarse-pointer targets.
-- The server-rendered Chronicle ready state, explicit Start boundary, saved
-  progress summary, and absence of a canvas or game-world requests before Start.
-- Auto-run, jump, dash, fast-drop, onboarding, safe and optional routes,
-  momentum, hazards, checkpoints, quick recovery, and chronological chapters.
-- Nine canonical story pickups, non-blocking unlock delivery, replay-safe
-  deduplication, local persistence, empty/partial Story Log states, completion,
+- The server-rendered Chronicle training fallback, direct Game transition,
+  exactly five matching-input walkthrough steps, returning-player skip, and
+  absence of game-world requests from the recruiter-facing Portfolio route.
+- Auto-run, forgiving buffered jump, dash, fast-drop, safe one-way optional
+  routes, momentum, hazards, checkpoints, quick recovery, and chronological
+  chapters, including a measured reachability margin for every upper entrance.
+- Nine larger animated canonical story pickups, optional flow rewards,
+  non-blocking unlock delivery, replay-safe deduplication, local persistence,
+  empty/partial Story Log states, completion, elapsed time, personal best,
   recap, Story Log review, high score, and replay.
 - Focus containment and return, explicit resume behavior, keyboard and touch
-  parity, visibility pause, safe Escape exit, live theme changes, live
-  reduced-motion changes, 320px/200% reflow, and unlock/control non-overlap.
-- A complete finite run through Present Day using the public Start flow. Tests
-  do not use query parameters, debug APIs, or production gameplay bypasses.
+  parity through the walkthrough and run, visibility/timer pause, safe Escape
+  exit, live theme changes, live reduced-motion settling, 320px/200% reflow,
+  and unlock/control/player non-overlap.
+- A complete finite run through Present Day using public Game activation and
+  walkthrough/skip controls. Tests do not use query parameters, debug APIs, or
+  production gameplay bypasses.
 
 `npm run qa` runs strict ESLint, TypeScript, a production static export, and
 `scripts/validate-static-export.mjs`. Static validation confirms:
 
 - `/index.html`, `/game/index.html`, `404.html`, `.htaccess`, and `robots.txt`
   are exported.
-- Portfolio chapters and the Chronicle premise, Start action, and direct
+- Portfolio chapters and the Chronicle five-action fallback and direct
   Portfolio return are present in server-rendered HTML.
 - Local `href` and `src` references resolve to exported files.
 - The Chronicle character sheet, world atlas, and inventory exist and remain
   within explicit transfer budgets.
-- Neither the Portfolio nor the Game ready state eagerly references a canvas,
-  Phaser chunk, game-world artwork, or Chronicle scene code.
-- A separate lazy Phaser chunk exists and is available only after Start.
+- Neither the Portfolio nor the server-rendered Game fallback eagerly references
+  a canvas, Phaser chunk, game-world artwork, or Chronicle scene code.
+- A separate lazy Phaser chunk exists and loads only after Game mode activation;
+  it remains absent from the initial recruiter-facing route.
 
 ## Current production bundle
 
@@ -56,11 +62,11 @@ route composition changes:
 | Route | Route JS | First-load JS |
 | --- | ---: | ---: |
 | Portfolio `/` | 4.41 kB | 137 kB |
-| Chronicle ready state `/game/` | 5.13 kB | 126 kB |
+| Chronicle training route `/game/` | 3.32 kB | 124 kB |
 
-Phaser remains a separate lazy chunk and does not affect either initial route.
-The world atlas is approximately 466 kB and the character sheet approximately
-56 kB; both are requested only after Start.
+Phaser remains a separate lazy chunk and does not affect the initial Portfolio
+route. The world atlas is approximately 466 kB and the character sheet
+approximately 56 kB; both are requested only after Game mode activation.
 
 ## Local responsive and accessibility matrix
 
@@ -71,7 +77,7 @@ must not be committed.
 | Surface | 320px | 390px | 768px | 1440px | 200% text | Dark/light | Reduced motion |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Portfolio reading flow | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
-| Chronicle ready state | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
+| Chronicle training shell | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
 | Runtime HUD and controls | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
 | Unlock card | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
 | Story Log | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
@@ -87,21 +93,28 @@ browser, preview URL, reviewer, and result.
 
 ### Desktop keyboard
 
-- [ ] Complete a fresh guided run and confirm auto-run, Space/Up jump, Shift/D
-  dash, S/Down fast-drop, P pause, L Story Log, R restart, M sound, and Escape
-  exit all match their visible labels.
-- [ ] Take at least one safe route and one optional upper route; confirm the
-  harder line rewards score or momentum without becoming mandatory.
+- [ ] Enter through the Portfolio Game control and complete Jump, Dash, safe
+  airborne Fast Drop, Pause/Resume, and Story Log as the five displayed actions;
+  confirm unrelated inputs do not advance a step and normal play starts after
+  step five without an intermediate deployment page.
+- [ ] Complete a run and confirm auto-run, Space/Up jump, Shift/D dash, S/Down
+  fast-drop, P pause, L Story Log, R restart, M sound, and Escape exit all match
+  their visible labels.
+- [ ] Take every optional upper-route entrance at least once; confirm each jump
+  has forgiving clearance, lower routes remain unobstructed, and harder lines
+  reward score or momentum without becoming mandatory.
 - [ ] Hit a hazard and fall from an upper route; confirm recovery is quick, uses
   the latest checkpoint, and retains recovered story records.
-- [ ] Recover representative Education, Experience, and Project cards; compare
-  title, organisation/project, period/status, summary, and technologies with the
-  recruiter-facing portfolio.
+- [ ] Recover representative Education, Experience, and Project cards; confirm
+  the larger halo/pulse reads clearly before collision, catch feedback is brief,
+  and title, organisation/project, period/status, summary, and technologies
+  match the recruiter-facing portfolio.
 - [ ] Keep each unlock visible through the next route segment and confirm it does
   not hide the player, next hazard, critical HUD, or controls.
-- [ ] Finish Present Day, review score and records, open the Story Log from the
-  recap, replay, restart, refresh, and confirm durable records/completion/high
-  score while transient score and position reset.
+- [ ] Finish Present Day, review score, elapsed time, personal best and records,
+  open the Story Log from the recap, then complete faster and slower replays;
+  confirm only a faster valid completion changes best time and restart resets
+  transient score, time, and position.
 
 ### Mobile and touch
 
@@ -117,10 +130,10 @@ browser, preview URL, reviewer, and result.
 
 - [ ] Switch Day/Night during active play, during an unlock, and in the Story Log;
   confirm the world and DOM remain legible without restart or progress loss.
-- [ ] Start with reduced motion enabled, then toggle it live. Confirm deployment
-  travel, camera easing, parallax differentiation, flashes, shakes, and spatial
-  UI motion stop while route timing, controls, score, records, and completion stay
-  equivalent.
+- [ ] Start with reduced motion enabled, then toggle it live. Confirm camera
+  easing, parallax differentiation, pickup bob/pulse, character angle/afterimage,
+  particles, flashes, shakes, and spatial UI motion settle while route physics,
+  controls, score, time, records, and completion stay equivalent.
 - [ ] Background and restore the tab on desktop and mobile; confirm movement,
   scoring, hazards, and input stop until explicit Resume.
 
@@ -128,8 +141,9 @@ browser, preview URL, reviewer, and result.
 
 - [ ] Complete the Portfolio reading flow with current VoiceOver/Safari and
   NVDA/Firefox or NVDA/Chrome.
-- [ ] On `/game/`, verify the ready-state premise, duration, controls, Start, and
-  direct Portfolio return are understandable before starting.
+- [ ] On `/game/`, verify the five-step training premise, ordinal progress,
+  current input, returning-player skip, and direct Portfolio return are
+  understandable before normal movement starts.
 - [ ] Verify chapter/status changes and a recovered record's type and title are
   announced politely without repeated or competing announcements.
 - [ ] Open an empty and partial Story Log, traverse all recovered/locked entries,
@@ -142,10 +156,12 @@ browser, preview URL, reviewer, and result.
 
 - [ ] Exercise direct `/`, `/game/`, and chapter-anchor refreshes on the actual
   static host, plus browser Back/Forward and remembered Portfolio return.
-- [ ] Inspect network requests: Portfolio and pre-Start `/game/` must not request
-  Phaser, the character sheet, or the industrial world atlas.
-- [ ] Inspect the console throughout ready, active, paused, unlock, Story Log,
-  completion, replay, refresh, and exit flows; no uncaught errors are acceptable.
+- [ ] Inspect network requests: the Portfolio must not request Phaser, the
+  character sheet, or the industrial world atlas; those requests may begin only
+  after the visitor activates Game mode or opens `/game/` directly.
+- [ ] Inspect the console throughout training, active, paused, unlock, Story Log,
+  completion, timing, replay, refresh, and exit flows; no uncaught errors are
+  acceptable.
 - [ ] Confirm private CV files, environment files, credentials, certificates,
   local design studies, traces, screenshots, and temporary artifacts are absent
   from the release archive.
@@ -158,8 +174,8 @@ browser, preview URL, reviewer, and result.
   its Sharp build dependency. This is a static export with no Next server,
   Server Actions, or image optimisation endpoint; the available automated fix
   requires a separate semver-major Next 16 migration.
-- Phaser is intentionally substantial but isolated behind Start. It must remain
-  absent from the initial recruiter-facing and Game ready-state requests.
+- Phaser is intentionally substantial but isolated behind Game mode activation.
+  It must remain absent from the initial recruiter-facing Portfolio request.
 
 Production deployment remains out of scope until the preview matrix is signed
 off.

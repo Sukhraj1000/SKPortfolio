@@ -7,7 +7,7 @@ Production site: [sukhrajkalon.info](https://sukhrajkalon.info)
 ## Routes
 
 - `/` — recruiter-facing portfolio: Profile, Projects, Experience, Skills, and Contact.
-- `/game/` — optional **Chronicle Run** auto-runner through five chronological professional chapters. Phaser and world assets stay lazy-loaded until the visitor explicitly selects **Start Chronicle Run**.
+- `/game/` — optional **Chronicle Run** auto-runner through five chronological professional chapters. Selecting Game transitions directly into a paused five-step training shell; Phaser and world assets remain isolated from the Portfolio route and load only after Game mode activation.
 
 No portfolio evidence is gated behind the game.
 
@@ -66,7 +66,7 @@ The release checklist and remaining real-device checks are documented in [`docs/
 
 The portfolio supports keyboard navigation, visible focus, semantic headings and landmarks, native disclosure controls, dark and light themes, widths from 320 pixels, 200% text sizing, no-JavaScript content, and `prefers-reduced-motion`. Decorative sprites are pointer-inert and excluded from the accessibility tree.
 
-Chronicle Run adds labelled keyboard and touch controls, a guided opening, non-blocking DOM unlock cards, a focus-contained pause-safe Story Log, live theme and reduced-motion updates, and a direct Portfolio exit. The server-rendered ready state remains useful when JavaScript is unavailable.
+Chronicle Run adds labelled keyboard and touch controls, an input-driven five-step walkthrough, forgiving reachable routes, larger animated rewards, pause-aware personal-best timing, non-blocking DOM unlock cards, a focus-contained Story Log, live theme and reduced-motion updates, and a direct Portfolio exit. The server-rendered training fallback remains informative when JavaScript is unavailable.
 
 Automated accessibility checks supplement rather than replace real assistive-technology review.
 

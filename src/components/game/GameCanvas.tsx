@@ -13,13 +13,11 @@ export function GameCanvas({
   controls,
   callbacks,
   onReady,
-  skipTutorial,
   recoveredRecords,
 }: {
   controls: React.MutableRefObject<GameControlsState>;
   callbacks: ChronicleGameCallbacks;
   onReady: (handle: ChronicleGameHandle | null) => void;
-  skipTutorial: boolean;
   recoveredRecords: readonly ChronicleRecordId[];
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -41,7 +39,6 @@ export function GameCanvas({
       handle = createChronicleGame({
         parent: containerRef.current,
         controls,
-        skipTutorial,
         recoveredRecords: initialRecoveredRecordsRef.current,
         callbacks: {
           onSnapshot: (snapshot) => callbacksRef.current.onSnapshot(snapshot),
@@ -59,7 +56,7 @@ export function GameCanvas({
       onReady(null);
       handle?.destroy();
     };
-  }, [controls, onReady, skipTutorial]);
+  }, [controls, onReady]);
 
   return (
     <div

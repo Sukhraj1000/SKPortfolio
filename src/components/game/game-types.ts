@@ -50,7 +50,7 @@ export interface ChronicleGameHandle {
   setReducedMotion: (reduced: boolean) => void;
   performTutorialAction: (action: GameAction) => void;
   completeTutorialAction: (action: "pause" | "story-log") => void;
-  beginRun: (skipTutorial?: boolean) => void;
+  beginRun: (skipWalkthrough?: boolean) => void;
   restart: () => void;
   refreshTheme: () => void;
 }

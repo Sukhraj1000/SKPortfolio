@@ -435,7 +435,7 @@
   background: var(--signal-yellow);
 }
 
-.skipTutorial {
+.skipWalkthrough {
   min-height: 44px;
   border: 1px solid var(--border-strong);
   background: var(--background);
@@ -447,7 +447,7 @@
   text-transform: uppercase;
 }
 
-.skipTutorial:hover {
+.skipWalkthrough:hover {
   border-color: var(--primary);
   color: var(--primary);
 }

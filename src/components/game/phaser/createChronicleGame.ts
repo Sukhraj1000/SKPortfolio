@@ -149,17 +149,15 @@ export function createChronicleGame({
   parent,
   controls,
   callbacks,
-  skipTutorial,
   recoveredRecords: initialRecoveredRecords,
 }: {
   parent: HTMLElement;
   controls: MutableRefObject<GameControlsState>;
   callbacks: ChronicleGameCallbacks;
-  skipTutorial: boolean;
   recoveredRecords: readonly ChronicleRecordId[];
 }): ChronicleGameHandle {
   let pausedRequested = true;
-  let tutorialAlreadyCompleted = skipTutorial;
+  let tutorialAlreadyCompleted = false;
   let reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -1064,8 +1062,8 @@ export function createChronicleGame({
       this.advanceTutorial(action);
     }
 
-    beginRun(skipTutorialStep = false) {
-      if (skipTutorialStep) {
+    beginRun(skipWalkthrough = false) {
+      if (skipWalkthrough) {
         this.tutorialStepIndex = chronicleTutorialSteps.length - 1;
       }
       if (!this.tutorialCompleted()) return;
@@ -1082,7 +1080,7 @@ export function createChronicleGame({
       this.dashReadyAt = 0;
       this.lastScoredX = 150;
       callbacks.onNotice(
-        skipTutorialStep
+        skipWalkthrough
           ? "Walkthrough skipped. Auto-run active."
           : "Ready. Chronicle Run starts now.",
         "success",
@@ -1269,8 +1267,8 @@ export function createChronicleGame({
     completeTutorialAction(action) {
       getScene()?.completeTutorialAction(action);
     },
-    beginRun(skipTutorialStep = false) {
-      getScene()?.beginRun(skipTutorialStep);
+    beginRun(skipWalkthrough = false) {
+      getScene()?.beginRun(skipWalkthrough);
     },
     restart() {
       const scene = getScene();

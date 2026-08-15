@@ -672,7 +672,7 @@ test.describe("Chronicle Run", () => {
     ).toBeVisible();
   });
 
-  test("reflows ready, runtime, Story Log, and unlock UI at 320 pixels and 200 percent text", async ({
+  test("reflows training, runtime, Story Log, and unlock UI at 320 pixels and 200 percent text", async ({
     browser,
     baseURL,
   }) => {

@@ -47,7 +47,6 @@ type StoryOverlay = "story-log" | "complete";
 
 interface GameExperienceProps {
   onExit: () => void;
-  skipTutorial: boolean;
   initialProgress: ChronicleProgress;
 }
 
@@ -150,7 +149,6 @@ function TouchButton({
 
 export function GameExperience({
   onExit,
-  skipTutorial,
   initialProgress,
 }: GameExperienceProps) {
   const controlsRef = React.useRef<GameControlsState>({
@@ -164,6 +162,7 @@ export function GameExperience({
   const audioContextRef = React.useRef<AudioContext | null>(null);
   const shouldPauseRef = React.useRef(true);
   const reducedMotionRef = React.useRef(false);
+  const queuedTutorialActionRef = React.useRef<GameAction | null>(null);
   const [spawnCycle, setSpawnCycle] = React.useState(0);
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
   const [runtimeReady, setRuntimeReady] = React.useState(false);
@@ -225,6 +224,17 @@ export function GameExperience({
       noticeTimerRef.current = window.setTimeout(() => setNotice(null), 3200);
     },
     [playTone],
+  );
+
+  const performTutorialAction = React.useCallback(
+    (action: GameAction) => {
+      if (!runtimeReady || !gameHandleRef.current) {
+        queuedTutorialActionRef.current = action;
+        return;
+      }
+      gameHandleRef.current.performTutorialAction(action);
+    },
+    [runtimeReady],
   );
 
   React.useEffect(() => {
@@ -329,7 +339,7 @@ export function GameExperience({
       if (!snapshot.runStarted && !storyOverlay && tutorialAction) {
         event.preventDefault();
         if (snapshot.tutorialStep === tutorialAction) {
-          gameHandleRef.current?.performTutorialAction(tutorialAction);
+          performTutorialAction(tutorialAction);
         }
         return;
       }
@@ -417,6 +427,7 @@ export function GameExperience({
     };
   }, [
     onExit,
+    performTutorialAction,
     showNotice,
     snapshot.completed,
     snapshot.runStarted,
@@ -456,6 +467,13 @@ export function GameExperience({
       onSnapshot: (nextSnapshot: GameSnapshot) => {
         setSnapshot(nextSnapshot);
         setRuntimeReady(true);
+        const queuedAction = queuedTutorialActionRef.current;
+        if (queuedAction && nextSnapshot.tutorialStep === queuedAction) {
+          queuedTutorialActionRef.current = null;
+          window.queueMicrotask(() =>
+            gameHandleRef.current?.performTutorialAction(queuedAction),
+          );
+        }
       },
       onUnlock: setActiveUnlockId,
       onNotice: showNotice,
@@ -561,6 +579,7 @@ export function GameExperience({
       data-tutorial-step={snapshot.tutorialStep}
       data-tutorial-completed={snapshot.tutorialCompleted}
       data-run-started={snapshot.runStarted}
+      data-runtime-ready={runtimeReady}
       data-recovered-records={snapshot.recoveredRecords.length}
       data-latest-unlock={snapshot.latestUnlockId ?? ""}
       data-reduced-motion={reducedMotionActive}
@@ -708,7 +727,6 @@ export function GameExperience({
           controls={controlsRef}
           callbacks={callbacks}
           onReady={setGameHandle}
-          skipTutorial={skipTutorial}
           recoveredRecords={initialProgress.recoveredRecords}
         />
         <div className={styles.scanlines} aria-hidden="true" />
@@ -777,7 +795,7 @@ export function GameExperience({
             {savedProgress.tutorialCompleted ? (
               <button
                 type="button"
-                className={styles.skipTutorial}
+                className={styles.skipWalkthrough}
                 disabled={!runtimeReady}
                 onClick={() => beginNormalRun(true)}
               >
@@ -830,7 +848,7 @@ export function GameExperience({
             controls={controlsRef}
             onPress={() => {
               if (!snapshot.runStarted && snapshot.tutorialStep === "jump") {
-                gameHandleRef.current?.performTutorialAction("jump");
+                performTutorialAction("jump");
               }
             }}
           />
@@ -841,7 +859,7 @@ export function GameExperience({
             controls={controlsRef}
             onPress={() => {
               if (!snapshot.runStarted && snapshot.tutorialStep === "dash") {
-                gameHandleRef.current?.performTutorialAction("dash");
+                performTutorialAction("dash");
               }
             }}
           />
@@ -852,7 +870,7 @@ export function GameExperience({
             controls={controlsRef}
             onPress={() => {
               if (!snapshot.runStarted && snapshot.tutorialStep === "drop") {
-                gameHandleRef.current?.performTutorialAction("drop");
+                performTutorialAction("drop");
               }
             }}
           />

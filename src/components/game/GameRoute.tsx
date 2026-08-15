@@ -72,8 +72,9 @@ function TrainingShellFallback({
           ))}
         </ol>
         <p className="font-mono text-xs uppercase tracking-[0.06em] text-ink-muted">
-          Loading the paused training stage. The run will not move until the
-          walkthrough is complete.
+          Loading the paused training stage. This optional game will not move
+          until the walkthrough is complete; the full Portfolio remains
+          available below.
         </p>
         <Button variant="outline" asChild className="w-fit max-w-full">
           <Link href={portfolioReturnHref}>
@@ -81,12 +82,6 @@ function TrainingShellFallback({
             Exit to Portfolio
           </Link>
         </Button>
-        <noscript>
-          <p className="border-l-2 border-signal-yellow pl-3 text-sm text-foreground">
-            JavaScript is required for the optional game. The complete
-            professional portfolio remains available through the link above.
-          </p>
-        </noscript>
       </div>
     </section>
   );
@@ -119,11 +114,7 @@ export function GameRoute() {
     <React.Suspense
       fallback={<TrainingShellFallback portfolioReturnHref={portfolioReturnHref} />}
     >
-      <GameExperience
-        onExit={exitGame}
-        skipTutorial={false}
-        initialProgress={savedProgress}
-      />
+      <GameExperience onExit={exitGame} initialProgress={savedProgress} />
     </React.Suspense>
   );
 }
