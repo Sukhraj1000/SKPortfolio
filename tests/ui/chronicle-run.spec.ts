@@ -114,4 +114,50 @@ test.describe("Chronicle Run", () => {
       .poll(() => requests.some((url) => url.includes("industrial-world-atlas")))
       .toBeTruthy();
   });
+
+  test("auto-runs and responds to jump, dash, pause, and restart", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/game/");
+    await page.getByRole("button", { name: "Start Chronicle Run" }).click();
+
+    const runtime = page.locator("[data-journey-progress]");
+    await expect(runtime).toHaveAttribute("data-game-state", "running");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThan(1);
+
+    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await stage.focus();
+    await page.keyboard.press("Space");
+    await expect
+      .poll(() => runtime.getAttribute("data-player-state"))
+      .toMatch(/jumping|falling/);
+
+    await page.keyboard.down("Shift");
+    await expect
+      .poll(() => runtime.getAttribute("data-player-state"))
+      .toBe("dashing");
+    await expect(runtime).toHaveAttribute("data-dash-ready", "false");
+    await page.keyboard.up("Shift");
+
+    await page.getByRole("button", { name: "Pause", exact: true }).click();
+    await expect(runtime).toHaveAttribute("data-game-state", "paused");
+    const pausedProgress = await runtime.getAttribute("data-journey-progress");
+    await page.waitForTimeout(700);
+    await expect(runtime).toHaveAttribute(
+      "data-journey-progress",
+      pausedProgress ?? "0",
+    );
+
+    await page.getByRole("button", { name: "Start or resume" }).click();
+    await expect(runtime).toHaveAttribute("data-game-state", "running");
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeGreaterThan(Number(pausedProgress));
+
+    await page.getByRole("button", { name: "Restart level" }).click();
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .toBeLessThanOrEqual(4);
+  });
 });

@@ -58,7 +58,7 @@ export function GameCanvas({
       ref={containerRef}
       className={styles.canvasHost}
       role="application"
-      aria-label="IRON SIGNAL platformer. Use WASD or arrow keys to move, Space to jump, and E or Enter to interact."
+      aria-label="Chronicle Run auto-runner. Use Space or Up to jump, Shift or D to dash, and S or Down to fast-drop."
       tabIndex={0}
     />
   );

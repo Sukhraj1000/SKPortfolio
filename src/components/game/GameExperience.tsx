@@ -3,8 +3,6 @@
 import * as React from "react";
 import {
   ArrowDown,
-  ArrowLeft,
-  ArrowRight,
   ArrowUp,
   Gamepad2,
   LogOut,
@@ -14,6 +12,7 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
+  Zap,
 } from "lucide-react";
 import { GameCanvas } from "@/components/game/GameCanvas";
 import { chronicleChapters } from "@/components/game/chronicle-story";
@@ -132,16 +131,16 @@ function TouchButton({
 
 export function GameExperience({ onExit }: GameExperienceProps) {
   const controlsRef = React.useRef<GameControlsState>({
-    left: false,
-    right: false,
     jump: false,
-    interact: false,
+    dash: false,
+    drop: false,
   });
   const gameHandleRef = React.useRef<SignalGameHandle | null>(null);
   const stageRef = React.useRef<HTMLDivElement>(null);
   const noticeTimerRef = React.useRef<number | null>(null);
   const audioContextRef = React.useRef<AudioContext | null>(null);
   const shouldPauseRef = React.useRef(true);
+  const reducedMotionRef = React.useRef(false);
   const [spawnCycle, setSpawnCycle] = React.useState(0);
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
   const [paused, setPaused] = React.useState(false);
@@ -221,7 +220,7 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     shouldPauseRef.current = shouldPause;
     gameHandleRef.current?.setPaused(shouldPause);
     if (shouldPause) {
-      controlsRef.current = { left: false, right: false, jump: false, interact: false };
+      controlsRef.current = { jump: false, dash: false, drop: false };
     }
   }, [panelId, paused, spawnPhase]);
 
@@ -284,9 +283,23 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     return () => observer.disconnect();
   }, []);
 
+  React.useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => {
+      reducedMotionRef.current = motionQuery.matches;
+      gameHandleRef.current?.setReducedMotion(motionQuery.matches);
+    };
+    syncMotion();
+    motionQuery.addEventListener("change", syncMotion);
+    return () => motionQuery.removeEventListener("change", syncMotion);
+  }, []);
+
   const setGameHandle = React.useCallback((handle: SignalGameHandle | null) => {
     gameHandleRef.current = handle;
-    if (handle) handle.setPaused(shouldPauseRef.current);
+    if (handle) {
+      handle.setReducedMotion(reducedMotionRef.current);
+      handle.setPaused(shouldPauseRef.current);
+    }
   }, []);
 
   const callbacks = React.useMemo(
@@ -336,22 +349,18 @@ export function GameExperience({ onExit }: GameExperienceProps) {
           : snapshot.completed
             ? "Complete"
             : "Running";
-  const legacyChapterIndex = Math.max(
-    0,
-    ["onboarding", "mission-archive", "field-log", "loadout", "comms"].indexOf(
-      snapshot.zone,
-    ),
-  );
-  const activeChapter = chronicleChapters[legacyChapterIndex] ?? chronicleChapters[0];
-  const journeyProgress = Math.round(
-    (legacyChapterIndex / (chronicleChapters.length - 1)) * 100,
-  );
+  const activeChapter =
+    chronicleChapters[snapshot.chapterIndex] ?? chronicleChapters[0];
+  const journeyProgress = snapshot.journeyProgress;
 
   return (
     <section
       aria-labelledby="game-runtime-title"
       data-game-state={gameStatus.toLowerCase()}
       data-chronicle-chapter={activeChapter.id}
+      data-journey-progress={journeyProgress}
+      data-player-state={snapshot.playerState}
+      data-dash-ready={snapshot.dashReady}
       className="min-h-[100svh] bg-background pt-16"
     >
       <h1 id="game-runtime-title" className="sr-only">
@@ -425,9 +434,9 @@ export function GameExperience({ onExit }: GameExperienceProps) {
           <li
             key={chapter.id}
             data-chapter-state={
-              index < legacyChapterIndex
+              index < snapshot.chapterIndex
                 ? "complete"
-                : index === legacyChapterIndex
+                : index === snapshot.chapterIndex
                   ? "active"
                   : "ahead"
             }
@@ -481,14 +490,24 @@ export function GameExperience({ onExit }: GameExperienceProps) {
         ) : null}
 
         <div className={styles.touchControls} aria-label="Touch game controls">
-          <div className="flex gap-2">
-            <TouchButton action="left" label="Move left" icon={<ArrowLeft aria-hidden="true" />} controls={controlsRef} />
-            <TouchButton action="right" label="Move right" icon={<ArrowRight aria-hidden="true" />} controls={controlsRef} />
-          </div>
-          <div className="flex gap-2">
-            <TouchButton action="jump" label="Jump" icon={<ArrowUp aria-hidden="true" />} controls={controlsRef} />
-            <TouchButton action="interact" label="Interact" icon={<ArrowDown aria-hidden="true" />} controls={controlsRef} />
-          </div>
+          <TouchButton
+            action="jump"
+            label="Jump"
+            icon={<ArrowUp aria-hidden="true" />}
+            controls={controlsRef}
+          />
+          <TouchButton
+            action="dash"
+            label="Dash"
+            icon={<Zap aria-hidden="true" />}
+            controls={controlsRef}
+          />
+          <TouchButton
+            action="drop"
+            label="Fast drop"
+            icon={<ArrowDown aria-hidden="true" />}
+            controls={controlsRef}
+          />
         </div>
 
         {panelId ? (

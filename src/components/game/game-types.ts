@@ -18,18 +18,27 @@ export type GamePanelId =
   | "comms"
   | "uplink";
 
-export type GameAction = "left" | "right" | "jump" | "interact";
+export type ChroniclePlayerState =
+  | "grounded"
+  | "jumping"
+  | "falling"
+  | "dashing";
+
+export type GameAction = "jump" | "dash" | "drop";
 
 export interface GameControlsState {
-  left: boolean;
-  right: boolean;
   jump: boolean;
-  interact: boolean;
+  dash: boolean;
+  drop: boolean;
 }
 
 export interface GameSnapshot {
   zone: GameZoneId;
   zoneLabel: string;
+  chapterIndex: number;
+  journeyProgress: number;
+  playerState: ChroniclePlayerState;
+  dashReady: boolean;
   score: number;
   multiplier: number;
   signal: number;
@@ -57,13 +66,18 @@ export interface SignalGameCallbacks {
 export interface SignalGameHandle {
   destroy: () => void;
   setPaused: (paused: boolean) => void;
+  setReducedMotion: (reduced: boolean) => void;
   restart: () => void;
   refreshTheme: () => void;
 }
 
 export const initialGameSnapshot: GameSnapshot = {
   zone: "onboarding",
-  zoneLabel: "Onboarding Bay",
+  zoneLabel: "Origin",
+  chapterIndex: 0,
+  journeyProgress: 0,
+  playerState: "grounded",
+  dashReady: true,
   score: 0,
   multiplier: 1,
   signal: 100,

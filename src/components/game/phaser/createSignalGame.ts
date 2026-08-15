@@ -13,8 +13,14 @@ import type {
 const WORLD_WIDTH = 5360;
 const WORLD_HEIGHT = 720;
 const FLOOR_Y = 664;
-const PLAYER_SPEED = 285;
+const RUN_SPEED = 270;
+const DASH_SPEED = 455;
+const DASH_DURATION = 240;
+const DASH_COOLDOWN = 950;
 const JUMP_SPEED = 610;
+const DROP_SPEED = 820;
+const COYOTE_WINDOW = 120;
+const JUMP_BUFFER_WINDOW = 140;
 
 const zones: readonly {
   id: GameZoneId;
@@ -23,11 +29,11 @@ const zones: readonly {
   end: number;
   tint: number;
 }[] = [
-  { id: "onboarding", label: "Onboarding Bay", start: 0, end: 640, tint: 0x66747a },
-  { id: "mission-archive", label: "Mission Archive", start: 640, end: 1900, tint: 0x315f78 },
-  { id: "field-log", label: "Field Log", start: 1900, end: 2900, tint: 0x5e765f },
-  { id: "loadout", label: "Loadout Bay", start: 2900, end: 3900, tint: 0x39758a },
-  { id: "comms", label: "Comms Tower", start: 3900, end: WORLD_WIDTH, tint: 0xc79b2e },
+  { id: "onboarding", label: "Origin", start: 0, end: 640, tint: 0x315f78 },
+  { id: "mission-archive", label: "Live Systems", start: 640, end: 1900, tint: 0xc79b2e },
+  { id: "field-log", label: "Secure Engineering", start: 1900, end: 2900, tint: 0x315f78 },
+  { id: "loadout", label: "Build Lab", start: 2900, end: 3900, tint: 0xa94743 },
+  { id: "comms", label: "Present Day", start: 3900, end: WORLD_WIDTH, tint: 0x5e765f },
 ] as const;
 
 const terminalDefinitions: readonly {
@@ -104,13 +110,13 @@ export function createSignalGame({
   callbacks: SignalGameCallbacks;
 }): SignalGameHandle {
   let pausedRequested = true;
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   class SignalScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private keys!: Record<
-      "left" | "right" | "jump" | "interact" | "enter",
+      "jump" | "dash" | "dashAlt" | "drop" | "dropAlt",
       Phaser.Input.Keyboard.Key
     >;
     private terminals: Phaser.Physics.Arcade.StaticGroup | null = null;
@@ -128,9 +134,15 @@ export function createSignalGame({
     private respawnX = 150;
     private respawnY = 520;
     private lastTouchJump = false;
-    private lastTouchInteract = false;
+    private lastTouchDash = false;
     private lastZone: GameZoneId = "onboarding";
     private damageReadyAt = 0;
+    private lastGroundedAt = 0;
+    private jumpBufferedAt = Number.NEGATIVE_INFINITY;
+    private dashEndsAt = 0;
+    private dashReadyAt = 0;
+    private lastSnapshotAt = 0;
+    private playerState: GameSnapshot["playerState"] = "grounded";
     private themedObjects: Phaser.GameObjects.Rectangle[] = [];
     private zoneLabels: Phaser.GameObjects.Text[] = [];
 
@@ -163,9 +175,15 @@ export function createSignalGame({
       this.respawnX = 150;
       this.respawnY = 520;
       this.lastTouchJump = false;
-      this.lastTouchInteract = false;
+      this.lastTouchDash = false;
       this.lastZone = "onboarding";
       this.damageReadyAt = 0;
+      this.lastGroundedAt = 0;
+      this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
+      this.dashEndsAt = 0;
+      this.dashReadyAt = 0;
+      this.lastSnapshotAt = 0;
+      this.playerState = "grounded";
       this.themedObjects = [];
       this.zoneLabels = [];
 
@@ -205,8 +223,8 @@ export function createSignalGame({
       const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
       playerBody.setSize(26, 52);
       playerBody.setOffset(11, 11);
-      this.player.setMaxVelocity(PLAYER_SPEED, 780);
-      this.player.setDragX(1200);
+      this.player.setMaxVelocity(DASH_SPEED, DROP_SPEED);
+      this.player.setDragX(0);
       this.physics.add.collider(this.player, platforms);
 
       this.createTerminals();
@@ -215,19 +233,17 @@ export function createSignalGame({
       this.createHazards(platforms);
       this.createFinalUplink();
 
-      const cameraLerp = prefersReducedMotion ? 1 : 0.09;
-      this.cameras.main.startFollow(this.player, true, cameraLerp, cameraLerp);
-      this.cameras.main.setDeadzone(220, 120);
+      this.configureCamera();
 
       this.cursors = this.input.keyboard!.createCursorKeys();
       this.keys = this.input.keyboard!.addKeys({
-        left: Phaser.Input.Keyboard.KeyCodes.A,
-        right: Phaser.Input.Keyboard.KeyCodes.D,
         jump: Phaser.Input.Keyboard.KeyCodes.SPACE,
-        interact: Phaser.Input.Keyboard.KeyCodes.E,
-        enter: Phaser.Input.Keyboard.KeyCodes.ENTER,
+        dash: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+        dashAlt: Phaser.Input.Keyboard.KeyCodes.D,
+        drop: Phaser.Input.Keyboard.KeyCodes.S,
+        dropAlt: Phaser.Input.Keyboard.KeyCodes.DOWN,
       }) as Record<
-        "left" | "right" | "jump" | "interact" | "enter",
+        "jump" | "dash" | "dashAlt" | "drop" | "dropAlt",
         Phaser.Input.Keyboard.Key
       >;
 
@@ -236,46 +252,63 @@ export function createSignalGame({
       });
 
       this.refreshTheme();
-      callbacks.onNotice("Move with WASD or arrows. Reach the nearby beacon.", "info");
+      callbacks.onNotice("Auto-run active. Space jumps, Shift dashes, and S drops.", "info");
       this.emitSnapshot();
       if (pausedRequested) this.scene.pause();
     }
 
-    update() {
+    update(time: number) {
       const body = this.player.body as Phaser.Physics.Arcade.Body;
       const grounded = body.blocked.down || body.touching.down;
-      const moveLeft = this.cursors.left.isDown || this.keys.left.isDown || controls.current.left;
-      const moveRight = this.cursors.right.isDown || this.keys.right.isDown || controls.current.right;
-      const keyboardJump = Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keys.jump);
+      const keyboardJump =
+        Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.jump);
       const touchJump = controls.current.jump && !this.lastTouchJump;
-      const keyboardInteract = Phaser.Input.Keyboard.JustDown(this.keys.interact) ||
-        Phaser.Input.Keyboard.JustDown(this.keys.enter);
-      const touchInteract = controls.current.interact && !this.lastTouchInteract;
+      const keyboardDash =
+        Phaser.Input.Keyboard.JustDown(this.keys.dash) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.dashAlt);
+      const touchDash = controls.current.dash && !this.lastTouchDash;
+      const dropHeld =
+        this.cursors.down.isDown ||
+        this.keys.drop.isDown ||
+        this.keys.dropAlt.isDown ||
+        controls.current.drop;
+      const previousState = this.playerState;
 
-      if (moveLeft === moveRight) {
-        this.player.setAccelerationX(0);
-      } else if (moveLeft) {
-        this.player.setAccelerationX(-1500);
-      } else {
-        this.player.setAccelerationX(1500);
-      }
+      if (grounded) this.lastGroundedAt = time;
+      if (keyboardJump || touchJump) this.jumpBufferedAt = time;
 
-      if ((keyboardJump || touchJump) && grounded) {
+      if (
+        time - this.jumpBufferedAt <= JUMP_BUFFER_WINDOW &&
+        time - this.lastGroundedAt <= COYOTE_WINDOW
+      ) {
         this.player.setVelocityY(-JUMP_SPEED);
+        this.jumpBufferedAt = Number.NEGATIVE_INFINITY;
+        this.lastGroundedAt = Number.NEGATIVE_INFINITY;
       }
 
-      if (!grounded) {
+      if ((keyboardDash || touchDash) && time >= this.dashReadyAt) {
+        this.dashEndsAt = time + DASH_DURATION;
+        this.dashReadyAt = time + DASH_COOLDOWN;
+        this.emitSnapshot();
+      }
+
+      const dashing = time < this.dashEndsAt;
+      this.player.setVelocityX(dashing ? DASH_SPEED : RUN_SPEED);
+
+      if (!grounded && dropHeld && body.velocity.y < DROP_SPEED) {
+        this.player.setVelocityY(Math.max(360, body.velocity.y + 90));
+      }
+
+      if (dashing) {
+        this.playerState = "dashing";
+        this.player.play("sk-run-right", true);
+      } else if (!grounded) {
+        this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
         this.player.play(body.velocity.y < 0 ? "sk-jump" : "sk-fall", true);
-      } else if (Math.abs(body.velocity.x) > 20) {
-        this.player.play(body.velocity.x < 0 ? "sk-run-left" : "sk-run-right", true);
       } else {
-        this.player.play("sk-idle", true);
-      }
-
-      this.updateNearbyTarget();
-
-      if (keyboardInteract || touchInteract) {
-        this.activateNearbyTarget();
+        this.playerState = "grounded";
+        this.player.play("sk-run-right", true);
       }
 
       if (this.player.y > WORLD_HEIGHT - 20) {
@@ -284,7 +317,20 @@ export function createSignalGame({
 
       this.updateZone();
       this.lastTouchJump = controls.current.jump;
-      this.lastTouchInteract = controls.current.interact;
+      this.lastTouchDash = controls.current.dash;
+
+      if (previousState !== this.playerState || time - this.lastSnapshotAt >= 250) {
+        this.lastSnapshotAt = time;
+        this.emitSnapshot();
+      }
+    }
+
+    private configureCamera() {
+      const camera = this.cameras.main;
+      const cameraLerp = reducedMotion ? 1 : 0.12;
+      camera.startFollow(this.player, true, cameraLerp, cameraLerp);
+      camera.setDeadzone(Math.min(420, parent.clientWidth * 0.4), 130);
+      camera.setFollowOffset(Math.min(250, parent.clientWidth * 0.18), 0);
     }
 
     private createAtmosphere() {
@@ -365,7 +411,7 @@ export function createSignalGame({
         core.setDataEnabled();
         core.setData("coreId", definition.id);
         core.setDepth(8);
-        if (!prefersReducedMotion) {
+        if (!reducedMotion) {
           this.tweens.add({
             targets: core,
             y: definition.y - 10,
@@ -541,6 +587,10 @@ export function createSignalGame({
 
     private emitSnapshot() {
       const zone = zones.find((candidate) => candidate.id === this.lastZone) ?? zones[0];
+      const chapterIndex = Math.max(
+        0,
+        zones.findIndex((candidate) => candidate.id === zone.id),
+      );
       const nearbyLabel = this.nearbyUplink
         ? (this.finalUplink.getData("label") as string)
         : this.nearbyTerminal
@@ -550,6 +600,14 @@ export function createSignalGame({
       const snapshot: GameSnapshot = {
         zone: zone.id,
         zoneLabel: zone.label,
+        chapterIndex,
+        journeyProgress: Phaser.Math.Clamp(
+          Math.round((this.player.x / WORLD_WIDTH) * 100),
+          0,
+          100,
+        ),
+        playerState: this.playerState,
+        dashReady: this.time.now >= this.dashReadyAt,
         score: this.score,
         multiplier: this.multiplier,
         signal: this.signal,
@@ -560,6 +618,11 @@ export function createSignalGame({
         completed: this.completed,
       };
       callbacks.onSnapshot(snapshot);
+    }
+
+    setReducedMotion(reduced: boolean) {
+      reducedMotion = reduced;
+      this.configureCamera();
     }
 
     refreshTheme() {
@@ -615,6 +678,9 @@ export function createSignalGame({
       if (!scene) return;
       if (paused && scene.scene.isActive()) scene.scene.pause();
       if (!paused && scene.scene.isPaused()) scene.scene.resume();
+    },
+    setReducedMotion(reduced) {
+      getScene()?.setReducedMotion(reduced);
     },
     restart() {
       pausedRequested = true;
