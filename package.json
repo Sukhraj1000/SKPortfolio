@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Sukhraj Kalon's statically exported Pixel Quest software engineering portfolio.",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sukhraj1000/SKPortfolio.git"

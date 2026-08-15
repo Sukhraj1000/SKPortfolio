@@ -77,3 +77,7 @@ npm run qa
 The export is written to `out/`. Hostinger-specific deployment notes are available in [`DEPLOY.md`](DEPLOY.md); `deploy.sh` performs the production audit and build preparation.
 
 Private CV files, environment files, credentials, certificates, and profile-reference material are excluded from version control. The contact address is assembled in the browser to avoid placing the complete value in server-rendered HTML; this is not a privacy boundary.
+
+## License
+
+Released under the [MIT License](LICENSE).
