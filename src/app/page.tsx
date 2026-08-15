@@ -8,9 +8,13 @@ export default function Home() {
   return (
     <div className="pq-root min-h-screen overflow-clip bg-background" data-portfolio-theme="pixel-quest">
       <HeroSection />
-      <StoryRail />
-      <ProjectsSection />
-      <AboutSection />
+      <div className="pq-journey-layout">
+        <StoryRail />
+        <div className="pq-journey-content">
+          <ProjectsSection />
+          <AboutSection />
+        </div>
+      </div>
       <Footer />
     </div>
   );

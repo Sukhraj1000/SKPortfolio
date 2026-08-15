@@ -57,4 +57,67 @@ test.describe("Pixel Quest portfolio", () => {
     expect(response.headers()["content-type"]).toBe("image/png");
     expect((await response.body()).byteLength).toBeGreaterThan(1_000);
   });
+
+  test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    await expect(page.locator("[data-chapter-status]")).toContainText("Profile");
+    await expect(
+      page.getByRole("navigation", { name: "Portfolio sections" }).getByRole("link", {
+        name: "Profile",
+      }),
+    ).toHaveAttribute("aria-current", "location");
+
+    await page.locator("#projects").scrollIntoViewIfNeeded();
+    await expect(page.locator("[data-chapter-status]")).toContainText("Projects");
+    await expect(
+      page.getByRole("navigation", { name: "Portfolio sections" }).getByRole("link", {
+        name: "Projects",
+      }),
+    ).toHaveAttribute("aria-current", "location");
+    await expect(page.getByRole("progressbar", { name: "Portfolio chapters completed" })).toHaveAttribute(
+      "aria-valuenow",
+      "40",
+    );
+  });
+
+  test("supports direct chapter anchors below the sticky header", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/#about");
+
+    const experience = page.locator("#about");
+    await expect(experience).toBeInViewport();
+    await expect
+      .poll(() => experience.evaluate((element) => element.getBoundingClientRect().top))
+      .toBeGreaterThanOrEqual(64);
+
+    await page.getByRole("button", { name: "Open portfolio navigation" }).click();
+    const mobileNavigation = page.getByRole("navigation", { name: "Mobile navigation" });
+    await expect(mobileNavigation.getByRole("link")).toHaveCount(5);
+    await mobileNavigation.getByRole("link", { name: "Skills" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/#loadout$/);
+  });
+
+  test("fails open when chapter observation is unavailable", async ({ page }) => {
+    await page.addInitScript(() => {
+      delete (window as unknown as { IntersectionObserver?: typeof IntersectionObserver })
+        .IntersectionObserver;
+    });
+    await page.goto("/");
+
+    await expect(page.locator("[data-chapter-status]")).toContainText("Profile");
+    await expect(page.locator("main section")).toHaveCount(5);
+    await expect(page.getByRole("link", { name: "Enter Game mode" })).toBeVisible();
+  });
+
+  test("keeps the game route on its existing isolated header path", async ({ page }) => {
+    await page.goto("/game/");
+
+    await expect(page.locator("[data-portfolio-header]")).toHaveCount(0);
+    await expect(page.getByText("Game route // isolated runtime")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Start deployment" })).toBeVisible();
+    await expect(page.getByRole("group", { name: "Portfolio experience mode" })).toBeVisible();
+  });
 });

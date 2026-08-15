@@ -151,16 +151,23 @@ test.describe("portfolio reading flow", () => {
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto("/");
 
-    const sectionNavigation = page.getByRole("navigation", {
-      name: "Portfolio sections",
+    const menuTrigger = page.getByRole("button", {
+      name: "Open portfolio navigation",
     });
-    const links = sectionNavigation.getByRole("link");
+    const chapterLabels = ["Profile", "Projects", "Experience", "Skills", "Contact"];
 
-    await expect(links).toHaveCount(5);
-    for (const link of await links.all()) await expect(link).toBeVisible();
+    await expect(menuTrigger).toBeVisible();
     await expectNoPageOverflow(page);
 
-    for (const link of await links.all()) {
+    for (const chapterLabel of chapterLabels) {
+      await menuTrigger.click();
+      const sectionNavigation = page.getByRole("navigation", {
+        name: "Mobile navigation",
+      });
+      const links = sectionNavigation.getByRole("link");
+      await expect(links).toHaveCount(5);
+
+      const link = sectionNavigation.getByRole("link", { name: chapterLabel });
       const href = await link.getAttribute("href");
       const targetId = href?.split("#")[1];
       expect(targetId).toBeTruthy();

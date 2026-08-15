@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
+import { PortfolioProgressProvider } from "@/components/pixel-quest/PortfolioProgress";
 
 const geistSans = localFont({
   src: "./fonts/geist-latin.woff2",
@@ -54,8 +55,10 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          <Navbar />
-          <main>{children}</main>
+          <PortfolioProgressProvider>
+            <Navbar />
+            <main>{children}</main>
+          </PortfolioProgressProvider>
         </ThemeProvider>
       </body>
     </html>
