@@ -211,6 +211,44 @@ test.describe("Pixel Quest portfolio", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
+  test("finishes with an accessible contact scene and complete outreach paths", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/#contact");
+
+    const contact = page.locator("#contact");
+    await expect(
+      contact.getByRole("heading", { name: "The story is still being written." }),
+    ).toBeVisible();
+    await expect(contact.locator(".pq-ending-scene")).toHaveAttribute("aria-hidden", "true");
+    await expect(contact.locator(".pq-ending-door")).toHaveCount(1);
+    await expect(contact.locator(".pq-operator")).toHaveCount(1);
+
+    const emailLink = contact.getByRole("link", { name: "Request by email" });
+    await expect(emailLink).toHaveAttribute("href", /^mailto:/);
+
+    const cvTrigger = contact.getByRole("button", { name: "Request private CV" });
+    await cvTrigger.click();
+    await expect(page.getByRole("dialog", { name: "Request Sukhraj's CV" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(cvTrigger).toBeFocused();
+
+    const socialNavigation = contact.getByRole("list", {
+      name: "Professional and social profiles",
+    });
+    await expect(socialNavigation.getByRole("link")).toHaveCount(3);
+    for (const link of await socialNavigation.getByRole("link").all()) {
+      await expect(link).toHaveAttribute("target", "_blank");
+      await expect(link).toHaveAttribute("rel", /noopener/);
+    }
+
+    const footerNavigation = page.getByRole("navigation", { name: "Footer navigation" });
+    await expect(footerNavigation.getByRole("link")).toHaveCount(5);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
