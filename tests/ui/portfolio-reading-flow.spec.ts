@@ -128,7 +128,11 @@ test.describe("portfolio reading flow", () => {
       await page.setViewportSize(viewport);
       await page.goto("/");
 
-      await expect(page.getByRole("heading", { name: "Sukhraj Kalon" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: "I build systems that hold up in the real world.",
+        }),
+      ).toBeVisible();
       await expectReadableText(page.locator("[data-hero-summary]"));
       await expect(
         page.locator("#home").getByText("First-Class Computer Science graduate", {
@@ -316,7 +320,7 @@ test.describe("portfolio reading flow", () => {
     expect(focusStyle?.outlineWidth).toBeGreaterThanOrEqual(2);
 
     const cvTrigger = page.locator("#home").getByRole("button", {
-      name: "Request CV",
+      name: "Request private CV",
     });
     await cvTrigger.focus();
     await page.keyboard.press("Enter");
@@ -397,7 +401,11 @@ test.describe("portfolio reading flow", () => {
           await expect(page.locator("html")).toHaveClass(/dark/);
         }
 
-        await expect(page.getByRole("heading", { name: "Sukhraj Kalon" })).toBeVisible();
+        await expect(
+          page.getByRole("heading", {
+            name: "I build systems that hold up in the real world.",
+          }),
+        ).toBeVisible();
         await expect(page.locator("[data-project-record]")).toHaveCount(4);
         await expect(page.locator("[data-experience-record]")).toHaveCount(4);
         await expect(page.locator("[data-capability-record]")).toHaveCount(5);

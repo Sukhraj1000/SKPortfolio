@@ -82,6 +82,14 @@ export const portfolioProfile = {
   location: "West Midlands, UK",
   education: "First-Class Computer Science graduate",
   headline: "Building secure products, cloud services, and intelligent automation.",
+  storyHeadline: {
+    before: "I build systems that",
+    emphasis: "hold up",
+    after: "in the real world.",
+  },
+  storyObjective:
+    "Build useful things. Make the reasoning, ownership, and outcome easy to see.",
+  toolkit: "Full-stack · Cloud · Data · AI",
   journey:
     "From learning how systems work to building dependable products in secure, real-world environments.",
   summary:

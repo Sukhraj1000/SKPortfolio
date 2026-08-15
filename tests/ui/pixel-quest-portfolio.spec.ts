@@ -58,6 +58,39 @@ test.describe("Pixel Quest portfolio", () => {
     expect((await response.body()).byteLength).toBeGreaterThan(1_000);
   });
 
+  test("renders the complete Profile hero without loading the game world", async ({ page }) => {
+    const requests: string[] = [];
+    page.on("request", (request) => requests.push(request.url()));
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/");
+
+    const hero = page.locator("#home");
+    await expect(
+      hero.getByRole("heading", {
+        name: "I build systems that hold up in the real world.",
+      }),
+    ).toBeVisible();
+    await expect(hero.getByText("Sukhraj Kalon · Software Engineer at")).toBeVisible();
+    await expect(hero.getByText("Northrop Grumman", { exact: true })).toHaveCount(2);
+    await expect(hero.getByText("First-Class Computer Science graduate", { exact: true })).toBeVisible();
+    await expect(hero.getByText("Full-stack · Cloud · Data · AI", { exact: true })).toBeVisible();
+    await expect(hero.getByLabel("Current portfolio objective")).toContainText(
+      "Make the reasoning, ownership, and outcome easy to see",
+    );
+    await expect(hero.getByRole("link", { name: "Start the story" })).toBeVisible();
+    await expect(hero.getByRole("button", { name: "Request private CV" })).toBeVisible();
+    await expect(hero.locator(".pq-hero-scene")).toHaveAttribute("aria-hidden", "true");
+    await expect(hero.locator(".pq-operator")).toHaveCount(1);
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+    expect(requests.some((url) => url.endsWith("/sk-operator-sheet.png"))).toBeTruthy();
+    expect(requests.some((url) => url.includes("industrial-world-atlas"))).toBeFalsy();
+    expect(requests.some((url) => url.includes("phaser"))).toBeFalsy();
+  });
+
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
