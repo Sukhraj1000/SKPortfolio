@@ -1,0 +1,274 @@
+/* Pixel Quest production layer. All composition selectors are scoped with pq-. */
+
+.pq-root,
+.pq-scope {
+  color-scheme: dark;
+  --pq-void: #0b1118;
+  --pq-night: #101923;
+  --pq-panel: #16232d;
+  --pq-panel-high: #1d303b;
+  --pq-paper: #eef2e7;
+  --pq-muted: #a7b8b5;
+  --pq-line: #3d565c;
+  --pq-cyan: #69d6e5;
+  --pq-mint: #8bd59b;
+  --pq-lime: #d8ef72;
+  --pq-gold: #f0c969;
+  --pq-coral: #ef806d;
+  --pq-shadow: #05090d;
+  --pq-grid: rgba(105, 214, 229, 0.045);
+
+  --background: var(--pq-void);
+  --foreground: var(--pq-paper);
+  --surface: var(--pq-night);
+  --surface-raised: var(--pq-panel);
+  --surface-high: var(--pq-panel-high);
+  --card: var(--pq-night);
+  --card-foreground: var(--pq-paper);
+  --popover: var(--pq-panel);
+  --popover-foreground: var(--pq-paper);
+  --primary: var(--pq-lime);
+  --primary-foreground: var(--pq-void);
+  --secondary: var(--pq-panel);
+  --secondary-foreground: var(--pq-paper);
+  --muted: var(--pq-panel);
+  --muted-foreground: var(--pq-muted);
+  --accent: var(--pq-cyan);
+  --accent-foreground: var(--pq-void);
+  --destructive: var(--pq-coral);
+  --destructive-foreground: var(--pq-void);
+  --border: var(--pq-line);
+  --border-strong: #587077;
+  --input: #587077;
+  --ring: var(--pq-lime);
+  --ink-muted: var(--pq-muted);
+  --ink-faint: #819494;
+  --steel: #71878a;
+  --signal-green: var(--pq-mint);
+  --signal-cyan: var(--pq-cyan);
+  --signal-red: var(--pq-coral);
+  --celestial-sun: var(--pq-gold);
+  --celestial-moon: var(--pq-cyan);
+  --stripe-contrast: var(--pq-panel);
+  --shadow-soft: rgba(5, 9, 13, 0.5);
+  --shadow-strong: var(--pq-shadow);
+  --grid-line: var(--pq-grid);
+  --grid-line-soft: rgba(105, 214, 229, 0.03);
+  --dither-dot: rgba(105, 214, 229, 0.14);
+  --frame-inset: rgba(238, 242, 231, 0.05);
+}
+
+.light .pq-root,
+.light .pq-scope {
+  color-scheme: light;
+  --pq-void: #eef2e7;
+  --pq-night: #f8faf3;
+  --pq-panel: #dfe8df;
+  --pq-panel-high: #cedbd4;
+  --pq-paper: #101923;
+  --pq-muted: #46595b;
+  --pq-line: #879a94;
+  --pq-cyan: #166978;
+  --pq-mint: #356b48;
+  --pq-lime: #3f682b;
+  --pq-gold: #76580b;
+  --pq-coral: #a64135;
+  --pq-shadow: #aab8b0;
+  --pq-grid: rgba(22, 105, 120, 0.08);
+
+  --primary-foreground: #ffffff;
+  --accent-foreground: #ffffff;
+  --destructive-foreground: #ffffff;
+  --border-strong: #647873;
+  --input: #647873;
+  --ring: #155f70;
+  --ink-faint: #586b6d;
+  --steel: #5b6e70;
+  --stripe-contrast: #d8e2da;
+  --shadow-soft: rgba(34, 51, 48, 0.2);
+  --grid-line-soft: rgba(22, 105, 120, 0.05);
+  --dither-dot: rgba(22, 105, 120, 0.15);
+  --frame-inset: rgba(255, 255, 255, 0.7);
+}
+
+.pq-root {
+  min-height: 100svh;
+  overflow: clip;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.pq-shell {
+  width: min(100% - 2rem, 88rem);
+  margin-inline: auto;
+}
+
+.pq-grid-field {
+  background-image:
+    linear-gradient(var(--pq-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pq-grid) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.pq-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--pq-cyan);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.pq-kicker::before {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  background: var(--pq-lime);
+  content: "";
+}
+
+.pq-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--pq-line);
+  background: var(--pq-panel);
+  color: var(--pq-paper);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.035em;
+  text-decoration: none;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--pq-shadow);
+}
+
+.pq-button[data-variant="primary"] {
+  border-color: var(--pq-lime);
+  background: var(--pq-lime);
+  color: var(--primary-foreground);
+}
+
+.pq-button[data-variant="quiet"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+.pq-chip {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--pq-line);
+  color: var(--pq-muted);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.pq-frame {
+  position: relative;
+  border: 2px solid var(--pq-line);
+  background: var(--pq-night);
+  color: var(--pq-paper);
+  box-shadow: 8px 8px 0 var(--pq-shadow);
+}
+
+.pq-frame::before,
+.pq-frame::after {
+  position: absolute;
+  z-index: 2;
+  width: 0.8rem;
+  height: 0.8rem;
+  pointer-events: none;
+  content: "";
+}
+
+.pq-frame::before {
+  top: -2px;
+  left: -2px;
+  border-top: 2px solid var(--pq-cyan);
+  border-left: 2px solid var(--pq-cyan);
+}
+
+.pq-frame::after {
+  right: -2px;
+  bottom: -2px;
+  border-right: 2px solid var(--pq-lime);
+  border-bottom: 2px solid var(--pq-lime);
+}
+
+.pq-operator {
+  display: block;
+  width: 48px;
+  height: 64px;
+  flex: none;
+  background-image: url("/sk-operator-sheet.png");
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 192px 256px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.pq-operator[data-size="medium"] {
+  width: 72px;
+  height: 96px;
+  background-size: 288px 384px;
+}
+
+.pq-operator[data-size="large"] {
+  width: 96px;
+  height: 128px;
+  background-size: 384px 512px;
+}
+
+.pq-operator[data-pose="run"] { background-position: -96px 0; }
+.pq-operator[data-pose="interact"] { background-position: -48px -128px; }
+.pq-operator[data-pose="arrive"] { background-position: 0 -192px; }
+
+.light .pq-operator {
+  filter: drop-shadow(3px 4px 0 rgba(62, 79, 73, 0.28));
+}
+
+.pq-root :where(a, button, summary):focus-visible,
+.pq-scope :where(a, button, summary):focus-visible {
+  outline-color: var(--pq-lime);
+  outline-width: 2px;
+  outline-offset: 3px;
+}
+
+@media (min-width: 48rem) {
+  .pq-shell { width: min(100% - 4rem, 88rem); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pq-button {
+    transition:
+      border-color var(--motion-fast) steps(2, end),
+      color var(--motion-fast) steps(2, end),
+      background-color var(--motion-fast) steps(2, end),
+      transform var(--motion-fast) steps(2, end),
+      box-shadow var(--motion-fast) steps(2, end);
+  }
+
+  .pq-button:hover {
+    border-color: var(--pq-cyan);
+    color: var(--pq-cyan);
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--pq-shadow);
+  }
+
+  .pq-button[data-variant="primary"]:hover {
+    border-color: var(--pq-paper);
+    background: var(--pq-paper);
+    color: var(--pq-void);
+  }
+}

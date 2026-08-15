@@ -104,7 +104,8 @@ function contrastRatio(foreground: string, background: string) {
 
 async function readThemeTokens(page: Page) {
   return page.evaluate(() => {
-    const styles = window.getComputedStyle(document.documentElement);
+    const themeRoot = document.querySelector(".pq-root") ?? document.documentElement;
+    const styles = window.getComputedStyle(themeRoot);
     const token = (name: string) => styles.getPropertyValue(name).trim();
 
     return {
@@ -329,12 +330,11 @@ test.describe("portfolio reading flow", () => {
     await page.goto("/");
 
     for (const theme of ["light", "dark"] as const) {
-      if (theme === "dark") {
-        await page
-          .getByRole("button", { name: "Switch to night theme" })
-          .click();
-        await expect(page.locator("html")).toHaveClass(/dark/);
-      }
+      await page.evaluate((nextTheme) => {
+        window.localStorage.setItem("theme", nextTheme);
+      }, theme);
+      await page.reload();
+      await expect(page.locator("html")).toHaveClass(new RegExp(theme));
 
       const tokens = await readThemeTokens(page);
       const normalTextPairs = [
