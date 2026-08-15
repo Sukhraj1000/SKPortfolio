@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+const appURL = "http://127.0.0.1:4173";
+
 async function readPixelQuestTokens(page: Page) {
   return page.locator(".pq-root").evaluate((element) => {
     const styles = window.getComputedStyle(element);
@@ -247,6 +249,87 @@ test.describe("Pixel Quest portfolio", () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test("runs story motion once and settles without moving focused actions", async ({ page }) => {
+    await page.goto("/");
+
+    const heroCopy = page.locator('[data-motion="hero-copy"]');
+    const startLink = page.getByRole("link", { name: "Start the story" });
+    await startLink.focus();
+    expect(
+      await heroCopy.evaluate((element) =>
+        element.getAnimations().every((animation) => {
+          const effect = animation.effect as KeyframeEffect | null;
+          return effect
+            ? effect
+                .getKeyframes()
+                .every((frame) => !frame.transform || frame.transform === "none")
+            : true;
+        }),
+      ),
+    ).toBeTruthy();
+
+    await expect.poll(() => heroCopy.getAttribute("data-motion-state")).toBe("complete");
+    await expect(startLink).toBeFocused();
+
+    const projectHeading = page.locator('#projects [data-motion="section"]');
+    await projectHeading.scrollIntoViewIfNeeded();
+    await expect.poll(() => projectHeading.getAttribute("data-motion-state")).toBe("complete");
+    await page.locator("#home").scrollIntoViewIfNeeded();
+    await projectHeading.scrollIntoViewIfNeeded();
+    await expect(projectHeading).toHaveAttribute("data-motion-state", "complete");
+
+    await page.waitForTimeout(1_600);
+    expect(
+      await page.evaluate(() =>
+        document
+          .getAnimations()
+          .filter((animation) => animation.playState === "running").length,
+      ),
+    ).toBe(0);
+  });
+
+  test("shows final content when JavaScript is disabled", async ({ browser }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      baseURL: appURL,
+      viewport: { width: 390, height: 844 },
+    });
+    const page = await context.newPage();
+    await page.goto("/");
+
+    await expect(
+      page.getByRole("heading", {
+        name: "I build systems that hold up in the real world.",
+      }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Software Engineer", exact: true }).last()).toBeVisible();
+    await expect(page.locator("[data-motion-state]")).toHaveCount(0);
+    const finalState = await page.locator('[data-motion="record"]').first().evaluate((element) => {
+      const styles = window.getComputedStyle(element);
+      return { opacity: styles.opacity, transform: styles.transform };
+    });
+    expect(finalState.opacity).toBe("1");
+    expect(finalState.transform).toBe("none");
+    await context.close();
+  });
+
+  test("settles motion at load and when reduced motion changes live", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "reduced");
+    await expect(page.locator('[data-motion]:not([data-motion-state="complete"])')).toHaveCount(0);
+    await expect(page.locator(".pq-hero-operator")).toHaveCSS("animation-name", "none");
+
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.reload();
+    await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "enhanced");
+    await page.locator("#projects").scrollIntoViewIfNeeded();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "reduced");
+    await expect(page.locator('[data-motion]:not([data-motion-state="complete"])')).toHaveCount(0);
   });
 
   test("keeps the header and desktop rail on one active chapter", async ({ page }) => {

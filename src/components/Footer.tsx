@@ -38,7 +38,7 @@ export function Footer() {
         aria-labelledby="contact-title"
         className="pq-ending"
       >
-        <div className="pq-ending-scene" aria-hidden="true">
+        <div className="pq-ending-scene" data-motion="ending-scene" aria-hidden="true">
           <div className="pq-ending-operator">
             <OperatorSprite size="large" />
           </div>
@@ -48,7 +48,7 @@ export function Footer() {
           <span className="pq-ending-door" />
         </div>
 
-        <div className="pq-ending-copy">
+        <div className="pq-ending-copy" data-motion="record">
           <QuestLabel>Chapter 05 / Next / Contact</QuestLabel>
           <h2 id="contact-title">The story is still being written.</h2>
           <p>

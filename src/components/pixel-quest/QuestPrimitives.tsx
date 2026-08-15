@@ -61,7 +61,11 @@ export function QuestChapterHeading({
   ...props
 }: QuestChapterHeadingProps) {
   return (
-    <header className={cn("pq-chapter-heading", className)} {...props}>
+    <header
+      {...props}
+      className={cn("pq-chapter-heading", className)}
+      data-motion="section"
+    >
       <QuestLabel>
         Chapter {index} / {label}
       </QuestLabel>

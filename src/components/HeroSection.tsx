@@ -16,7 +16,7 @@ export function HeroSection() {
     >
       <div className="pq-hero-grid" aria-hidden="true" />
 
-      <div className="pq-hero-copy">
+      <div className="pq-hero-copy" data-motion="hero-copy">
         <QuestLabel>
           Player 01 / {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
@@ -61,7 +61,7 @@ export function HeroSection() {
         </dl>
       </div>
 
-      <div className="pq-hero-scene" aria-hidden="true">
+      <div className="pq-hero-scene" data-motion="hero-scene" aria-hidden="true">
         <div className="pq-scene-sky">
           <i />
           <i />
@@ -85,7 +85,11 @@ export function HeroSection() {
         </div>
       </div>
 
-      <div className="pq-objective-console" aria-label="Current portfolio objective">
+      <div
+        className="pq-objective-console"
+        data-motion="hero-console"
+        aria-label="Current portfolio objective"
+      >
         <span className="pq-objective-label">Current objective</span>
         <p>{portfolioProfile.storyObjective}</p>
         <div className="pq-console-lines" aria-hidden="true">

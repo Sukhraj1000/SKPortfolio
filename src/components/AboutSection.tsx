@@ -41,6 +41,7 @@ function ExperienceRecord({
     <li
       id={`field-log-${entry.id}`}
       data-experience-record={entry.id}
+      data-motion="record"
       className="pq-level-record"
     >
       <span className="pq-level-node" aria-hidden="true">
@@ -101,6 +102,7 @@ function CapabilityRecord({
     <article
       id={`loadout-${group.id}`}
       data-capability-record={group.id}
+      data-motion="record"
       className="pq-inventory-card"
       aria-labelledby={`loadout-${group.id}-title`}
     >

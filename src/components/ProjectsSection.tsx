@@ -56,6 +56,7 @@ function FeaturedProject({
       id={`project-${project.id}`}
       data-project-record={project.id}
       data-project-tier="featured"
+      data-motion="record"
       className={cn("pq-project-quest", index % 2 === 1 && "is-reverse")}
       aria-labelledby={`project-${project.id}-title`}
     >
@@ -130,6 +131,7 @@ function SupportingProject({
       id={`project-${project.id}`}
       data-project-record={project.id}
       data-project-tier="supporting"
+      data-motion="record"
       className="pq-side-quest"
       aria-labelledby={`project-${project.id}-title`}
     >

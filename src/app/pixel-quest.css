@@ -1363,6 +1363,150 @@
 }
 .pq-legal-inner nav a:hover { color: var(--pq-lime); }
 
+.pq-root[data-active-chapter="02"] .pq-rail-operator .pq-operator { background-position: -96px 0; }
+.pq-root[data-active-chapter="03"] .pq-rail-operator .pq-operator { background-position: -48px -128px; }
+.pq-root[data-active-chapter="04"] .pq-rail-operator .pq-operator { background-position: -96px -128px; }
+.pq-root[data-active-chapter="05"] .pq-rail-operator .pq-operator { background-position: 0 -192px; }
+
+.pq-root [data-motion-state="running"][data-motion="hero-copy"] {
+  animation: pq-hero-enter 520ms steps(7, end) both;
+}
+
+.pq-root [data-motion-state="running"][data-motion="hero-scene"] {
+  animation: pq-frame-enter 620ms steps(8, end) both;
+}
+
+.pq-root [data-motion-state="running"][data-motion="hero-console"],
+.pq-root [data-motion-state="running"][data-motion="section"] {
+  animation: pq-evidence-enter 520ms steps(6, end) both;
+}
+
+.pq-root [data-motion-state="running"][data-motion="record"] {
+  animation: pq-record-enter 440ms steps(6, end) both;
+}
+
+.pq-root [data-motion-state="running"][data-motion="ending-scene"] {
+  animation: pq-frame-enter 600ms steps(7, end) both;
+}
+
+.pq-root[data-motion-mode="enhanced"] .pq-status-light {
+  animation: pq-status-blink 360ms steps(2, end) 4;
+}
+
+.pq-root [data-motion-state="running"] .pq-scene-sky i,
+.pq-root [data-motion-state="running"].pq-ending-scene > i {
+  animation: pq-star-flicker 300ms steps(2, end) 4;
+}
+
+.pq-root [data-motion-state="running"] .pq-scene-sky i:nth-child(2),
+.pq-root [data-motion-state="running"].pq-ending-scene > i:nth-of-type(2) { animation-delay: 100ms; }
+.pq-root [data-motion-state="running"] .pq-scene-sky i:nth-child(3),
+.pq-root [data-motion-state="running"].pq-ending-scene > i:nth-of-type(3) { animation-delay: 180ms; }
+
+.pq-root [data-motion-state="running"] .pq-hero-operator {
+  animation: pq-operator-arrival 720ms steps(8, end) both 180ms;
+}
+
+.pq-root [data-motion-state="running"] .pq-hero-operator .pq-operator {
+  animation: pq-operator-idle-large 240ms steps(1, end) 3 620ms;
+}
+.pq-root [data-motion-state="running"].pq-ending-scene .pq-operator {
+  animation: pq-operator-idle-large 220ms steps(1, end) 3 180ms;
+}
+
+.pq-root [data-motion-state="running"] .pq-scene-beacon {
+  animation: pq-beacon-pulse 320ms steps(3, end) 3 260ms;
+}
+
+.pq-scene-terminal::after {
+  position: absolute;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  left: 0.35rem;
+  height: 2px;
+  background: var(--pq-cyan);
+  content: "";
+  opacity: 0;
+  transform-origin: left;
+}
+.pq-root [data-motion-state="running"] .pq-scene-terminal::after {
+  animation: pq-terminal-scan 520ms steps(7, end) both 220ms;
+}
+
+.pq-root [data-motion-state="running"] .pq-console-lines i {
+  animation: pq-console-line 520ms steps(6, end) both;
+}
+.pq-root [data-motion-state="running"] .pq-console-lines i:nth-child(2) { animation-delay: 120ms; }
+.pq-root [data-motion-state="running"] .pq-console-lines i:nth-child(3) { animation-delay: 220ms; }
+
+.pq-root [data-motion-state="running"] .pq-signal-orbits i {
+  animation: pq-orbit-turn 900ms linear 1;
+}
+.pq-root [data-motion-state="running"] .pq-signal-orbits i:nth-child(2) { animation-direction: reverse; }
+
+.pq-level-details[open] .pq-level-details-panel,
+.pq-inventory-details[open] .pq-inventory-lists,
+.pq-build-notes[open] dl {
+  animation: pq-details-open var(--motion-fast) steps(4, end) both;
+}
+
+.pq-root[data-motion-mode="reduced"] *,
+.pq-root[data-motion-mode="reduced"] *::before,
+.pq-root[data-motion-mode="reduced"] *::after {
+  animation: none !important;
+  transition-duration: 0.01ms !important;
+}
+
+@keyframes pq-hero-enter {
+  from { opacity: 0.78; }
+  to { opacity: 1; }
+}
+
+@keyframes pq-frame-enter {
+  from { opacity: 0.82; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pq-evidence-enter {
+  from { opacity: 0.76; transform: translateY(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes pq-record-enter {
+  from { opacity: 0.82; }
+  to { opacity: 1; }
+}
+
+@keyframes pq-status-blink { 50% { opacity: 0.3; } }
+@keyframes pq-star-flicker { 50% { opacity: 0.2; transform: scale(0.7); } }
+@keyframes pq-operator-arrival {
+  from { opacity: 0.4; transform: translateX(-8rem); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pq-operator-idle-large { 50% { background-position: -96px 0; } }
+@keyframes pq-beacon-pulse {
+  50% {
+    background: var(--pq-lime);
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--pq-lime) 8%, transparent), 0 0 38px color-mix(in srgb, var(--pq-lime) 42%, transparent);
+  }
+}
+@keyframes pq-terminal-scan {
+  from { opacity: 0; transform: scaleX(0); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+@keyframes pq-console-line {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes pq-orbit-turn {
+  from { transform: translate(-50%, -50%) rotate(0); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes pq-details-open {
+  from { opacity: 0.72; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
 .pq-journey-layout {
   display: grid;
   grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
@@ -1553,6 +1697,18 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .pq-project-visual img,
+  .pq-slot-icon {
+    transition: transform var(--motion-base) steps(4, end), background-color var(--motion-fast) steps(2, end), color var(--motion-fast) steps(2, end);
+  }
+
+  .pq-project-visual:hover img { transform: scale(1.04); }
+  .pq-inventory-card:hover .pq-slot-icon {
+    background: var(--pq-cyan);
+    color: var(--pq-void);
+    transform: translateY(-4px);
+  }
+
   .pq-button {
     transition:
       border-color var(--motion-fast) steps(2, end),

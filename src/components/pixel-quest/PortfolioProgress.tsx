@@ -73,6 +73,13 @@ export function PortfolioProgressProvider({
   }, [pathname]);
 
   const activeIndex = portfolioStoryAnchors.indexOf(activeSection);
+
+  React.useEffect(() => {
+    const root = document.querySelector<HTMLElement>(".pq-root");
+    if (!root) return;
+    root.dataset.activeChapter = String(activeIndex + 1).padStart(2, "0");
+  }, [activeIndex]);
+
   const value = React.useMemo<PortfolioProgressValue>(
     () => ({
       activeSection,
