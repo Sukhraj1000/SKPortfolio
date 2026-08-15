@@ -23,7 +23,6 @@ export interface ProjectLink {
 export interface PortfolioProject {
   id: string;
   title: string;
-  shortTitle: string;
   kind: string;
   status: "Live" | "Independent project" | "Final-year project";
   summary: string;
@@ -68,7 +67,6 @@ export interface StoryChapter {
   id: StoryChapterId;
   index: string;
   portfolioLabel: string;
-  gameLabel: string;
   title: string;
   summary: string;
   href: string;
@@ -81,31 +79,25 @@ export const portfolioProfile = {
   employer: "Northrop Grumman",
   location: "West Midlands, UK",
   education: "First-Class Computer Science graduate",
-  headline: "Building secure products, cloud services, and intelligent automation.",
+  storyHeadline: {
+    before: "I build systems that",
+    emphasis: "hold up",
+    after: "in the real world.",
+  },
+  storyObjective:
+    "Build useful things. Make the reasoning, ownership, and outcome easy to see.",
+  toolkit: "Full-stack · Cloud · Data · AI",
   journey:
     "From learning how systems work to building dependable products in secure, real-world environments.",
   summary:
     "Software Engineer and First-Class Computer Science graduate with hands-on experience across secure full-stack development, cloud services, data automation, AI-assisted systems, and blockchain applications.",
-  proofPoints: [
-    "Software Engineer at Northrop Grumman",
-    "First-Class Computer Science graduate",
-    "Production product and automation builds",
-  ],
 } as const;
-
-export const portfolioNavigation = [
-  { id: "home", label: "Home", href: "/#home" },
-  { id: "projects", label: "Projects", href: "/#projects" },
-  { id: "about", label: "Experience", href: "/#about" },
-  { id: "contact", label: "Contact", href: "/#contact" },
-] as const;
 
 export const storyChapters: readonly StoryChapter[] = [
   {
     id: "briefing",
     index: "01",
     portfolioLabel: "Profile",
-    gameLabel: "Briefing Room",
     title: "Software engineer building secure, useful systems.",
     summary:
       "Current role, background, and the engineering work Sukhraj focuses on.",
@@ -115,7 +107,6 @@ export const storyChapters: readonly StoryChapter[] = [
     id: "build",
     index: "02",
     portfolioLabel: "Projects",
-    gameLabel: "Mission Archive",
     title: "Selected projects and product work.",
     summary:
       "Production products and technical projects, with outcomes and individual contribution made clear.",
@@ -125,7 +116,6 @@ export const storyChapters: readonly StoryChapter[] = [
     id: "progress",
     index: "03",
     portfolioLabel: "Experience",
-    gameLabel: "Field Log",
     title: "Professional experience.",
     summary:
       "Current and previous roles across software engineering, data, and operations.",
@@ -135,7 +125,6 @@ export const storyChapters: readonly StoryChapter[] = [
     id: "method",
     index: "04",
     portfolioLabel: "Skills",
-    gameLabel: "Loadout Bay",
     title: "Technical skills.",
     summary:
       "Technologies grouped by how they are used across applications, data, cloud, automation, and delivery.",
@@ -145,7 +134,6 @@ export const storyChapters: readonly StoryChapter[] = [
     id: "next",
     index: "05",
     portfolioLabel: "Contact",
-    gameLabel: "Comms Tower",
     title: "Get in touch.",
     summary:
       "Contact details for recruiters, engineering teams, and relevant collaborators.",
@@ -175,7 +163,6 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   {
     id: "tymaura",
     title: "Tymaura",
-    shortTitle: "Tymaura",
     kind: "Event-planning platform",
     status: "Live",
     summary:
@@ -206,7 +193,6 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   {
     id: "skaltek",
     title: "Skaltek",
-    shortTitle: "Skaltek",
     kind: "AI systems and product automation",
     status: "Live",
     summary:
@@ -237,7 +223,6 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   {
     id: "solana-contract-generator",
     title: "Solana Smart Contract AI Generator",
-    shortTitle: "Solana AI Generator",
     kind: "AI developer platform",
     status: "Final-year project",
     grade: "82%",
@@ -271,7 +256,6 @@ export const portfolioProjects: readonly PortfolioProject[] = [
   {
     id: "crypto-portfolio",
     title: "Crypto Portfolio Mobile App",
-    shortTitle: "Crypto Portfolio",
     kind: "Cross-platform mobile application",
     status: "Independent project",
     grade: "80%",

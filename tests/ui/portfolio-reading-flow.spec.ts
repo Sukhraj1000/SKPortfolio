@@ -104,7 +104,8 @@ function contrastRatio(foreground: string, background: string) {
 
 async function readThemeTokens(page: Page) {
   return page.evaluate(() => {
-    const styles = window.getComputedStyle(document.documentElement);
+    const themeRoot = document.querySelector(".pq-root") ?? document.documentElement;
+    const styles = window.getComputedStyle(themeRoot);
     const token = (name: string) => styles.getPropertyValue(name).trim();
 
     return {
@@ -127,7 +128,11 @@ test.describe("portfolio reading flow", () => {
       await page.setViewportSize(viewport);
       await page.goto("/");
 
-      await expect(page.getByRole("heading", { name: "Sukhraj Kalon" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: "I build systems that hold up in the real world.",
+        }),
+      ).toBeVisible();
       await expectReadableText(page.locator("[data-hero-summary]"));
       await expect(
         page.locator("#home").getByText("First-Class Computer Science graduate", {
@@ -150,16 +155,23 @@ test.describe("portfolio reading flow", () => {
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto("/");
 
-    const sectionNavigation = page.getByRole("navigation", {
-      name: "Portfolio sections",
+    const menuTrigger = page.getByRole("button", {
+      name: "Open portfolio navigation",
     });
-    const links = sectionNavigation.getByRole("link");
+    const chapterLabels = ["Profile", "Projects", "Experience", "Skills", "Contact"];
 
-    await expect(links).toHaveCount(5);
-    for (const link of await links.all()) await expect(link).toBeVisible();
+    await expect(menuTrigger).toBeVisible();
     await expectNoPageOverflow(page);
 
-    for (const link of await links.all()) {
+    for (const chapterLabel of chapterLabels) {
+      await menuTrigger.click();
+      const sectionNavigation = page.getByRole("navigation", {
+        name: "Mobile navigation",
+      });
+      const links = sectionNavigation.getByRole("link");
+      await expect(links).toHaveCount(5);
+
+      const link = sectionNavigation.getByRole("link", { name: chapterLabel });
       const href = await link.getAttribute("href");
       const targetId = href?.split("#")[1];
       expect(targetId).toBeTruthy();
@@ -183,63 +195,48 @@ test.describe("portfolio reading flow", () => {
     }
   });
 
-  test("keeps project evidence comparable and disclosures keyboard operable", async ({
+  test("keeps featured project evidence visible and supporting notes keyboard operable", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#projects");
 
     const projectRecords = page.locator("[data-project-record]");
+    const featuredProjects = page.locator('[data-project-tier="featured"]');
+    const supportingProjects = page.locator('[data-project-tier="supporting"]');
     await expect(projectRecords).toHaveCount(4);
+    await expect(featuredProjects).toHaveCount(2);
+    await expect(supportingProjects).toHaveCount(2);
 
     for (const record of await projectRecords.all()) {
-      await expect(record.locator("summary h3")).toBeVisible();
-      await expect(record.locator("summary [data-project-kind]")).toBeVisible();
-      await expect(record.locator("summary [data-project-status]")).toBeVisible();
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.locator("[data-project-kind]")).toBeVisible();
+      await expect(record.locator("[data-project-status]")).toBeVisible();
       await expect(record.locator("[data-project-outcome]")).toBeVisible();
-      await expect(
-        record.locator("summary [data-disclosure-action]"),
-      ).toBeVisible();
     }
 
-    const firstRecord = projectRecords.first();
-    const summary = firstRecord.locator("summary");
-    await summary.focus();
-
-    if (await firstRecord.evaluate((element) => (element as HTMLDetailsElement).open)) {
-      await page.keyboard.press("Enter");
+    for (const record of await featuredProjects.all()) {
+      await expect(record.locator("[data-project-overview]")).toBeVisible();
+      await expect(record.locator("[data-project-media]")).toBeVisible();
+      await expect(record.locator(".pq-story-beats > div")).toHaveCount(3);
     }
 
-    await expect(firstRecord).not.toHaveAttribute("open", "");
-    await expect(summary.getByText("View case study")).toBeVisible();
+    const firstSupporting = supportingProjects.first();
+    const notes = firstSupporting.locator("details");
+    const notesSummary = notes.locator("summary");
+    await notesSummary.focus();
     await page.keyboard.press("Enter");
-    await expect(firstRecord).toHaveAttribute("open", "");
-    await expect(summary.getByText("Hide case study")).toBeVisible();
-    await expect(summary).toBeFocused();
+    await expect(notes).toHaveAttribute("open", "");
+    await expect(notesSummary).toBeFocused();
 
-    const secondRecord = projectRecords.nth(1);
-    const secondSummary = secondRecord.locator("summary");
-    await expect(secondRecord).not.toHaveAttribute("open", "");
-    await secondSummary.click();
-    await expect(secondRecord).toHaveAttribute("open", "");
-    await expect(secondSummary.getByText("Hide case study")).toBeVisible();
-    await secondSummary.click();
-    await expect(secondRecord).not.toHaveAttribute("open", "");
-    await expect(secondSummary.getByText("View case study")).toBeVisible();
-
-    await summary.click();
-    await expect(firstRecord).toHaveAttribute("open", "");
-
-    const overview = firstRecord.locator("[data-project-overview]");
-    const media = firstRecord.locator("[data-project-media]");
-    await expect(overview).toBeVisible();
-    await expect(media).toBeVisible();
-
+    const firstFeatured = featuredProjects.first();
+    const overview = firstFeatured.locator("[data-project-overview]");
+    const media = firstFeatured.locator("[data-project-media]");
     const [overviewBox, mediaBox] = await Promise.all([
       overview.boundingBox(),
       media.boundingBox(),
     ]);
-    expect(overviewBox?.y).toBeLessThan(mediaBox?.y ?? Number.POSITIVE_INFINITY);
+    expect(mediaBox?.y).toBeLessThan(overviewBox?.y ?? Number.POSITIVE_INFINITY);
   });
 
   test("keeps experience and skills readable with native disclosure controls", async ({
@@ -252,9 +249,10 @@ test.describe("portfolio reading flow", () => {
     await expect(experienceRecords).toHaveCount(4);
 
     for (const record of await experienceRecords.all()) {
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.locator("time")).toBeVisible();
       const summary = record.locator("summary");
-      await expect(summary.getByRole("heading")).toBeVisible();
-      await expect(summary.locator("[data-disclosure-action]")).toBeVisible();
+      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
       expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
     }
 
@@ -264,26 +262,29 @@ test.describe("portfolio reading flow", () => {
     await secondExperienceSummary.focus();
     await page.keyboard.press("Enter");
     await expect(secondExperienceDetails).toHaveAttribute("open", "");
-    await expect(secondExperienceSummary.getByText("Hide details")).toBeVisible();
+    await expect(
+      secondExperienceSummary.getByText("Hide responsibilities and stack"),
+    ).toBeVisible();
     await expect(secondExperienceSummary).toBeFocused();
 
     const capabilityRecords = page.locator("[data-capability-record]");
     await expect(capabilityRecords).toHaveCount(5);
 
     for (const record of await capabilityRecords.all()) {
+      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
+      await expect(record.getByText(/primary$/)).toBeVisible();
+      await expect(record.getByText(/supporting$/)).toBeVisible();
       const summary = record.locator("summary");
-      await expect(summary.getByRole("heading")).toBeVisible();
-      await expect(summary.getByText(/primary$/)).toBeVisible();
-      await expect(summary.getByText(/supporting$/)).toBeVisible();
-      await expect(summary.locator("[data-disclosure-action]")).toBeVisible();
+      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
       expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
     }
 
     const firstCapability = capabilityRecords.first();
+    const firstCapabilityDetails = firstCapability.locator("details");
     const firstCapabilitySummary = firstCapability.locator("summary");
     await firstCapabilitySummary.click();
-    await expect(firstCapability).toHaveAttribute("open", "");
-    await expect(firstCapabilitySummary.getByText("Hide skills")).toBeVisible();
+    await expect(firstCapabilityDetails).toHaveAttribute("open", "");
+    await expect(firstCapabilitySummary.getByText("Close inventory")).toBeVisible();
   });
 
   test("keeps keyboard focus visible and returns it after closing the CV dialog", async ({
@@ -308,7 +309,7 @@ test.describe("portfolio reading flow", () => {
     expect(focusStyle?.outlineWidth).toBeGreaterThanOrEqual(2);
 
     const cvTrigger = page.locator("#home").getByRole("button", {
-      name: "Request CV",
+      name: "Request private CV",
     });
     await cvTrigger.focus();
     await page.keyboard.press("Enter");
@@ -329,12 +330,11 @@ test.describe("portfolio reading flow", () => {
     await page.goto("/");
 
     for (const theme of ["light", "dark"] as const) {
-      if (theme === "dark") {
-        await page
-          .getByRole("button", { name: "Switch to night theme" })
-          .click();
-        await expect(page.locator("html")).toHaveClass(/dark/);
-      }
+      await page.evaluate((nextTheme) => {
+        window.localStorage.setItem("theme", nextTheme);
+      }, theme);
+      await page.reload();
+      await expect(page.locator("html")).toHaveClass(new RegExp(theme));
 
       const tokens = await readThemeTokens(page);
       const normalTextPairs = [
@@ -390,7 +390,11 @@ test.describe("portfolio reading flow", () => {
           await expect(page.locator("html")).toHaveClass(/dark/);
         }
 
-        await expect(page.getByRole("heading", { name: "Sukhraj Kalon" })).toBeVisible();
+        await expect(
+          page.getByRole("heading", {
+            name: "I build systems that hold up in the real world.",
+          }),
+        ).toBeVisible();
         await expect(page.locator("[data-project-record]")).toHaveCount(4);
         await expect(page.locator("[data-experience-record]")).toHaveCount(4);
         await expect(page.locator("[data-capability-record]")).toHaveCount(5);

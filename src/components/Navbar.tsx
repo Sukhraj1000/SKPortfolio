@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CVAccessDialog, CVAccessDialogMobile } from "@/components/CVAccessDialog";
-import { portfolioNavigation, portfolioProfile } from "@/data/portfolio";
+import { portfolioProfile, storyChapters } from "@/data/portfolio";
 import {
   defaultPortfolioHref,
   portfolioStoryAnchors,
@@ -25,135 +25,50 @@ import {
   type PortfolioStoryAnchor,
 } from "@/lib/game-mode";
 import { cn } from "@/lib/utils";
+import { usePortfolioProgress } from "@/components/pixel-quest/PortfolioProgress";
 
-function ModeControl({
-  isGameMode,
-  portfolioReturnHref,
-  onEnterGame,
-}: {
-  isGameMode: boolean;
-  portfolioReturnHref: string;
-  onEnterGame: () => void;
-}) {
+function GameModeControl({ portfolioReturnHref }: { portfolioReturnHref: string }) {
   return (
     <div
       role="group"
       aria-label="Portfolio experience mode"
-      className="grid h-11 shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
+      className="grid h-11 shrink-0 grid-cols-2 border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
     >
-      {isGameMode ? (
-        <Link
-          href={portfolioReturnHref}
-          className="grid place-items-center px-2.5 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
-          aria-label="Return to Portfolio mode"
-          title="Return to Portfolio mode"
-        >
-          Portfolio
-        </Link>
-      ) : (
-        <span
-          className="grid place-items-center bg-primary px-2.5 text-primary-foreground"
-          aria-current="page"
-          title="Portfolio mode selected"
-        >
-          Portfolio
-          <span className="sr-only"> mode selected</span>
-        </span>
-      )}
-
-      {isGameMode ? (
-        <span
-          className="grid place-items-center border-l border-border bg-primary px-2 text-primary-foreground"
-          aria-current="page"
-          title="Game mode selected"
-        >
-          Game
-          <span className="sr-only"> mode selected</span>
-        </span>
-      ) : (
-        <Link
-          href="/game"
-          prefetch={false}
-          className="grid place-items-center border-l border-border px-2 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
-          aria-label="Enter Game mode"
-          title="Enter Game mode"
-          onClick={onEnterGame}
-        >
-          Game
-        </Link>
-      )}
+      <Link
+        href={portfolioReturnHref}
+        className="grid place-items-center px-2.5 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+        aria-label="Return to Portfolio mode"
+        title="Return to Portfolio mode"
+      >
+        Portfolio
+      </Link>
+      <span
+        className="grid place-items-center border-l border-border bg-primary px-2 text-primary-foreground"
+        aria-current="page"
+        title="Game mode selected"
+      >
+        Game<span className="sr-only"> mode selected</span>
+      </span>
     </div>
   );
 }
 
-export function Navbar() {
-  const pathname = usePathname();
-  const isGameMode = pathname.startsWith("/game");
-  const [activeSection, setActiveSection] =
-    React.useState<PortfolioStoryAnchor>("home");
-  const [mobileOpen, setMobileOpen] = React.useState(false);
+function GameNavbar() {
   const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
     defaultPortfolioHref,
   );
 
   React.useEffect(() => {
-    if (isGameMode) setPortfolioReturnHref(readPortfolioReturnHref());
-  }, [isGameMode]);
-
-  React.useEffect(() => {
-    if (isGameMode) return;
-
-    const updateActiveSection = () => {
-      const readingLine = window.scrollY + 112;
-      let currentSection: PortfolioStoryAnchor = portfolioStoryAnchors[0];
-
-      for (const sectionId of portfolioStoryAnchors) {
-        const section = document.getElementById(sectionId);
-
-        if (section && section.offsetTop <= readingLine) {
-          currentSection = sectionId;
-        }
-      }
-
-      if (
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 8
-      ) {
-        currentSection = "contact";
-      }
-
-      setActiveSection(currentSection);
-    };
-
-    updateActiveSection();
-    window.addEventListener("scroll", updateActiveSection, { passive: true });
-    window.addEventListener("resize", updateActiveSection);
-
-    return () => {
-      window.removeEventListener("scroll", updateActiveSection);
-      window.removeEventListener("resize", updateActiveSection);
-    };
-  }, [isGameMode]);
-
-  const handleEnterGame = React.useCallback(() => {
-    if (isGameMode) return;
-
-    rememberPortfolioAnchor(activeSection);
-    setPortfolioReturnHref(`/#${activeSection}`);
-  }, [activeSection, isGameMode]);
+    setPortfolioReturnHref(readPortfolioReturnHref());
+  }, []);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border-strong bg-background shadow-[0_3px_0_var(--shadow-soft)]">
       <div className="section-shell flex h-16 items-center gap-2 lg:gap-4">
         <Link
-          href={isGameMode ? portfolioReturnHref : "/#home"}
+          href={portfolioReturnHref}
           className="group hidden shrink-0 items-center gap-2 min-[360px]:flex"
-          aria-label={
-            isGameMode
-              ? `${portfolioProfile.name}, exit Game mode`
-              : `${portfolioProfile.name}, return to Home`
-          }
-          onClick={() => setActiveSection("home")}
+          aria-label={`${portfolioProfile.name}, exit Game mode`}
         >
           <span className="grid h-11 w-11 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
             {portfolioProfile.initials}
@@ -168,134 +83,176 @@ export function Navbar() {
           </span>
         </Link>
 
-        {!isGameMode ? (
-          <nav
-            aria-label="Primary navigation"
-            className="ml-auto hidden items-stretch self-stretch xl:flex"
-          >
-            {portfolioNavigation.map((link, index) => {
-              const isActive = activeSection === link.id;
-
-              return (
-                <Link
-                  key={link.id}
-                  href={link.href}
-                  aria-current={isActive ? "location" : undefined}
-                  className={cn(
-                    "group relative flex min-w-20 items-center justify-center border-l border-border px-3 font-mono text-sm font-semibold uppercase tracking-[0.04em] transition-colors last:border-r",
-                    isActive
-                      ? "bg-surface-raised text-primary"
-                      : "text-ink-muted hover:bg-surface hover:text-foreground",
-                  )}
-                  onClick={() => setActiveSection(link.id)}
-                >
-                  <span className="mr-1.5 text-xs text-ink-faint">
-                    0{index + 1}
-                  </span>
-                  {link.label}
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "absolute inset-x-3 bottom-0 h-0.5 bg-primary transition-transform",
-                      isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100",
-                    )}
-                  />
-                </Link>
-              );
-            })}
-          </nav>
-        ) : (
-          <p className="ml-auto hidden font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted xl:block">
-            Game route // isolated runtime
-          </p>
-        )}
+        <p className="ml-auto hidden font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted xl:block">
+          Game route // isolated runtime
+        </p>
 
         <div className="ml-auto flex items-center gap-1.5 xl:ml-0 xl:gap-2">
-          <ModeControl
-            isGameMode={isGameMode}
-            portfolioReturnHref={portfolioReturnHref}
-            onEnterGame={handleEnterGame}
-          />
-
+          <GameModeControl portfolioReturnHref={portfolioReturnHref} />
           <ThemeToggle />
-
-          {!isGameMode ? (
-            <div className="hidden xl:block">
-              <CVAccessDialog buttonClassName="h-11 px-3" />
-            </div>
-          ) : null}
-
-          {!isGameMode ? (
-            <div className="xl:hidden">
-              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-11 w-11"
-                    aria-label="Open portfolio navigation"
-                    title="Open navigation"
-                  >
-                    <Menu aria-hidden="true" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="right"
-                  className="w-[min(22rem,calc(100vw-1rem))] gap-0 border-l border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-soft)]"
-                >
-                  <SheetHeader className="border-b border-border px-5 py-5 text-left">
-                    <span className="font-mono text-xs uppercase tracking-[0.08em] text-primary">
-                      Sukhraj Kalon
-                    </span>
-                    <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
-                    <SheetDescription>
-                      Move directly between portfolio sections.
-                    </SheetDescription>
-                  </SheetHeader>
-
-                  <nav aria-label="Mobile navigation" className="grid p-3">
-                    {portfolioNavigation.map((link, index) => {
-                      const isActive = activeSection === link.id;
-
-                      return (
-                        <SheetClose asChild key={link.id}>
-                          <Link
-                            href={link.href}
-                            aria-current={isActive ? "location" : undefined}
-                            className={cn(
-                              "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-sm font-semibold uppercase tracking-[0.04em] transition-colors first:border-t",
-                              isActive
-                                ? "bg-surface-raised text-primary"
-                                : "text-foreground hover:bg-surface",
-                            )}
-                            onClick={() => setActiveSection(link.id)}
-                          >
-                            <span className="text-xs text-ink-faint">
-                              0{index + 1}
-                            </span>
-                            {link.label}
-                            <span aria-hidden="true" className="text-primary">
-                              /&#47;
-                            </span>
-                          </Link>
-                        </SheetClose>
-                      );
-                    })}
-                  </nav>
-
-                  <div className="mt-auto border-t border-border bg-surface p-4">
-                    <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
-                      CV access
-                    </p>
-                    <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          ) : null}
         </div>
       </div>
     </header>
   );
+}
+
+function PortfolioNavbar() {
+  const { activeSection, activeIndex, progress, selectSection } =
+    usePortfolioProgress();
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const activeChapter = storyChapters[activeIndex] ?? storyChapters[0];
+
+  const handleGameEntry = React.useCallback(() => {
+    rememberPortfolioAnchor(activeSection);
+  }, [activeSection]);
+
+  const activateChapter = React.useCallback(
+    (sectionId: PortfolioStoryAnchor) => {
+      selectSection(sectionId);
+      setMobileOpen(false);
+    },
+    [selectSection],
+  );
+
+  return (
+    <header className="pq-header pq-scope" data-portfolio-header>
+      <div className="pq-header-inner">
+        <Link
+          href="/#home"
+          className="pq-brand"
+          aria-label={`${portfolioProfile.name}, return to Profile`}
+          onClick={() => activateChapter("home")}
+        >
+          <span className="pq-brand-pixel" aria-hidden="true">
+            {portfolioProfile.initials}
+          </span>
+          <span className="pq-brand-copy">
+            <strong>{portfolioProfile.name}</strong>
+            <small>{portfolioProfile.role}</small>
+          </span>
+        </Link>
+
+        <div className="pq-story-status" aria-label="Portfolio story progress">
+          <span className="pq-status-light" aria-hidden="true" />
+          <span data-chapter-status>
+            Chapter {activeChapter.index} / 05 · {activeChapter.portfolioLabel}
+          </span>
+          <span
+            className="pq-status-track"
+            role="progressbar"
+            aria-label="Portfolio journey progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={progress}
+          >
+            <i style={{ width: `${progress}%` }} />
+          </span>
+        </div>
+
+        <nav className="pq-desktop-nav" aria-label="Primary navigation">
+          {storyChapters.slice(1).map((chapter, index) => {
+            const sectionId = portfolioStoryAnchors[index + 1];
+            const active = activeSection === sectionId;
+            return (
+              <Link
+                key={chapter.id}
+                href={chapter.href}
+                aria-current={active ? "location" : undefined}
+                onClick={() => activateChapter(sectionId)}
+              >
+                {chapter.portfolioLabel}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="pq-header-actions">
+          <Link
+            href="/game"
+            prefetch={false}
+            className="pq-game-link"
+            aria-label="Enter Game mode"
+            onClick={handleGameEntry}
+          >
+            Game
+          </Link>
+          <ThemeToggle className="pq-theme-toggle" />
+          <div className="pq-header-cv">
+            <CVAccessDialog buttonClassName="h-11 px-3" />
+          </div>
+
+          <div className="pq-mobile-menu">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-11 w-11"
+                  aria-label="Open portfolio navigation"
+                  title="Open navigation"
+                >
+                  <Menu aria-hidden="true" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="pq-scope w-[min(22rem,calc(100vw-1rem))] gap-0 border-l-2 border-border-strong bg-background p-0 shadow-[-6px_0_0_var(--shadow-strong)]"
+              >
+                <SheetHeader className="border-b border-border px-5 py-5 text-left">
+                  <span className="pq-kicker">Five chapter journey</span>
+                  <SheetTitle className="text-xl">Portfolio navigation</SheetTitle>
+                  <SheetDescription>
+                    Move directly between professional evidence chapters.
+                  </SheetDescription>
+                </SheetHeader>
+
+                <nav aria-label="Mobile navigation" className="grid p-3">
+                  {storyChapters.map((chapter, index) => {
+                    const sectionId = portfolioStoryAnchors[index];
+                    const active = activeSection === sectionId;
+                    return (
+                      <SheetClose asChild key={chapter.id}>
+                        <Link
+                          href={chapter.href}
+                          aria-current={active ? "location" : undefined}
+                          className={cn(
+                            "group grid min-h-14 grid-cols-[2.5rem_1fr_auto] items-center border-b border-border px-3 font-mono text-sm font-semibold uppercase tracking-[0.04em] first:border-t",
+                            active
+                              ? "bg-surface-raised text-primary"
+                              : "text-foreground hover:bg-surface",
+                          )}
+                          onClick={() => activateChapter(sectionId)}
+                        >
+                          <span className="text-xs text-signal-cyan">
+                            {chapter.index}
+                          </span>
+                          {chapter.portfolioLabel}
+                          <span aria-hidden="true" className="text-primary">
+                            →
+                          </span>
+                        </Link>
+                      </SheetClose>
+                    );
+                  })}
+                </nav>
+
+                <div className="mt-auto border-t border-border bg-surface p-4">
+                  <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-ink-muted">
+                    Private CV access
+                  </p>
+                  <CVAccessDialogMobile buttonClassName="h-11 bg-background" />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export function Navbar() {
+  const pathname = usePathname();
+  return pathname.startsWith("/game") ? <GameNavbar /> : <PortfolioNavbar />;
 }

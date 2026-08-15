@@ -5,12 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Email obfuscation function to avoid email harvesting by bots
+// Avoid emitting the complete address in server-rendered HTML. Client-side
+// assembly discourages basic markup scrapers, but it is not a privacy boundary.
 export function getObfuscatedEmail() {
-  // Split the email parts to avoid having the complete email in the source code
-  const username = "SukhrajKalon";
-  const domain = "gmail.com";
-  
-  // Return the constructed email
-  return `${username}@${domain}`;
+  return ["SukhrajKalon", "gmail.com"].join("@");
 }

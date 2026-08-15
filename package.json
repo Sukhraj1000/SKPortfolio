@@ -1,25 +1,31 @@
 {
-  "name": "portfolio",
+  "name": "skportfolio",
   "version": "0.1.0",
   "private": true,
+  "description": "Sukhraj Kalon's statically exported Pixel Quest software engineering portfolio.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sukhraj1000/SKPortfolio.git"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "node scripts/next-safe-webstorage.mjs dev --turbopack",
     "build": "node scripts/next-safe-webstorage.mjs build",
     "export": "node scripts/next-safe-webstorage.mjs build",
-    "qa": "npm run build && npm run qa:static",
+    "qa": "npm run lint && npm run typecheck && npm run build && npm run qa:static",
     "qa:static": "node scripts/validate-static-export.mjs",
     "qa:ui": "playwright test",
     "qa:ui:install": "playwright install chromium",
     "start": "node scripts/next-safe-webstorage.mjs start",
-    "lint": "next lint"
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@radix-ui/react-avatar": "^1.1.4",
     "@radix-ui/react-dialog": "^1.1.7",
-    "@radix-ui/react-hover-card": "^1.1.7",
-    "@radix-ui/react-scroll-area": "^1.2.4",
     "@radix-ui/react-slot": "^1.2.0",
-    "@radix-ui/react-tabs": "^1.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.488.0",

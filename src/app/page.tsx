@@ -3,14 +3,20 @@ import { AboutSection } from "@/components/AboutSection";
 import { ProjectsSection } from "@/components/ProjectsSection";
 import { Footer } from "@/components/Footer";
 import { StoryRail } from "@/components/StoryRail";
+import { PortfolioMotion } from "@/components/pixel-quest/PortfolioMotion";
 
 export default function Home() {
   return (
-    <div className="min-h-screen overflow-clip bg-background">
+    <div className="pq-root min-h-screen overflow-clip bg-background" data-portfolio-theme="pixel-quest">
+      <PortfolioMotion />
       <HeroSection />
-      <StoryRail />
-      <ProjectsSection />
-      <AboutSection />
+      <div className="pq-journey-layout">
+        <StoryRail />
+        <div className="pq-journey-content">
+          <ProjectsSection />
+          <AboutSection />
+        </div>
+      </div>
       <Footer />
     </div>
   );
