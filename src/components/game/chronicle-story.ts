@@ -71,6 +71,7 @@ export interface ChronicleProgress {
   tutorialCompleted: boolean;
   completed: boolean;
   highScore: number;
+  bestTimeMs: number | null;
   completedAt?: string;
 }
 
@@ -276,6 +277,7 @@ export const emptyChronicleProgress: ChronicleProgress = {
   tutorialCompleted: false,
   completed: false,
   highScore: 0,
+  bestTimeMs: null,
 };
 
 function orderedUnique<T extends string>(
@@ -292,6 +294,23 @@ function finiteNonNegativeNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0
     ? Math.floor(value)
     : 0;
+}
+
+function finitePositiveNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0
+    ? Math.floor(value)
+    : null;
+}
+
+export function formatRunTime(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return "—";
+  }
+  const totalTenths = Math.floor(value / 100);
+  const minutes = Math.floor(totalTenths / 600);
+  const seconds = Math.floor((totalTenths % 600) / 10);
+  const tenths = totalTenths % 10;
+  return `${minutes}:${String(seconds).padStart(2, "0")}.${tenths}`;
 }
 
 export function parseChronicleProgress(value: unknown): ChronicleProgress {
@@ -335,6 +354,9 @@ export function parseChronicleProgress(value: unknown): ChronicleProgress {
       isCurrentVersion && stored.tutorialCompleted === true,
     completed: stored.completed === true,
     highScore: finiteNonNegativeNumber(stored.highScore),
+    bestTimeMs: isCurrentVersion
+      ? finitePositiveNumber(stored.bestTimeMs)
+      : null,
     ...(completedAt ? { completedAt } : {}),
   };
 }
@@ -345,6 +367,11 @@ export function mergeChronicleProgress(
 ): ChronicleProgress {
   const completed = current.completed || update.completed === true;
   const completedAt = current.completedAt ?? update.completedAt;
+  const updateBestTime = finitePositiveNumber(update.bestTimeMs);
+  const bestTimeMs =
+    current.bestTimeMs && updateBestTime
+      ? Math.min(current.bestTimeMs, updateBestTime)
+      : current.bestTimeMs ?? updateBestTime;
 
   return {
     version: CHRONICLE_PROGRESS_VERSION,
@@ -365,6 +392,7 @@ export function mergeChronicleProgress(
       current.highScore,
       finiteNonNegativeNumber(update.highScore),
     ),
+    bestTimeMs,
     ...(completedAt ? { completedAt } : {}),
   };
 }

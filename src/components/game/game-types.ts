@@ -31,6 +31,7 @@ export interface GameSnapshot {
   recoveredRecords: readonly ChronicleRecordId[];
   latestUnlockId: ChronicleRecordId | null;
   score: number;
+  elapsedMs: number;
   multiplier: number;
   signal: number;
   checkpoints: readonly ChronicleChapterId[];
@@ -67,6 +68,7 @@ export const initialGameSnapshot: GameSnapshot = {
   recoveredRecords: [],
   latestUnlockId: null,
   score: 0,
+  elapsedMs: 0,
   multiplier: 1,
   signal: 100,
   checkpoints: [],

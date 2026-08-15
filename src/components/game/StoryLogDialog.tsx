@@ -14,6 +14,7 @@ import {
 import {
   chronicleChapters,
   chronicleRecords,
+  formatRunTime,
   type ChronicleRecordId,
 } from "@/components/game/chronicle-story";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,9 @@ interface StoryLogDialogProps {
   recoveredRecords: readonly ChronicleRecordId[];
   score: number;
   highScore: number;
+  elapsedMs: number;
+  bestTimeMs: number | null;
+  isPersonalBest: boolean;
   runCompleted: boolean;
   onClose: () => void;
   onResume: () => void;
@@ -42,6 +46,9 @@ export function StoryLogDialog({
   recoveredRecords,
   score,
   highScore,
+  elapsedMs,
+  bestTimeMs,
+  isPersonalBest,
   runCompleted,
   onClose,
   onResume,
@@ -154,6 +161,14 @@ export function StoryLogDialog({
                 <dd>{Math.max(score, highScore).toLocaleString()}</dd>
               </div>
               <div>
+                <dt>Run time</dt>
+                <dd>{formatRunTime(elapsedMs)}</dd>
+              </div>
+              <div>
+                <dt>Personal best</dt>
+                <dd>{formatRunTime(bestTimeMs ?? elapsedMs)}</dd>
+              </div>
+              <div>
                 <dt>Records</dt>
                 <dd>{`${recoveredRecords.length} / ${chronicleRecords.length}`}</dd>
               </div>
@@ -166,8 +181,9 @@ export function StoryLogDialog({
             <div className={styles.recapSignal}>
               <Check aria-hidden="true" />
               <span>
-                Completion and recovered records are stored locally on this
-                device. Portfolio mode remains complete without them.
+                {isPersonalBest
+                  ? `New personal best: ${formatRunTime(elapsedMs)}. Completion and records are stored locally on this device.`
+                  : "Completion, personal best, and recovered records are stored locally on this device. Portfolio mode remains complete without them."}
               </span>
             </div>
 

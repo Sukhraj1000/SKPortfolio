@@ -174,6 +174,7 @@ export function createChronicleGame({
     private lastTouchJump = false;
     private lastTouchDash = false;
     private score = 0;
+    private elapsedMs = 0;
     private multiplier = 1;
     private signal = 100;
     private completed = false;
@@ -262,8 +263,11 @@ export function createChronicleGame({
       if (pausedRequested) this.scene.pause();
     }
 
-    update(time: number) {
+    update(time: number, delta: number) {
       if (this.completed) return;
+      if (this.runStarted) {
+        this.elapsedMs += Math.min(Math.max(delta, 0), 250);
+      }
       const body = this.player.body as Phaser.Physics.Arcade.Body;
       const grounded = body.blocked.down || body.touching.down;
       const keyboardJump =
@@ -395,6 +399,7 @@ export function createChronicleGame({
       this.lastTouchJump = false;
       this.lastTouchDash = false;
       this.score = 0;
+      this.elapsedMs = 0;
       this.multiplier = 1;
       this.signal = 100;
       this.completed = false;
@@ -1072,6 +1077,7 @@ export function createChronicleGame({
       this.player.setVelocity(0, 0);
       this.player.clearTint();
       this.playerState = "grounded";
+      this.elapsedMs = 0;
       this.dashEndsAt = 0;
       this.dashReadyAt = 0;
       this.lastScoredX = 150;
@@ -1166,6 +1172,7 @@ export function createChronicleGame({
           .filter((recordId) => this.recoveredRecordIds.has(recordId)),
         latestUnlockId: this.latestUnlockId,
         score: this.score,
+        elapsedMs: Math.round(this.elapsedMs),
         multiplier: this.multiplier,
         signal: this.signal,
         checkpoints: [...this.checkpointIds],

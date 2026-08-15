@@ -10,6 +10,7 @@ import {
   chronicleRecordIds,
   chronicleRecords,
   emptyChronicleProgress,
+  formatRunTime,
   mergeChronicleProgress,
   parseChronicleProgress,
 } from "../../src/components/game/chronicle-story";
@@ -103,6 +104,7 @@ test.describe("Chronicle Run story foundation", () => {
         tutorialCompleted: true,
         completed: false,
         highScore: 422.9,
+        bestTimeMs: 123_456.7,
       }),
     ).toEqual({
       version: CHRONICLE_PROGRESS_VERSION,
@@ -114,6 +116,7 @@ test.describe("Chronicle Run story foundation", () => {
       tutorialCompleted: true,
       completed: false,
       highScore: 422,
+      bestTimeMs: 123_456,
     });
   });
 
@@ -122,6 +125,18 @@ test.describe("Chronicle Run story foundation", () => {
       emptyChronicleProgress,
     );
     expect(parseChronicleProgress(null)).toEqual(emptyChronicleProgress);
+    expect(
+      parseChronicleProgress({
+        ...emptyChronicleProgress,
+        bestTimeMs: Number.POSITIVE_INFINITY,
+      }).bestTimeMs,
+    ).toBeNull();
+    expect(
+      parseChronicleProgress({
+        ...emptyChronicleProgress,
+        bestTimeMs: -1,
+      }).bestTimeMs,
+    ).toBeNull();
 
     expect(
       parseChronicleProgress({
@@ -138,6 +153,7 @@ test.describe("Chronicle Run story foundation", () => {
       tutorialCompleted: false,
       completed: true,
       highScore: 900,
+      bestTimeMs: null,
       completedAt: "2026-08-15T12:00:00.000Z",
     });
   });
@@ -149,6 +165,7 @@ test.describe("Chronicle Run story foundation", () => {
         recoveredRecords: ["project:tymaura"],
         completedChapters: ["origin"],
         highScore: 800,
+        bestTimeMs: 78_000,
       },
       {
         recoveredRecords: [
@@ -159,6 +176,7 @@ test.describe("Chronicle Run story foundation", () => {
         tutorialCompleted: true,
         completed: true,
         highScore: 500,
+        bestTimeMs: 92_000,
         completedAt: "2026-08-15T12:00:00.000Z",
       },
     );
@@ -173,8 +191,18 @@ test.describe("Chronicle Run story foundation", () => {
       tutorialCompleted: true,
       completed: true,
       highScore: 800,
+      bestTimeMs: 78_000,
       completedAt: "2026-08-15T12:00:00.000Z",
     });
+    expect(
+      mergeChronicleProgress(merged, { bestTimeMs: 70_250 }).bestTimeMs,
+    ).toBe(70_250);
+    expect(
+      mergeChronicleProgress(merged, { bestTimeMs: Number.NaN }).bestTimeMs,
+    ).toBe(78_000);
+    expect(formatRunTime(0)).toBe("0:00.0");
+    expect(formatRunTime(70_250)).toBe("1:10.2");
+    expect(formatRunTime(null)).toBe("—");
     expect(chronicleChapterIds).toHaveLength(5);
   });
 });

@@ -64,6 +64,7 @@ test.describe("Chronicle Run", () => {
       "data-journey-progress",
       heldProgress ?? "0",
     );
+    await expect(runtime).toHaveAttribute("data-elapsed-ms", "0");
     await expect
       .poll(() => requests.some((url) => url.includes("industrial-world-atlas")))
       .toBeTruthy();
@@ -84,6 +85,7 @@ test.describe("Chronicle Run", () => {
             tutorialCompleted: true,
             completed: false,
             highScore: 1250,
+            bestTimeMs: 125_000,
           }),
         );
       },
@@ -96,6 +98,7 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-recovered-records", "2");
     await expect(page.getByText("Records 2/9", { exact: true })).toBeVisible();
     await expect(page.getByText("High 1,250", { exact: true })).toBeVisible();
+    await expect(page.getByText("Best 2:05.0", { exact: true })).toBeVisible();
     await expect(page.locator("[data-tutorial-prompt]")).toContainText(
       "Replay walkthrough",
     );
@@ -194,10 +197,15 @@ test.describe("Chronicle Run", () => {
     await page.getByRole("button", { name: "Pause", exact: true }).click();
     await expect(runtime).toHaveAttribute("data-game-state", "paused");
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
+    const pausedElapsed = await runtime.getAttribute("data-elapsed-ms");
     await page.waitForTimeout(700);
     await expect(runtime).toHaveAttribute(
       "data-journey-progress",
       pausedProgress ?? "0",
+    );
+    await expect(runtime).toHaveAttribute(
+      "data-elapsed-ms",
+      pausedElapsed ?? "0",
     );
 
     await page.getByRole("button", { name: "Start or resume" }).click();
@@ -205,11 +213,17 @@ test.describe("Chronicle Run", () => {
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThan(Number(pausedProgress));
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-elapsed-ms")))
+      .toBeGreaterThan(Number(pausedElapsed));
 
     await page.getByRole("button", { name: "Restart level" }).click();
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeLessThanOrEqual(4);
+    await expect
+      .poll(async () => Number(await runtime.getAttribute("data-elapsed-ms")))
+      .toBeLessThanOrEqual(1_500);
   });
 
   test("advances the five-step walkthrough only on matching inputs", async ({
@@ -373,10 +387,15 @@ test.describe("Chronicle Run", () => {
       "2",
     );
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
+    const pausedElapsed = await runtime.getAttribute("data-elapsed-ms");
     await page.waitForTimeout(500);
     await expect(runtime).toHaveAttribute(
       "data-journey-progress",
       pausedProgress ?? "0",
+    );
+    await expect(runtime).toHaveAttribute(
+      "data-elapsed-ms",
+      pausedElapsed ?? "0",
     );
 
     await page.keyboard.press("Shift+Tab");
@@ -522,7 +541,10 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-game-state", "story");
     await expect(runtime).toHaveAttribute("data-recovered-records", "9");
     const completedScore = Number(await runtime.getAttribute("data-score"));
+    const completedTime = Number(await runtime.getAttribute("data-elapsed-ms"));
     expect(completedScore).toBeGreaterThan(0);
+    expect(completedTime).toBeGreaterThan(0);
+    await expect(completion).toContainText("New personal best");
     await expect
       .poll(() =>
         page.evaluate((key) => {
@@ -532,6 +554,7 @@ test.describe("Chronicle Run", () => {
             chapters: value?.completedChapters?.length,
             records: value?.recoveredRecords?.length,
             highScore: value?.highScore,
+            bestTimeMs: value?.bestTimeMs,
           };
         }, progressKey),
       )
@@ -540,6 +563,7 @@ test.describe("Chronicle Run", () => {
         chapters: 5,
         records: 9,
         highScore: completedScore,
+        bestTimeMs: completedTime,
       });
 
     await completion.getByRole("button", { name: "Open Story Log" }).click();

@@ -21,6 +21,7 @@ import {
   chronicleChapters,
   chronicleTutorialSteps,
   emptyChronicleProgress,
+  formatRunTime,
   mergeChronicleProgress,
   parseChronicleProgress,
   type ChronicleProgress,
@@ -266,6 +267,9 @@ export function GameExperience({
       recoveredRecords: [...snapshot.recoveredRecords],
       tutorialCompleted: snapshot.tutorialCompleted,
       highScore: snapshot.completed ? snapshot.score : savedProgress.highScore,
+      bestTimeMs: snapshot.completed
+        ? snapshot.elapsedMs
+        : savedProgress.bestTimeMs,
       completedAt:
         snapshot.completed && !savedProgress.completedAt
           ? new Date().toISOString()
@@ -275,6 +279,7 @@ export function GameExperience({
     const changed =
       nextProgress.completed !== savedProgress.completed ||
       nextProgress.highScore !== savedProgress.highScore ||
+      nextProgress.bestTimeMs !== savedProgress.bestTimeMs ||
       nextProgress.completedAt !== savedProgress.completedAt ||
       nextProgress.tutorialCompleted !== savedProgress.tutorialCompleted ||
       nextProgress.recoveredRecords.join("|") !==
@@ -528,6 +533,11 @@ export function GameExperience({
   const activeChapter =
     chronicleChapters[snapshot.chapterIndex] ?? chronicleChapters[0];
   const journeyProgress = snapshot.journeyProgress;
+  const isPersonalBest =
+    snapshot.completed &&
+    snapshot.elapsedMs > 0 &&
+    (savedProgress.bestTimeMs === null ||
+      snapshot.elapsedMs <= savedProgress.bestTimeMs);
   const tutorialStep = chronicleTutorialSteps.find(
     (step) => step.id === snapshot.tutorialStep,
   );
@@ -545,6 +555,8 @@ export function GameExperience({
       data-dash-ready={snapshot.dashReady}
       data-signal={snapshot.signal}
       data-score={snapshot.score}
+      data-elapsed-ms={snapshot.elapsedMs}
+      data-best-time-ms={savedProgress.bestTimeMs ?? ""}
       data-checkpoints={snapshot.checkpoints.length}
       data-tutorial-step={snapshot.tutorialStep}
       data-tutorial-completed={snapshot.tutorialCompleted}
@@ -574,6 +586,8 @@ export function GameExperience({
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-muted sm:text-xs">
             <div><dt className="sr-only">Signal</dt><dd>Signal {snapshot.signal}%</dd></div>
             <div><dt className="sr-only">Story records</dt><dd className="text-primary">Records {snapshot.recoveredRecords.length}/9</dd></div>
+            <div><dt className="sr-only">Time</dt><dd className="text-signal-yellow">Time {formatRunTime(snapshot.elapsedMs)}</dd></div>
+            <div><dt className="sr-only">Personal best time</dt><dd>Best {formatRunTime(savedProgress.bestTimeMs)}</dd></div>
             <div><dt className="sr-only">Score</dt><dd>Score {snapshot.score.toLocaleString()}</dd></div>
             <div><dt className="sr-only">Momentum</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
             <div className="hidden md:block"><dt className="sr-only">High score</dt><dd>High {savedProgress.highScore.toLocaleString()}</dd></div>
@@ -850,6 +864,9 @@ export function GameExperience({
             recoveredRecords={snapshot.recoveredRecords}
             score={snapshot.score}
             highScore={savedProgress.highScore}
+            elapsedMs={snapshot.elapsedMs}
+            bestTimeMs={savedProgress.bestTimeMs}
+            isPersonalBest={isPersonalBest}
             runCompleted={snapshot.completed}
             onClose={closeStoryOverlay}
             onResume={resumeFromStoryLog}
