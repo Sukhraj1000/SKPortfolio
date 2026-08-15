@@ -1,6 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const appURL = "http://127.0.0.1:4173";
 const releaseViewports = [
   { width: 320, height: 568 },
   { width: 390, height: 844 },
@@ -8,6 +7,11 @@ const releaseViewports = [
   { width: 1024, height: 768 },
   { width: 1440, height: 900 },
 ] as const;
+
+function requireBaseURL(baseURL: string | undefined) {
+  if (!baseURL) throw new Error("Playwright baseURL is required for this test.");
+  return baseURL;
+}
 
 function boxesOverlap(
   first: { x: number; y: number; width: number; height: number },
@@ -309,10 +313,10 @@ test.describe("Pixel Quest portfolio", () => {
     ).toBe(0);
   });
 
-  test("shows final content when JavaScript is disabled", async ({ browser }) => {
+  test("shows final content when JavaScript is disabled", async ({ browser, baseURL }) => {
     const context = await browser.newContext({
       javaScriptEnabled: false,
-      baseURL: appURL,
+      baseURL: requireBaseURL(baseURL),
       viewport: { width: 390, height: 844 },
     });
     const page = await context.newPage();
@@ -448,9 +452,9 @@ test.describe("Pixel Quest portfolio", () => {
     }
   });
 
-  test("does not apply fine-pointer hover motion in a touch context", async ({ browser }) => {
+  test("does not apply fine-pointer hover motion in a touch context", async ({ browser, baseURL }) => {
     const context = await browser.newContext({
-      baseURL: appURL,
+      baseURL: requireBaseURL(baseURL),
       hasTouch: true,
       isMobile: true,
       viewport: { width: 390, height: 844 },
@@ -487,7 +491,7 @@ test.describe("Pixel Quest portfolio", () => {
         name: "Projects",
       }),
     ).toHaveAttribute("aria-current", "location");
-    await expect(page.getByRole("progressbar", { name: "Portfolio chapters completed" })).toHaveAttribute(
+    await expect(page.getByRole("progressbar", { name: "Portfolio journey progress" })).toHaveAttribute(
       "aria-valuenow",
       "40",
     );

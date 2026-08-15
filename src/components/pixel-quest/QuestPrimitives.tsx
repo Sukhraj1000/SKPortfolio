@@ -36,13 +36,6 @@ export function QuestChip({
   return <li className={cn("pq-chip", className)} {...props} />;
 }
 
-export function QuestFrame({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  return <div className={cn("pq-frame", className)} {...props} />;
-}
-
 interface QuestChapterHeadingProps extends React.ComponentProps<"header"> {
   index: string;
   label: string;
@@ -75,17 +68,14 @@ export function QuestChapterHeading({
   );
 }
 
-type OperatorPose = "idle" | "run" | "interact" | "arrive";
-type OperatorSize = "small" | "medium" | "large";
+type OperatorSize = "small" | "large";
 
 interface OperatorSpriteProps extends Omit<React.ComponentProps<"span">, "children"> {
-  pose?: OperatorPose;
   size?: OperatorSize;
 }
 
 export function OperatorSprite({
   className,
-  pose = "idle",
   size = "small",
   ...props
 }: OperatorSpriteProps) {
@@ -94,7 +84,6 @@ export function OperatorSprite({
       {...props}
       aria-hidden="true"
       className={cn("pq-operator", className)}
-      data-pose={pose}
       data-size={size}
     />
   );

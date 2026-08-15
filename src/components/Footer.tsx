@@ -34,7 +34,6 @@ export function Footer() {
       <section
         id="contact"
         data-chapter="05"
-        data-game-checkpoint="comms"
         aria-labelledby="contact-title"
         className="pq-ending"
       >

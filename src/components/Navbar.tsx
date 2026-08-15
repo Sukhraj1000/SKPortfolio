@@ -140,7 +140,7 @@ function PortfolioNavbar() {
           <span
             className="pq-status-track"
             role="progressbar"
-            aria-label="Portfolio chapters completed"
+            aria-label="Portfolio journey progress"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={progress}

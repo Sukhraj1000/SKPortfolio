@@ -158,7 +158,6 @@ export function AboutSection() {
       <section
         id="about"
         data-chapter="03"
-        data-game-checkpoint="field-log"
         aria-labelledby="field-log-title"
         className="pq-chapter pq-experience-chapter"
       >
@@ -180,7 +179,6 @@ export function AboutSection() {
       <section
         id="loadout"
         data-chapter="04"
-        data-game-checkpoint="loadout"
         aria-labelledby="loadout-title"
         className="pq-chapter pq-skills-chapter"
       >

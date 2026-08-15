@@ -1,5 +1,6 @@
 /* Pixel Quest production layer. All composition selectors are scoped with pq-. */
 
+/* Theme tokens */
 .pq-root,
 .pq-scope {
   color-scheme: dark;
@@ -49,7 +50,6 @@
   --signal-red: var(--pq-coral);
   --celestial-sun: var(--pq-gold);
   --celestial-moon: var(--pq-cyan);
-  --stripe-contrast: var(--pq-panel);
   --shadow-soft: rgba(5, 9, 13, 0.5);
   --shadow-strong: var(--pq-shadow);
   --grid-line: var(--pq-grid);
@@ -84,13 +84,13 @@
   --ring: #155f70;
   --ink-faint: #586b6d;
   --steel: #5b6e70;
-  --stripe-contrast: #d8e2da;
   --shadow-soft: rgba(34, 51, 48, 0.2);
   --grid-line-soft: rgba(22, 105, 120, 0.05);
   --dither-dot: rgba(22, 105, 120, 0.15);
   --frame-inset: rgba(255, 255, 255, 0.7);
 }
 
+/* Shared primitives */
 .pq-root {
   min-height: 100svh;
   overflow: clip;
@@ -101,13 +101,6 @@
 .pq-shell {
   width: min(100% - 2rem, 88rem);
   margin-inline: auto;
-}
-
-.pq-grid-field {
-  background-image:
-    linear-gradient(var(--pq-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--pq-grid) 1px, transparent 1px);
-  background-size: 32px 32px;
 }
 
 .pq-kicker {
@@ -173,38 +166,6 @@
   line-height: 1.35;
 }
 
-.pq-frame {
-  position: relative;
-  border: 2px solid var(--pq-line);
-  background: var(--pq-night);
-  color: var(--pq-paper);
-  box-shadow: 8px 8px 0 var(--pq-shadow);
-}
-
-.pq-frame::before,
-.pq-frame::after {
-  position: absolute;
-  z-index: 2;
-  width: 0.8rem;
-  height: 0.8rem;
-  pointer-events: none;
-  content: "";
-}
-
-.pq-frame::before {
-  top: -2px;
-  left: -2px;
-  border-top: 2px solid var(--pq-cyan);
-  border-left: 2px solid var(--pq-cyan);
-}
-
-.pq-frame::after {
-  right: -2px;
-  bottom: -2px;
-  border-right: 2px solid var(--pq-lime);
-  border-bottom: 2px solid var(--pq-lime);
-}
-
 .pq-operator {
   display: block;
   width: 48px;
@@ -218,21 +179,11 @@
   image-rendering: crisp-edges;
 }
 
-.pq-operator[data-size="medium"] {
-  width: 72px;
-  height: 96px;
-  background-size: 288px 384px;
-}
-
 .pq-operator[data-size="large"] {
   width: 96px;
   height: 128px;
   background-size: 384px 512px;
 }
-
-.pq-operator[data-pose="run"] { background-position: -96px 0; }
-.pq-operator[data-pose="interact"] { background-position: -48px -128px; }
-.pq-operator[data-pose="arrive"] { background-position: 0 -192px; }
 
 .light .pq-operator {
   filter: drop-shadow(3px 4px 0 rgba(62, 79, 73, 0.28));
@@ -245,6 +196,7 @@
   outline-offset: 3px;
 }
 
+/* Header and navigation */
 .pq-header {
   position: fixed;
   z-index: 50;
@@ -400,6 +352,7 @@
 .pq-header-cv { display: none; }
 .pq-mobile-menu { display: block; }
 
+/* Profile hero */
 .pq-hero {
   position: relative;
   display: grid;
@@ -657,6 +610,7 @@
 .pq-console-lines i:nth-child(2) { width: 78%; }
 .pq-console-lines i:nth-child(3) { width: 46%; }
 
+/* Shared chapter and project presentation */
 .pq-chapter {
   padding: clamp(5rem, 9vw, 9rem) 0 clamp(5rem, 9vw, 9rem) clamp(2rem, 6vw, 6rem);
   border-bottom: 1px solid var(--pq-line);
@@ -916,6 +870,7 @@
 .pq-build-notes dt { color: var(--pq-cyan); font-family: var(--font-geist-mono), ui-monospace, monospace; font-size: 0.7rem; text-transform: uppercase; }
 .pq-build-notes dd { margin: 0.35rem 0 0; color: var(--pq-muted); font-size: 0.88rem; line-height: 1.55; }
 
+/* Experience path */
 .pq-level-path {
   position: relative;
   display: grid;
@@ -1041,6 +996,7 @@
   content: "";
 }
 
+/* Capability inventory */
 .pq-inventory-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1164,6 +1120,7 @@
   line-height: 1.7;
 }
 
+/* Contact ending */
 .pq-ending {
   position: relative;
   display: grid;
@@ -1362,6 +1319,7 @@
 }
 .pq-legal-inner nav a:hover { color: var(--pq-lime); }
 
+/* Progressive motion */
 .pq-root[data-active-chapter="02"] .pq-rail-operator .pq-operator { background-position: -96px 0; }
 .pq-root[data-active-chapter="03"] .pq-rail-operator .pq-operator { background-position: -48px -128px; }
 .pq-root[data-active-chapter="04"] .pq-rail-operator .pq-operator { background-position: -96px -128px; }
@@ -1506,6 +1464,7 @@
   to { opacity: 1; transform: none; }
 }
 
+/* Desktop chapter rail and content shell */
 .pq-journey-layout {
   display: grid;
   grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr);
@@ -1593,6 +1552,7 @@
 .pq-chapter-rail a span { color: var(--pq-cyan); }
 .pq-chapter-rail li.is-active a { color: var(--pq-lime); }
 
+/* Responsive composition */
 @media (min-width: 48rem) {
   .pq-shell { width: min(100% - 4rem, 88rem); }
 }
