@@ -5,8 +5,8 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 echo "Preparing the SKPortfolio static export..."
 
-echo "Checking production dependencies for critical advisories..."
-npm audit --omit=dev --audit-level=critical
+echo "Checking production dependencies for high or critical advisories..."
+npm audit --omit=dev --audit-level=high
 
 echo "Removing previous build output..."
 rm -rf .next out

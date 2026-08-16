@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { gzipSync } from "node:zlib";
 
 const outputRoot = path.resolve("out");
 const rootHtmlPath = path.join(outputRoot, "index.html");
@@ -24,6 +25,23 @@ function localReferences(html) {
   return [...html.matchAll(/(?:href|src)="(\/[^"]+)"/g)]
     .map((match) => match[1].split(/[?#]/)[0])
     .filter(Boolean);
+}
+
+function initialScriptReferences(html) {
+  return [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+\.js)"[^>]*>/gi)]
+    .filter((match) => !/\bnomodule(?:\s|=|>)/i.test(match[0]))
+    .map((match) => match[1].split(/[?#]/)[0]);
+}
+
+async function initialScriptTransferBytes(html) {
+  const references = [...new Set(initialScriptReferences(html))];
+  const compressedSizes = await Promise.all(
+    references.map(async (reference) => {
+      const source = await readFile(outputPathFor(reference));
+      return gzipSync(source, { level: 9 }).byteLength;
+    }),
+  );
+  return compressedSizes.reduce((total, size) => total + size, 0);
 }
 
 function outputPathFor(reference) {
@@ -87,6 +105,20 @@ for (const requiredOutput of [
   );
 }
 
+const initialScriptBudgets = [
+  ["Portfolio", rootHtml, 200_000],
+  ["Game training fallback", gameHtml, 200_000],
+];
+const initialScriptTransfers = [];
+for (const [label, html, maximumBytes] of initialScriptBudgets) {
+  const transferBytes = await initialScriptTransferBytes(html);
+  assert(
+    transferBytes <= maximumBytes,
+    `${label} initial scripts exceed their ${maximumBytes}-byte gzip budget.`,
+  );
+  initialScriptTransfers.push([label, transferBytes]);
+}
+
 const chunkDirectory = path.join(outputRoot, "_next", "static", "chunks");
 const chunkFiles = (await walk(chunkDirectory)).filter((file) => file.endsWith(".js"));
 const phaserChunks = [];
@@ -128,4 +160,7 @@ for (const [asset, maximumBytes] of assetBudgets) {
 }
 
 console.log("Static release validation passed.");
+for (const [label, transferBytes] of initialScriptTransfers) {
+  console.log(`${label} initial scripts (gzip): ${(transferBytes / 1000).toFixed(1)} kB`);
+}
 console.log(`Lazy Phaser chunks: ${phaserChunks.join(", ")}`);

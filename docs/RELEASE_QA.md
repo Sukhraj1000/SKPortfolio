@@ -14,6 +14,7 @@ npm ci
 npm run qa:ui:install
 npm run qa:ui
 npm run qa
+npm audit
 ```
 
 `npm run qa:ui` covers:
@@ -40,7 +41,8 @@ npm run qa
   production gameplay bypasses.
 
 `npm run qa` runs strict ESLint, TypeScript, a production static export, and
-`scripts/validate-static-export.mjs`. Static validation confirms:
+`scripts/validate-static-export.mjs`. `npm audit` must report zero known
+vulnerabilities. Static validation confirms:
 
 - `/index.html`, `/game/index.html`, `404.html`, `.htaccess`, and `robots.txt`
   are exported.
@@ -56,16 +58,16 @@ npm run qa
 
 ## Current production bundle
 
-Record these values from the final `npm run qa` output whenever dependencies or
-route composition changes:
+The static release validator sums each modern initial script after gzip and
+excludes the legacy `nomodule` polyfill. It enforces a 200 kB budget per route:
 
-| Route | Route JS | First-load JS |
+| Route | Initial scripts (gzip) | Budget |
 | --- | ---: | ---: |
-| Portfolio `/` | 4.41 kB | 137 kB |
-| Chronicle training route `/game/` | 3.32 kB | 124 kB |
+| Portfolio `/` | 170.8 kB | 200 kB |
+| Chronicle training route `/game/` | 171.9 kB | 200 kB |
 
-Phaser remains a separate lazy chunk and does not affect the initial Portfolio
-route. The world atlas is approximately 466 kB and the character sheet
+Phaser remains a separate lazy chunk and does not affect either initial-script
+measurement. The world atlas is approximately 466 kB and the character sheet
 approximately 56 kB; both are requested only after Game mode activation.
 
 ## Local responsive and accessibility matrix
@@ -170,10 +172,6 @@ browser, preview URL, reviewer, and result.
 
 - Real-device, cross-browser, deployment-preview, and VoiceOver/NVDA checks
   remain manual approval gates even when local automation passes.
-- `npm audit --omit=dev` reports two high-severity advisories through Next.js and
-  its Sharp build dependency. This is a static export with no Next server,
-  Server Actions, or image optimisation endpoint; the available automated fix
-  requires a separate semver-major Next 16 migration.
 - Phaser is intentionally substantial but isolated behind Game mode activation.
   It must remain absent from the initial recruiter-facing Portfolio request.
 

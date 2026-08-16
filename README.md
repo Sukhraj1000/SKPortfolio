@@ -13,7 +13,7 @@ No portfolio evidence is gated behind the game.
 
 ## Technology
 
-- Next.js 15 App Router and React 19
+- Next.js 16 App Router and React 19
 - TypeScript and Tailwind CSS 4
 - Radix Dialog primitives and `next-themes`
 - Playwright browser coverage
@@ -82,4 +82,4 @@ Private CV files, environment files, credentials, certificates, and profile-refe
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Source code and original project artwork are released under the [MIT License](LICENSE). Third-party fonts, marks, and portfolio media retain the rights described in [Asset licensing and attribution](ASSET-LICENSES.md). The MIT License does not grant trademark or endorsement rights.

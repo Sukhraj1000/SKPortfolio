@@ -18,3 +18,7 @@ The artwork avoids weapons, military rank marks, cute or chibi treatment, pastel
 ## Source provenance
 
 The source sheets were generated with the built-in OpenAI image generation workflow on 2026-08-12. A private profile photograph was used only as an identity reference for the SK character and is deliberately not included in the repository. The character source used a flat chroma background that was removed locally; the world source was returned with an alpha channel. Both were normalized into exact frame grids using nearest-neighbour resampling.
+
+## License
+
+The source sheets and normalized Chronicle Run exports are original project artwork released under the repository's [MIT License](../../../LICENSE). The private reference photograph is not included and is not licensed. See [Asset licensing and attribution](../../../ASSET-LICENSES.md) for the complete asset and trademark notice.
