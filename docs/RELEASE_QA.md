@@ -29,9 +29,9 @@ npm audit
   routes, momentum, hazards, checkpoints, quick recovery, and chronological
   chapters, including a measured reachability margin for every upper entrance.
 - Nine larger animated canonical story pickups, optional flow rewards,
-  non-blocking unlock delivery, replay-safe deduplication, local persistence,
-  empty/partial Story Log states, completion, elapsed time, personal best,
-  recap, Story Log review, high score, and replay.
+  non-blocking unlock delivery, within-run deduplication, local persistence,
+  fresh `0/9` story state after Restart/Replay, empty/partial Story Log states,
+  completion, elapsed time, personal best, recap, high score, and replay.
 - Focus containment and return, explicit resume behavior, keyboard and touch
   parity through the walkthrough and run, visibility/timer pause, safe Escape
   exit, live theme changes, live reduced-motion settling, 320px/200% reflow,
@@ -102,9 +102,13 @@ browser, preview URL, reviewer, and result.
 - [ ] Complete a run and confirm auto-run, Space/Up jump, Shift/D dash, S/Down
   fast-drop, P pause, L Story Log, R restart, M sound, and Escape exit all match
   their visible labels.
+- [ ] Inspect the main route floor in both themes; confirm it reads as one solid
+  industrial deck with a clear top edge and long structural spans rather than a
+  row of square atlas blocks.
 - [ ] Take every optional upper-route entrance at least once; confirm each jump
-  has forgiving clearance, lower routes remain unobstructed, and harder lines
-  reward score or momentum without becoming mandatory.
+  has forgiving clearance, lower routes remain unobstructed, continuous upper
+  deck beams align with collision surfaces, and harder lines reward score or
+  momentum without becoming mandatory.
 - [ ] Hit a hazard and fall from an upper route; confirm recovery is quick, uses
   the latest checkpoint, and retains recovered story records.
 - [ ] Recover representative Education, Experience, and Project cards; confirm
@@ -114,9 +118,10 @@ browser, preview URL, reviewer, and result.
 - [ ] Keep each unlock visible through the next route segment and confirm it does
   not hide the player, next hazard, critical HUD, or controls.
 - [ ] Finish Present Day, review score, elapsed time, personal best and records,
-  open the Story Log from the recap, then complete faster and slower replays;
-  confirm only a faster valid completion changes best time and restart resets
-  transient score, time, and position.
+  open the Story Log from the recap, then choose Replay; confirm position, score,
+  time, cards, HUD records, Story Log records, and stored record IDs reset to
+  `0/9`, while tutorial completion, completed status, high score, and best time
+  remain, and the next pickup presents normal unlock feedback.
 
 ### Mobile and touch
 

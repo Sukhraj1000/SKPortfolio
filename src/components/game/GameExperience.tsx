@@ -24,6 +24,7 @@ import {
   formatRunTime,
   mergeChronicleProgress,
   parseChronicleProgress,
+  resetChronicleStoryProgress,
   type ChronicleProgress,
 } from "@/components/game/chronicle-story";
 import { StoryLogDialog } from "@/components/game/StoryLogDialog";
@@ -226,6 +227,21 @@ export function GameExperience({
     [playTone],
   );
 
+  const resetSavedStories = React.useCallback(() => {
+    setSavedProgress((current) => {
+      const nextProgress = resetChronicleStoryProgress(current);
+      try {
+        window.localStorage.setItem(
+          gameProgressKey,
+          JSON.stringify(nextProgress),
+        );
+      } catch {
+        // Restart still clears the active run when persistence is blocked.
+      }
+      return nextProgress;
+    });
+  }, []);
+
   const performTutorialAction = React.useCallback(
     (action: GameAction) => {
       if (!runtimeReady || !gameHandleRef.current) {
@@ -365,10 +381,11 @@ export function GameExperience({
         setPaused(false);
         setSnapshot(initialGameSnapshot);
         setActiveUnlockId(null);
+        resetSavedStories();
         setSpawnCycle((cycle) => cycle + 1);
         gameHandleRef.current?.restart();
         showNotice(
-          "Transient run state reset. Story records and high score preserved.",
+          "New story run started. Records reset; best time and high score preserved.",
           "info",
         );
         return;
@@ -428,6 +445,7 @@ export function GameExperience({
   }, [
     onExit,
     performTutorialAction,
+    resetSavedStories,
     showNotice,
     snapshot.completed,
     snapshot.runStarted,
@@ -531,9 +549,13 @@ export function GameExperience({
     setPaused(false);
     setSnapshot(initialGameSnapshot);
     setActiveUnlockId(null);
+    resetSavedStories();
     setSpawnCycle((cycle) => cycle + 1);
     gameHandleRef.current?.restart();
-    showNotice("Transient run state reset. Story records and high score preserved.", "info");
+    showNotice(
+      "New story run started. Records reset; best time and high score preserved.",
+      "info",
+    );
   };
 
   const gameStatus =

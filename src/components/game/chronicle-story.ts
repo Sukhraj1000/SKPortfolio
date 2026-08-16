@@ -361,6 +361,16 @@ export function parseChronicleProgress(value: unknown): ChronicleProgress {
   };
 }
 
+export function resetChronicleStoryProgress(
+  current: ChronicleProgress,
+): ChronicleProgress {
+  return {
+    ...current,
+    recoveredRecords: [],
+    completedChapters: [...current.completedChapters],
+  };
+}
+
 export function mergeChronicleProgress(
   current: ChronicleProgress,
   update: Partial<Omit<ChronicleProgress, "version">>,

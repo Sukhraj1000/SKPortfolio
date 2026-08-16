@@ -415,7 +415,7 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-game-state", "running");
   });
 
-  test("unlocks a factual record without pausing and deduplicates it on replay", async ({
+  test("unlocks a factual record again after Restart clears the story run", async ({
     page,
   }) => {
     test.setTimeout(65_000);
@@ -488,13 +488,32 @@ test.describe("Chronicle Run", () => {
     await expect(unlockCard).toHaveCount(0);
 
     await page.getByRole("button", { name: "Restart level" }).click();
-    await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
-        timeout: 25_000,
-      })
-      .toBeGreaterThanOrEqual(13);
+    await expect(runtime).toHaveAttribute("data-recovered-records", "0");
     await expect(unlockCard).toHaveCount(0);
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return value?.recoveredRecords;
+        }, progressKey),
+      )
+      .toEqual([]);
+
+    await page.getByRole("application").focus();
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      if ((await unlockCard.count()) > 0) break;
+      await page.keyboard.down("Shift");
+      await page.waitForTimeout(70);
+      await page.keyboard.up("Shift");
+      await page.waitForTimeout(300);
+    }
+
+    await expect(unlockCard).toHaveAttribute(
+      "data-record-id",
+      "education:first-class-computer-science",
+    );
     await expect(runtime).toHaveAttribute("data-recovered-records", "1");
+    await expect(page.getByText(/already stored/i)).toHaveCount(0);
   });
 
   test("persists completion and supports Story Log review and replay", async ({
@@ -577,7 +596,25 @@ test.describe("Chronicle Run", () => {
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeLessThanOrEqual(4);
-    await expect(runtime).toHaveAttribute("data-recovered-records", "9");
+    await expect(runtime).toHaveAttribute("data-recovered-records", "0");
+    await expect
+      .poll(() =>
+        page.evaluate((key) => {
+          const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+          return {
+            records: value?.recoveredRecords?.length,
+            completed: value?.completed,
+            highScore: value?.highScore,
+            bestTimeMs: value?.bestTimeMs,
+          };
+        }, progressKey),
+      )
+      .toEqual({
+        records: 0,
+        completed: true,
+        highScore: completedScore,
+        bestTimeMs: completedTime,
+      });
   });
 
   test("updates theme and motion live and supports the documented runtime shortcuts", async ({
@@ -589,7 +626,7 @@ test.describe("Chronicle Run", () => {
           key,
           JSON.stringify({
             version: 1,
-            recoveredRecords: [],
+            recoveredRecords: ["education:first-class-computer-science"],
             completedChapters: [],
             tutorialCompleted: true,
             completed: false,
@@ -608,6 +645,7 @@ test.describe("Chronicle Run", () => {
     const runtime = page.locator("[data-reduced-motion]");
     const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
     await stage.focus();
+    await expect(runtime).toHaveAttribute("data-recovered-records", "1");
     await expect(runtime).toHaveAttribute("data-reduced-motion", "false");
     await expect(runtime).toHaveAttribute("data-reward-motion", "animated");
     await expect
@@ -648,10 +686,13 @@ test.describe("Chronicle Run", () => {
       .poll(() =>
         page.evaluate((key) => {
           const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
-          return value?.highScore;
+          return {
+            records: value?.recoveredRecords?.length,
+            highScore: value?.highScore,
+          };
         }, progressKey),
       )
-      .toBe(7300);
+      .toEqual({ records: 0, highScore: 7300 });
 
     await page.evaluate(() => {
       Object.defineProperty(document, "visibilityState", {

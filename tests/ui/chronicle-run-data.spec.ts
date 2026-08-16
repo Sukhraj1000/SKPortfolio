@@ -13,6 +13,7 @@ import {
   formatRunTime,
   mergeChronicleProgress,
   parseChronicleProgress,
+  resetChronicleStoryProgress,
 } from "../../src/components/game/chronicle-story";
 import {
   experience,
@@ -200,6 +201,10 @@ test.describe("Chronicle Run story foundation", () => {
     expect(
       mergeChronicleProgress(merged, { bestTimeMs: Number.NaN }).bestTimeMs,
     ).toBe(78_000);
+    expect(resetChronicleStoryProgress(merged)).toEqual({
+      ...merged,
+      recoveredRecords: [],
+    });
     expect(formatRunTime(0)).toBe("0:00.0");
     expect(formatRunTime(70_250)).toBe("1:10.2");
     expect(formatRunTime(null)).toBe("—");

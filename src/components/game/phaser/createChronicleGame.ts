@@ -158,6 +158,7 @@ export function createChronicleGame({
 }): ChronicleGameHandle {
   let pausedRequested = true;
   let tutorialAlreadyCompleted = false;
+  let storyResetRequested = false;
   let reducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
@@ -200,6 +201,10 @@ export function createChronicleGame({
     private chapterPanels: Phaser.GameObjects.Rectangle[] = [];
     private chapterLabels: Phaser.GameObjects.Text[] = [];
     private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
+    private deckBases: Phaser.GameObjects.Rectangle[] = [];
+    private deckInsets: Phaser.GameObjects.Rectangle[] = [];
+    private deckEdges: Phaser.GameObjects.Rectangle[] = [];
+    private deckDetails: Phaser.GameObjects.TileSprite[] = [];
     private rewardMotions: Array<{
       target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc;
       tween: Phaser.Tweens.Tween;
@@ -252,11 +257,14 @@ export function createChronicleGame({
 
       this.refreshTheme();
       callbacks.onNotice(
-        this.runStarted
-          ? "Auto-run active. Space jumps, Shift dashes, and S drops."
-          : "Quick walkthrough ready. Complete the five displayed actions.",
+        storyResetRequested
+          ? "New story run started. Records reset; best time and high score preserved."
+          : this.runStarted
+            ? "Auto-run active. Space jumps, Shift dashes, and S drops."
+            : "Quick walkthrough ready. Complete the five displayed actions.",
         "info",
       );
+      storyResetRequested = false;
       this.emitSnapshot();
       if (pausedRequested) this.scene.pause();
     }
@@ -423,6 +431,10 @@ export function createChronicleGame({
       this.chapterPanels = [];
       this.chapterLabels = [];
       this.parallaxLayers = [];
+      this.deckBases = [];
+      this.deckInsets = [];
+      this.deckEdges = [];
+      this.deckDetails = [];
       this.rewardMotions = [];
       this.landingEndsAt = 0;
       this.lastDashTrailAt = 0;
@@ -460,6 +472,30 @@ export function createChronicleGame({
         for (let x = 24; x < 512; x += 64) near.lineBetween(x, 60, x, 280);
         near.generateTexture("chronicle-near-city", 512, 280);
         near.destroy();
+      }
+
+      if (!this.textures.exists("chronicle-deck-detail")) {
+        const deck = this.make.graphics({ x: 0, y: 0 }, false);
+        deck.fillStyle(0xffffff, 0.72);
+        deck.fillRect(0, 0, 512, 3);
+        deck.fillStyle(0xffffff, 0.22);
+        deck.fillRect(0, 9, 512, 2);
+        deck.fillRect(0, 46, 512, 2);
+        deck.lineStyle(2, 0xffffff, 0.2);
+        deck.lineBetween(0, 10, 0, 88);
+        deck.lineBetween(256, 10, 256, 88);
+        for (let x = 24; x < 512; x += 64) {
+          deck.fillStyle(0xffffff, 0.34);
+          deck.fillCircle(x, 18, 2);
+        }
+        deck.lineStyle(2, 0xffffff, 0.15);
+        for (let x = 104; x < 488; x += 256) {
+          for (let offset = 0; offset < 44; offset += 11) {
+            deck.lineBetween(x + offset, 56, x + offset + 18, 74);
+          }
+        }
+        deck.generateTexture("chronicle-deck-detail", 512, 88);
+        deck.destroy();
       }
     }
 
@@ -572,21 +608,38 @@ export function createChronicleGame({
 
     private createRoute() {
       const platforms = this.physics.add.staticGroup();
+      const floorTop = FLOOR_Y - 32;
+      this.addDeckSurface(0, WORLD_WIDTH, floorTop, WORLD_HEIGHT - floorTop, 8);
       for (let x = 32; x < WORLD_WIDTH; x += 64) {
-        this.addWorldSprite(platforms, x, FLOOR_Y, 0, 0.5).setDepth(8);
+        this.addWorldSprite(platforms, x, FLOOR_Y, 0, 0.5).setVisible(false);
       }
 
       chronicleUpperRoutes.forEach((route) => {
-        for (let index = 0; index < route.tiles; index += 1) {
-          if (index === 6 || index === 7) continue;
-          const frame = index === 0 || index === route.tiles - 1 ? 1 : 0;
+        let segmentStart: number | null = null;
+        for (let index = 0; index <= route.tiles; index += 1) {
+          const tileExists =
+            index < route.tiles && index !== 6 && index !== 7;
+          if (tileExists && segmentStart === null) segmentStart = index;
+          if (!tileExists && segmentStart !== null) {
+            const lastIndex = index - 1;
+            this.addDeckSurface(
+              route.start + segmentStart * 64 - 32,
+              route.start + lastIndex * 64 + 32,
+              route.y - 32,
+              30,
+              9,
+            );
+            segmentStart = null;
+          }
+          if (!tileExists) continue;
+
           const platform = this.addWorldSprite(
             platforms,
             route.start + index * 64,
             route.y,
-            frame,
+            0,
             0.5,
-          ).setDepth(9);
+          ).setVisible(false);
           const body = platform.body as Phaser.Physics.Arcade.StaticBody;
           body.checkCollision.left = false;
           body.checkCollision.right = false;
@@ -595,6 +648,51 @@ export function createChronicleGame({
       });
 
       return platforms;
+    }
+
+    private addDeckSurface(
+      left: number,
+      right: number,
+      top: number,
+      height: number,
+      depth: number,
+    ) {
+      const width = right - left;
+      const palette = readThemePalette();
+      const centerX = left + width / 2;
+      const base = this.add
+        .rectangle(centerX, top + height / 2, width, height, palette.surface, 1)
+        .setDepth(depth - 0.2);
+      const insetHeight = Math.max(8, height - 13);
+      const inset = this.add
+        .rectangle(
+          centerX,
+          top + 13 + insetHeight / 2,
+          width,
+          insetHeight,
+          palette.surfaceHigh,
+          0.94,
+        )
+        .setDepth(depth - 0.1);
+      const edge = this.add
+        .rectangle(centerX, top + 2, width, 4, palette.primary, 0.76)
+        .setDepth(depth + 0.1);
+      const detail = this.add
+        .tileSprite(
+          centerX,
+          top + height / 2,
+          width,
+          height,
+          "chronicle-deck-detail",
+        )
+        .setTint(palette.foreground)
+        .setAlpha(0.34)
+        .setDepth(depth);
+
+      this.deckBases.push(base);
+      this.deckInsets.push(inset);
+      this.deckEdges.push(edge);
+      this.deckDetails.push(detail);
     }
 
     private addWorldSprite(
@@ -826,7 +924,9 @@ export function createChronicleGame({
           callbacks.onUnlock(recordId);
           callbacks.onNotice("New story record saved to the Story Log.", "success");
         } else {
-          callbacks.onNotice("Story record already stored. Replay score added.", "info");
+          this.latestUnlockId = recordId;
+          callbacks.onUnlock(recordId);
+          callbacks.onNotice("Story record recovered for this run.", "success");
         }
         this.emitSnapshot();
       });
@@ -1179,6 +1279,11 @@ export function createChronicleGame({
       callbacks.onSnapshot(snapshot);
     }
 
+    clearRecoveredStories() {
+      this.recoveredRecordIds.clear();
+      this.latestUnlockId = null;
+    }
+
     setReducedMotion(reduced: boolean) {
       reducedMotion = reduced;
       this.configureCamera();
@@ -1210,6 +1315,16 @@ export function createChronicleGame({
         const colors = [palette.background, palette.surface, palette.surfaceHigh];
         panel.setFillStyle(colors[index], 1);
       });
+      this.deckBases.forEach((surface) => surface.setFillStyle(palette.surface, 1));
+      this.deckInsets.forEach((surface) =>
+        surface.setFillStyle(palette.surfaceHigh, 0.94),
+      );
+      this.deckEdges.forEach((edge) =>
+        edge.setFillStyle(palette.primary, 0.76),
+      );
+      this.deckDetails.forEach((detail) =>
+        detail.setTint(palette.foreground).setAlpha(0.34),
+      );
     }
   }
 
@@ -1273,6 +1388,8 @@ export function createChronicleGame({
     restart() {
       const scene = getScene();
       if (!scene) return;
+      scene.clearRecoveredStories();
+      storyResetRequested = true;
       if (scene.scene.isPaused()) scene.scene.resume();
       scene.scene.restart();
     },
