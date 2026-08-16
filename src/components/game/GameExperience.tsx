@@ -135,9 +135,19 @@ function TouchButton({
           window.clearTimeout(releaseTimerRef.current);
           releaseTimerRef.current = null;
         }
-        event.currentTarget.setPointerCapture(event.pointerId);
         controls.current[action] = true;
         onPress?.();
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {
+          // Some touch browsers reject capture for released or synthetic pointers.
+        }
+      }}
+      onClick={(event) => {
+        if (event.detail !== 0) return;
+        controls.current[action] = true;
+        onPress?.();
+        release();
       }}
       onPointerUp={release}
       onPointerCancel={release}
@@ -245,12 +255,14 @@ export function GameExperience({
   const performTutorialAction = React.useCallback(
     (action: GameAction) => {
       if (!runtimeReady || !gameHandleRef.current) {
-        queuedTutorialActionRef.current = action;
+        if (snapshot.tutorialStep === action) {
+          queuedTutorialActionRef.current = action;
+        }
         return;
       }
       gameHandleRef.current.performTutorialAction(action);
     },
-    [runtimeReady],
+    [runtimeReady, snapshot.tutorialStep],
   );
 
   React.useEffect(() => {
@@ -349,14 +361,15 @@ export function GameExperience({
               event.code === "ShiftRight" ||
               event.code === "KeyD"
             ? "dash"
-            : event.code === "KeyS" || event.code === "ArrowDown"
+            : event.code === "KeyS" ||
+                event.code === "ArrowDown" ||
+                key === "s" ||
+                key === "arrowdown"
               ? "drop"
               : null;
       if (!snapshot.runStarted && !storyOverlay && tutorialAction) {
         event.preventDefault();
-        if (snapshot.tutorialStep === tutorialAction) {
-          performTutorialAction(tutorialAction);
-        }
+        performTutorialAction(tutorialAction);
         return;
       }
 
@@ -869,9 +882,7 @@ export function GameExperience({
             icon={<ArrowUp aria-hidden="true" />}
             controls={controlsRef}
             onPress={() => {
-              if (!snapshot.runStarted && snapshot.tutorialStep === "jump") {
-                performTutorialAction("jump");
-              }
+              if (!snapshot.runStarted) performTutorialAction("jump");
             }}
           />
           <TouchButton
@@ -880,9 +891,7 @@ export function GameExperience({
             icon={<Zap aria-hidden="true" />}
             controls={controlsRef}
             onPress={() => {
-              if (!snapshot.runStarted && snapshot.tutorialStep === "dash") {
-                performTutorialAction("dash");
-              }
+              if (!snapshot.runStarted) performTutorialAction("dash");
             }}
           />
           <TouchButton
@@ -891,9 +900,7 @@ export function GameExperience({
             icon={<ArrowDown aria-hidden="true" />}
             controls={controlsRef}
             onPress={() => {
-              if (!snapshot.runStarted && snapshot.tutorialStep === "drop") {
-                performTutorialAction("drop");
-              }
+              if (!snapshot.runStarted) performTutorialAction("drop");
             }}
           />
         </div>

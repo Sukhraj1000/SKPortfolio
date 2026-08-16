@@ -292,6 +292,39 @@ test.describe("Chronicle Run", () => {
       .toBe(true);
   });
 
+  test("accepts the displayed touch actions through Fast Drop", async ({
+    browser,
+  }) => {
+    const baseURL = test.info().project.use.baseURL as string;
+    const context = await browser.newContext({
+      baseURL,
+      hasTouch: true,
+      viewport: { width: 390, height: 844 },
+    });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      const setPointerCapture = Element.prototype.setPointerCapture;
+      Element.prototype.setPointerCapture = function (pointerId) {
+        if (this instanceof HTMLButtonElement) {
+          throw new DOMException("Pointer capture unavailable", "NotFoundError");
+        }
+        return setPointerCapture.call(this, pointerId);
+      };
+    });
+    await page.goto("/game/");
+
+    const runtime = page.locator("[data-tutorial-step]");
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
+    await page.getByRole("button", { name: "Jump", exact: true }).tap();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "dash");
+    await page.getByRole("button", { name: "Dash", exact: true }).tap();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "drop");
+    await page.getByRole("button", { name: "Fast drop" }).tap();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "pause");
+
+    await context.close();
+  });
+
   test("lets returning players replay or skip the walkthrough", async ({ page }) => {
     await page.addInitScript(
       ({ key }) => {
