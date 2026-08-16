@@ -229,7 +229,6 @@ test.describe("Chronicle Run", () => {
   test("advances the five-step walkthrough only on matching inputs", async ({
     page,
   }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/game/");
 
     const runtime = page.locator("[data-tutorial-step]");

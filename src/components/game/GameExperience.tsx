@@ -345,7 +345,6 @@ export function GameExperience({
 
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable='true']")) {
         return;
@@ -372,6 +371,8 @@ export function GameExperience({
         performTutorialAction(tutorialAction);
         return;
       }
+
+      if (event.defaultPrevented) return;
 
       if (key === "m" && !storyOverlay) {
         event.preventDefault();
