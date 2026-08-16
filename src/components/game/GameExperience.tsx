@@ -173,6 +173,8 @@ export function GameExperience({
   const audioContextRef = React.useRef<AudioContext | null>(null);
   const shouldPauseRef = React.useRef(true);
   const reducedMotionRef = React.useRef(false);
+  const runtimeReadyRef = React.useRef(false);
+  const snapshotRef = React.useRef<GameSnapshot>(initialGameSnapshot);
   const queuedTutorialActionRef = React.useRef<GameAction | null>(null);
   const [spawnCycle, setSpawnCycle] = React.useState(0);
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
@@ -252,18 +254,15 @@ export function GameExperience({
     });
   }, []);
 
-  const performTutorialAction = React.useCallback(
-    (action: GameAction) => {
-      if (!runtimeReady || !gameHandleRef.current) {
-        if (snapshot.tutorialStep === action) {
-          queuedTutorialActionRef.current = action;
-        }
-        return;
+  const performTutorialAction = React.useCallback((action: GameAction) => {
+    if (!runtimeReadyRef.current || !gameHandleRef.current) {
+      if (snapshotRef.current.tutorialStep === action) {
+        queuedTutorialActionRef.current = action;
       }
-      gameHandleRef.current.performTutorialAction(action);
-    },
-    [runtimeReady, snapshot.tutorialStep],
-  );
+      return;
+    }
+    gameHandleRef.current.performTutorialAction(action);
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -366,7 +365,7 @@ export function GameExperience({
                 key === "arrowdown"
               ? "drop"
               : null;
-      if (!snapshot.runStarted && !storyOverlay && tutorialAction) {
+      if (!snapshotRef.current.runStarted && !storyOverlay && tutorialAction) {
         event.preventDefault();
         performTutorialAction(tutorialAction);
         return;
@@ -497,6 +496,8 @@ export function GameExperience({
   const callbacks = React.useMemo(
     () => ({
       onSnapshot: (nextSnapshot: GameSnapshot) => {
+        snapshotRef.current = nextSnapshot;
+        runtimeReadyRef.current = true;
         setSnapshot(nextSnapshot);
         setRuntimeReady(true);
         const queuedAction = queuedTutorialActionRef.current;

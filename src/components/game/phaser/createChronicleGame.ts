@@ -1132,6 +1132,12 @@ export function createChronicleGame({
         this.tutorialStepIndex + 1,
       );
       const nextStep = chronicleTutorialSteps[this.tutorialStepIndex];
+      if (nextStep.id === "drop") {
+        this.dropPracticePrepared = true;
+        this.player.setVelocityY(-420);
+        this.playerState = "jumping";
+        this.lastGroundedAt = Number.NEGATIVE_INFINITY;
+      }
       callbacks.onNotice(
         nextStep.id === "complete"
           ? "Five actions complete. Resume from the Story Log when ready."
