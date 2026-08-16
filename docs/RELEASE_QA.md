@@ -33,9 +33,10 @@ npm audit
   fresh `0/9` story state after Restart/Replay, empty/partial Story Log states,
   completion, elapsed time, personal best, recap, high score, and replay.
 - Focus containment and return, explicit resume behavior, keyboard and touch
-  parity through the walkthrough and run, visibility/timer pause, safe Escape
-  exit, live theme changes, live reduced-motion settling, 320px/200% reflow,
-  and unlock/control/player non-overlap.
+  parity through the walkthrough and run, Restart readiness, interactive-element
+  key isolation, visibility/timer pause, safe Escape exit, live theme changes,
+  live reduced-motion settling, 320px/200% reflow, and unlock/control/player
+  non-overlap.
 - A complete finite run through Present Day using public Game activation and
   walkthrough/skip controls. Tests do not use query parameters, debug APIs, or
   production gameplay bypasses.
@@ -102,6 +103,9 @@ browser, preview URL, reviewer, and result.
 - [ ] Complete a run and confirm auto-run, Space/Up jump, Shift/D dash, S/Down
   fast-drop, P pause, L Story Log, R restart, M sound, and Escape exit all match
   their visible labels.
+- [ ] During the Jump tutorial step, focus a different HUD/touch button and the
+  Portfolio return link; confirm gameplay keys do not advance the walkthrough,
+  then refocus the stage and confirm the matching input does.
 - [ ] Inspect the main route floor in both themes; confirm it reads as one solid
   industrial deck with a clear top edge and long structural spans rather than a
   row of square atlas blocks.

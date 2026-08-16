@@ -60,7 +60,7 @@ The release checklist and remaining real-device checks are documented in [`docs/
 - Pixel Quest composition styles are scoped under `pq-` selectors in [`src/app/pixel-quest.css`](src/app/pixel-quest.css).
 - Portfolio code does not import Phaser, game scenes, game state, or world artwork.
 - Chronicle records in [`chronicle-story.ts`](src/components/game/chronicle-story.ts) adapt facts from the canonical portfolio data; the Phaser scene emits stable record IDs rather than copied professional text.
-- Chronicle progress is versioned, validated, and merged locally. Recovered records and high scores survive replay, while malformed or legacy values fail open.
+- Chronicle progress is versioned, validated, and merged locally. Recovered records survive refresh until Restart or Replay begins a fresh `0/9` story run; tutorial completion, completion status, high score, and best time remain stored, while malformed or legacy values fail open.
 
 ## Accessibility and motion
 

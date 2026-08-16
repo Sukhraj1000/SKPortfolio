@@ -55,6 +55,9 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-game-state", "training");
     await expect(runtime).toHaveAttribute("data-run-started", "false");
     await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
+    await expect(
+      page.getByText("Training paused · Complete the displayed action"),
+    ).toBeVisible();
     await expect(page.locator("[data-tutorial-prompt]")).toContainText(
       "1 / 5",
     );
@@ -68,6 +71,62 @@ test.describe("Chronicle Run", () => {
     await expect
       .poll(() => requests.some((url) => url.includes("industrial-world-atlas")))
       .toBeTruthy();
+  });
+
+  test("keeps Restart disabled until Phaser is ready", async ({ page }) => {
+    let releaseWorldAsset = () => {};
+    const worldAssetGate = new Promise<void>((resolve) => {
+      releaseWorldAsset = resolve;
+    });
+    await page.route("**/game/assets/industrial-world-atlas.png", async (route) => {
+      await worldAssetGate;
+      await route.continue();
+    });
+    await page.addInitScript(
+      ({ key }) => {
+        window.localStorage.setItem(
+          key,
+          JSON.stringify({
+            version: 1,
+            recoveredRecords: ["education:first-class-computer-science"],
+            completedChapters: ["origin"],
+            tutorialCompleted: true,
+            completed: false,
+            highScore: 1250,
+            bestTimeMs: 125_000,
+          }),
+        );
+      },
+      { key: progressKey },
+    );
+
+    try {
+      await page.goto("/game/");
+      const runtime = page.locator("[data-runtime-ready]");
+      const restart = page.getByRole("button", { name: "Restart level" });
+      await expect(runtime).toHaveAttribute("data-runtime-ready", "false");
+      await expect(restart).toBeDisabled();
+
+      await page.getByRole("application").focus();
+      await page.keyboard.press("r");
+      await expect
+        .poll(() =>
+          page.evaluate((key) => {
+            const value = JSON.parse(window.localStorage.getItem(key) ?? "null");
+            return value?.recoveredRecords;
+          }, progressKey),
+        )
+        .toEqual(["education:first-class-computer-science"]);
+
+      releaseWorldAsset();
+      await expect(runtime).toHaveAttribute("data-runtime-ready", "true", {
+        timeout: 15_000,
+      });
+      await expect(restart).toBeEnabled();
+    } finally {
+      releaseWorldAsset();
+      await page.unroute("**/game/assets/industrial-world-atlas.png");
+    }
   });
 
   test("restores validated local progress in the training shell", async ({ page }) => {
@@ -175,6 +234,9 @@ test.describe("Chronicle Run", () => {
 
     const runtime = page.locator("[data-journey-progress]");
     await expect(runtime).toHaveAttribute("data-game-state", "running");
+    await expect(
+      page.getByText("Auto-run active · Space jumps · Shift dashes · S drops"),
+    ).toBeVisible();
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThan(1);
@@ -196,6 +258,9 @@ test.describe("Chronicle Run", () => {
 
     await page.getByRole("button", { name: "Pause", exact: true }).click();
     await expect(runtime).toHaveAttribute("data-game-state", "paused");
+    await expect(
+      page.getByText("Run paused · Resume from the game controls"),
+    ).toBeVisible();
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
     const pausedElapsed = await runtime.getAttribute("data-elapsed-ms");
     await page.waitForTimeout(700);
@@ -322,6 +387,31 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-tutorial-step", "pause");
 
     await context.close();
+  });
+
+  test("does not consume gameplay keys from focused buttons or links", async ({
+    page,
+  }) => {
+    await page.goto("/game/");
+
+    const runtime = page.locator("[data-tutorial-step]");
+    await expect(runtime).toHaveAttribute("data-runtime-ready", "true", {
+      timeout: 15_000,
+    });
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
+
+    await page.getByRole("button", { name: "Enable sound" }).focus();
+    await page.keyboard.press("Space");
+    await expect(page.getByRole("button", { name: "Mute sound" })).toBeVisible();
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
+
+    await page.getByRole("link", { name: "Return to Portfolio mode" }).focus();
+    await page.keyboard.press("s");
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
+
+    await page.getByRole("application").focus();
+    await page.keyboard.press("Space");
+    await expect(runtime).toHaveAttribute("data-tutorial-step", "dash");
   });
 
   test("lets returning players replay or skip the walkthrough", async ({ page }) => {
@@ -710,6 +800,7 @@ test.describe("Chronicle Run", () => {
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThanOrEqual(progressBeforeMotion);
 
+    await stage.focus();
     await page.keyboard.press("r");
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))

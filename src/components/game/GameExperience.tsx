@@ -46,6 +46,26 @@ type SpawnPhase = "dropping" | "landed";
 type NoticeTone = "info" | "success" | "warning";
 type StoryOverlay = "story-log" | "complete";
 
+const interactiveSelector =
+  "button, a[href], input, textarea, select, summary, [contenteditable]:not([contenteditable='false']), [role='button'], [role='link']";
+const gameKeyCodes = new Set([
+  "Space",
+  "ArrowUp",
+  "ShiftLeft",
+  "ShiftRight",
+  "KeyD",
+  "KeyS",
+  "ArrowDown",
+  "KeyP",
+  "KeyL",
+  "KeyR",
+  "KeyM",
+]);
+
+function isInteractiveKeyboardTarget(target: EventTarget | null) {
+  return target instanceof HTMLElement && target.matches(interactiveSelector);
+}
+
 interface GameExperienceProps {
   onExit: () => void;
   initialProgress: ChronicleProgress;
@@ -264,6 +284,25 @@ export function GameExperience({
     gameHandleRef.current.performTutorialAction(action);
   }, []);
 
+  const restartLevel = React.useCallback(() => {
+    const gameHandle = gameHandleRef.current;
+    if (!runtimeReadyRef.current || !gameHandle) return;
+
+    setStoryOverlay(null);
+    setTutorialPauseArmed(false);
+    completionShownRef.current = false;
+    setPaused(false);
+    setSnapshot(initialGameSnapshot);
+    setActiveUnlockId(null);
+    resetSavedStories();
+    setSpawnCycle((cycle) => cycle + 1);
+    gameHandle.restart();
+    showNotice(
+      "New story run started. Records reset; best time and high score preserved.",
+      "info",
+    );
+  }, [resetSavedStories, showNotice]);
+
   React.useEffect(() => {
     return () => {
       if (noticeTimerRef.current) window.clearTimeout(noticeTimerRef.current);
@@ -343,9 +382,27 @@ export function GameExperience({
   }, [snapshot.completed]);
 
   React.useEffect(() => {
+    const preserveInteractiveKey = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" &&
+        gameKeyCodes.has(event.code) &&
+        isInteractiveKeyboardTarget(event.target)
+      ) {
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("keydown", preserveInteractiveKey, true);
+    window.addEventListener("keyup", preserveInteractiveKey, true);
+    return () => {
+      window.removeEventListener("keydown", preserveInteractiveKey, true);
+      window.removeEventListener("keyup", preserveInteractiveKey, true);
+    };
+  }, []);
+
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      if (target?.matches("input, textarea, select, [contenteditable='true']")) {
+      if (isInteractiveKeyboardTarget(event.target) && event.key !== "Escape") {
         return;
       }
 
@@ -389,18 +446,7 @@ export function GameExperience({
 
       if (key === "r" && !storyOverlay) {
         event.preventDefault();
-        completionShownRef.current = false;
-        setTutorialPauseArmed(false);
-        setPaused(false);
-        setSnapshot(initialGameSnapshot);
-        setActiveUnlockId(null);
-        resetSavedStories();
-        setSpawnCycle((cycle) => cycle + 1);
-        gameHandleRef.current?.restart();
-        showNotice(
-          "New story run started. Records reset; best time and high score preserved.",
-          "info",
-        );
+        restartLevel();
         return;
       }
 
@@ -458,7 +504,7 @@ export function GameExperience({
   }, [
     onExit,
     performTutorialAction,
-    resetSavedStories,
+    restartLevel,
     showNotice,
     snapshot.completed,
     snapshot.runStarted,
@@ -555,22 +601,6 @@ export function GameExperience({
     } catch {
       // Sound remains usable for this session when storage is blocked.
     }
-  };
-
-  const restartLevel = () => {
-    setStoryOverlay(null);
-    setTutorialPauseArmed(false);
-    completionShownRef.current = false;
-    setPaused(false);
-    setSnapshot(initialGameSnapshot);
-    setActiveUnlockId(null);
-    resetSavedStories();
-    setSpawnCycle((cycle) => cycle + 1);
-    gameHandleRef.current?.restart();
-    showNotice(
-      "New story run started. Records reset; best time and high score preserved.",
-      "info",
-    );
   };
 
   const gameStatus =
@@ -726,6 +756,7 @@ export function GameExperience({
             <HudButton
               label="Restart level"
               icon={<RotateCcw aria-hidden="true" className="h-4 w-4" />}
+              disabled={!runtimeReady}
               onClick={restartLevel}
             />
             <HudButton
@@ -930,7 +961,11 @@ export function GameExperience({
       <div className={styles.gameFooter}>
         <p className="flex items-center gap-2 font-mono uppercase tracking-[0.08em]">
           <Gamepad2 aria-hidden="true" className="h-4 w-4 text-primary" />
-          Auto-run active · Space jumps · Shift dashes · S drops
+          {gameStatus === "Running"
+            ? "Auto-run active · Space jumps · Shift dashes · S drops"
+            : snapshot.runStarted
+              ? "Run paused · Resume from the game controls"
+              : "Training paused · Complete the displayed action"}
         </p>
         <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">
           P pause · L log · R restart · M sound · Esc exit

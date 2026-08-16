@@ -182,8 +182,8 @@ export function StoryLogDialog({
               <Check aria-hidden="true" />
               <span>
                 {isPersonalBest
-                  ? `New personal best: ${formatRunTime(elapsedMs)}. Completion and records are stored locally on this device.`
-                  : "Completion, personal best, and recovered records are stored locally on this device. Portfolio mode remains complete without them."}
+                  ? `New personal best: ${formatRunTime(elapsedMs)}. Completion and performance remain stored locally; Restart or Replay begins a fresh 0/9 story run.`
+                  : "Completion and personal best remain stored locally. Recovered records remain until Restart or Replay begins a fresh 0/9 story run."}
               </span>
             </div>
 
