@@ -24,7 +24,7 @@ Run:
 
 The script:
 
-1. blocks critical production dependency advisories;
+1. blocks high or critical production dependency advisories;
 2. removes previous `.next/` and `out/` output;
 3. runs lint, TypeScript, the production build, and static-export validation;
 4. verifies required Hostinger files; and
@@ -52,7 +52,7 @@ Before replacing the production site, verify the deployment preview against [`do
 - keyboard and reduced-motion behavior;
 - representative mobile and desktop layouts;
 - external project/contact links; and
-- the optional game's explicit Start and Exit flow.
+- the optional game's direct five-step training and Exit flow.
 
 ## Rollback
 

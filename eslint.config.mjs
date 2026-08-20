@@ -1,30 +1,29 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTypeScript from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
+export default defineConfig([
+  ...nextVitals,
+  ...nextTypeScript,
   {
-    ignores: [
-      ".next/**",
-      "out/**",
-      "node_modules/**",
-      "test-results/**",
-      "coverage/**",
-      "assets/**",
-      "public/**",
-      "design-reference/**",
-      "design-lab/**",
-      "next-env.d.ts",
-    ],
+    // These React Compiler-oriented rules reject intentional client hydration
+    // and imperative Phaser input/ref bridges used by this static application.
+    rules: {
+      "react-hooks/immutability": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
+    },
   },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-
-export default eslintConfig;
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "node_modules/**",
+    "test-results/**",
+    "coverage/**",
+    "assets/**",
+    "public/**",
+    "design-reference/**",
+    "design-lab/**",
+    "next-env.d.ts",
+  ]),
+]);

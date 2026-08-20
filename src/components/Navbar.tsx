@@ -32,18 +32,23 @@ function GameModeControl({ portfolioReturnHref }: { portfolioReturnHref: string 
     <div
       role="group"
       aria-label="Portfolio experience mode"
-      className="grid h-11 shrink-0 grid-cols-2 border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
+      className="grid min-h-[44px] shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
     >
       <Link
         href={portfolioReturnHref}
-        className="grid place-items-center px-2.5 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground"
+        className="grid place-items-center px-1 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground sm:px-2.5"
         aria-label="Return to Portfolio mode"
         title="Return to Portfolio mode"
       >
-        Portfolio
+        <span aria-hidden="true" className="hidden min-[480px]:inline">
+          Portfolio
+        </span>
+        <span aria-hidden="true" className="min-[480px]:hidden">
+          Port.
+        </span>
       </Link>
       <span
-        className="grid place-items-center border-l border-border bg-primary px-2 text-primary-foreground"
+        className="grid place-items-center border-l border-border bg-primary px-1 text-primary-foreground sm:px-2"
         aria-current="page"
         title="Game mode selected"
       >
@@ -64,10 +69,10 @@ function GameNavbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border-strong bg-background shadow-[0_3px_0_var(--shadow-soft)]">
-      <div className="section-shell flex h-16 items-center gap-2 lg:gap-4">
+      <div className="section-shell flex h-[64px] items-center gap-2 lg:gap-4">
         <Link
           href={portfolioReturnHref}
-          className="group hidden shrink-0 items-center gap-2 min-[360px]:flex"
+          className="group hidden shrink-0 items-center gap-2 md:flex"
           aria-label={`${portfolioProfile.name}, exit Game mode`}
         >
           <span className="grid h-11 w-11 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
@@ -87,9 +92,9 @@ function GameNavbar() {
           Game route // isolated runtime
         </p>
 
-        <div className="ml-auto flex items-center gap-1.5 xl:ml-0 xl:gap-2">
+        <div className="ml-auto flex items-center gap-[2px] xl:ml-0 xl:gap-2">
           <GameModeControl portfolioReturnHref={portfolioReturnHref} />
-          <ThemeToggle />
+          <ThemeToggle className="h-[44px] w-[44px]" />
         </div>
       </div>
     </header>

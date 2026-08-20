@@ -3,9 +3,8 @@
 import * as React from "react";
 import {
   ArrowDown,
-  ArrowLeft,
-  ArrowRight,
   ArrowUp,
+  BookOpen,
   Gamepad2,
   LogOut,
   Pause,
@@ -14,17 +13,28 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
+  Zap,
 } from "lucide-react";
 import { GameCanvas } from "@/components/game/GameCanvas";
-import { SignalPanel } from "@/components/game/SignalPanel";
+import {
+  chronicleChapterIds,
+  chronicleChapters,
+  chronicleTutorialSteps,
+  emptyChronicleProgress,
+  formatRunTime,
+  mergeChronicleProgress,
+  parseChronicleProgress,
+  resetChronicleStoryProgress,
+  type ChronicleProgress,
+} from "@/components/game/chronicle-story";
+import { StoryLogDialog } from "@/components/game/StoryLogDialog";
+import { StoryUnlockCard } from "@/components/game/StoryUnlockCard";
 import {
   initialGameSnapshot,
+  type ChronicleGameHandle,
   type GameAction,
   type GameControlsState,
-  type GamePanelId,
   type GameSnapshot,
-  type SavedGameProgress,
-  type SignalGameHandle,
 } from "@/components/game/game-types";
 import { StatusIndicator } from "@/components/ui/status-indicator";
 import { SystemLabel } from "@/components/ui/system-label";
@@ -34,9 +44,31 @@ import styles from "./GameExperience.module.css";
 
 type SpawnPhase = "dropping" | "landed";
 type NoticeTone = "info" | "success" | "warning";
+type StoryOverlay = "story-log" | "complete";
+
+const interactiveSelector =
+  "button, a[href], input, textarea, select, summary, [contenteditable]:not([contenteditable='false']), [role='button'], [role='link']";
+const gameKeyCodes = new Set([
+  "Space",
+  "ArrowUp",
+  "ShiftLeft",
+  "ShiftRight",
+  "KeyD",
+  "KeyS",
+  "ArrowDown",
+  "KeyP",
+  "KeyL",
+  "KeyR",
+  "KeyM",
+]);
+
+function isInteractiveKeyboardTarget(target: EventTarget | null) {
+  return target instanceof HTMLElement && target.matches(interactiveSelector);
+}
 
 interface GameExperienceProps {
   onExit: () => void;
+  initialProgress: ChronicleProgress;
 }
 
 interface HudButtonProps extends React.ComponentProps<"button"> {
@@ -45,26 +77,12 @@ interface HudButtonProps extends React.ComponentProps<"button"> {
   active?: boolean;
 }
 
-const emptyProgress: SavedGameProgress = {
-  completed: false,
-  highScore: 0,
-  discovered: [],
-  checkpoints: [],
-};
-
-function readSavedProgress(): SavedGameProgress {
-  if (typeof window === "undefined") return emptyProgress;
+function readSavedProgress(): ChronicleProgress {
+  if (typeof window === "undefined") return emptyChronicleProgress;
   try {
-    const value = JSON.parse(window.localStorage.getItem(gameProgressKey) ?? "null") as Partial<SavedGameProgress> | null;
-    return {
-      completed: value?.completed === true,
-      highScore: typeof value?.highScore === "number" ? value.highScore : 0,
-      discovered: Array.isArray(value?.discovered) ? value.discovered : [],
-      checkpoints: Array.isArray(value?.checkpoints) ? value.checkpoints : [],
-      completedAt: typeof value?.completedAt === "string" ? value.completedAt : undefined,
-    };
+    return parseChronicleProgress(window.localStorage.getItem(gameProgressKey));
   } catch {
-    return emptyProgress;
+    return { ...emptyChronicleProgress };
   }
 }
 
@@ -81,7 +99,7 @@ function HudButton({
       aria-label={label}
       title={label}
       className={cn(
-        "grid h-11 min-w-11 place-items-center border px-2.5 transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:px-3",
+        "grid h-[44px] min-w-[44px] place-items-center border px-[10px] transition-colors disabled:cursor-not-allowed disabled:opacity-40 sm:px-3",
         active
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border-strong bg-surface text-foreground hover:bg-surface-raised hover:text-primary",
@@ -99,14 +117,30 @@ function TouchButton({
   label,
   icon,
   controls,
+  onPress,
 }: {
   action: GameAction;
   label: string;
   icon: React.ReactNode;
   controls: React.MutableRefObject<GameControlsState>;
+  onPress?: () => void;
 }) {
+  const releaseTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(
+    () => () => {
+      if (releaseTimerRef.current) window.clearTimeout(releaseTimerRef.current);
+      controls.current[action] = false;
+    },
+    [action, controls],
+  );
+
   const release = () => {
-    controls.current[action] = false;
+    if (releaseTimerRef.current) window.clearTimeout(releaseTimerRef.current);
+    releaseTimerRef.current = window.setTimeout(() => {
+      controls.current[action] = false;
+      releaseTimerRef.current = null;
+    }, 50);
   };
 
   return (
@@ -117,8 +151,23 @@ function TouchButton({
       className={styles.touchButton}
       onPointerDown={(event) => {
         event.preventDefault();
-        event.currentTarget.setPointerCapture(event.pointerId);
+        if (releaseTimerRef.current) {
+          window.clearTimeout(releaseTimerRef.current);
+          releaseTimerRef.current = null;
+        }
         controls.current[action] = true;
+        onPress?.();
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        } catch {
+          // Some touch browsers reject capture for released or synthetic pointers.
+        }
+      }}
+      onClick={(event) => {
+        if (event.detail !== 0) return;
+        controls.current[action] = true;
+        onPress?.();
+        release();
       }}
       onPointerUp={release}
       onPointerCancel={release}
@@ -129,25 +178,40 @@ function TouchButton({
   );
 }
 
-export function GameExperience({ onExit }: GameExperienceProps) {
+export function GameExperience({
+  onExit,
+  initialProgress,
+}: GameExperienceProps) {
   const controlsRef = React.useRef<GameControlsState>({
-    left: false,
-    right: false,
     jump: false,
-    interact: false,
+    dash: false,
+    drop: false,
   });
-  const gameHandleRef = React.useRef<SignalGameHandle | null>(null);
+  const gameHandleRef = React.useRef<ChronicleGameHandle | null>(null);
   const stageRef = React.useRef<HTMLDivElement>(null);
   const noticeTimerRef = React.useRef<number | null>(null);
   const audioContextRef = React.useRef<AudioContext | null>(null);
   const shouldPauseRef = React.useRef(true);
+  const reducedMotionRef = React.useRef(false);
+  const runtimeReadyRef = React.useRef(false);
+  const snapshotRef = React.useRef<GameSnapshot>(initialGameSnapshot);
+  const queuedTutorialActionRef = React.useRef<GameAction | null>(null);
   const [spawnCycle, setSpawnCycle] = React.useState(0);
   const [spawnPhase, setSpawnPhase] = React.useState<SpawnPhase>("dropping");
+  const [runtimeReady, setRuntimeReady] = React.useState(false);
   const [paused, setPaused] = React.useState(false);
+  const [tutorialPauseArmed, setTutorialPauseArmed] = React.useState(false);
   const [soundEnabled, setSoundEnabled] = React.useState(false);
+  const [reducedMotionActive, setReducedMotionActive] = React.useState(false);
   const [snapshot, setSnapshot] = React.useState<GameSnapshot>(initialGameSnapshot);
-  const [panelId, setPanelId] = React.useState<GamePanelId | null>(null);
-  const [savedProgress, setSavedProgress] = React.useState<SavedGameProgress>(emptyProgress);
+  const [storyOverlay, setStoryOverlay] = React.useState<StoryOverlay | null>(null);
+  const overlayTriggerRef = React.useRef<HTMLElement | null>(null);
+  const completionShownRef = React.useRef(false);
+  const [activeUnlockId, setActiveUnlockId] = React.useState<
+    GameSnapshot["latestUnlockId"]
+  >(null);
+  const [savedProgress, setSavedProgress] =
+    React.useState<ChronicleProgress>(initialProgress);
   const [notice, setNotice] = React.useState<{
     message: string;
     tone: NoticeTone;
@@ -195,6 +259,50 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     [playTone],
   );
 
+  const resetSavedStories = React.useCallback(() => {
+    setSavedProgress((current) => {
+      const nextProgress = resetChronicleStoryProgress(current);
+      try {
+        window.localStorage.setItem(
+          gameProgressKey,
+          JSON.stringify(nextProgress),
+        );
+      } catch {
+        // Restart still clears the active run when persistence is blocked.
+      }
+      return nextProgress;
+    });
+  }, []);
+
+  const performTutorialAction = React.useCallback((action: GameAction) => {
+    if (!runtimeReadyRef.current || !gameHandleRef.current) {
+      if (snapshotRef.current.tutorialStep === action) {
+        queuedTutorialActionRef.current = action;
+      }
+      return;
+    }
+    gameHandleRef.current.performTutorialAction(action);
+  }, []);
+
+  const restartLevel = React.useCallback(() => {
+    const gameHandle = gameHandleRef.current;
+    if (!runtimeReadyRef.current || !gameHandle) return;
+
+    setStoryOverlay(null);
+    setTutorialPauseArmed(false);
+    completionShownRef.current = false;
+    setPaused(false);
+    setSnapshot(initialGameSnapshot);
+    setActiveUnlockId(null);
+    resetSavedStories();
+    setSpawnCycle((cycle) => cycle + 1);
+    gameHandle.restart();
+    showNotice(
+      "New story run started. Records reset; best time and high score preserved.",
+      "info",
+    );
+  }, [resetSavedStories, showNotice]);
+
   React.useEffect(() => {
     return () => {
       if (noticeTimerRef.current) window.clearTimeout(noticeTimerRef.current);
@@ -216,32 +324,44 @@ export function GameExperience({ onExit }: GameExperienceProps) {
   }, [spawnCycle]);
 
   React.useEffect(() => {
-    const shouldPause = paused || panelId !== null || spawnPhase === "dropping";
+    const shouldPause =
+      paused || storyOverlay !== null || spawnPhase === "dropping";
     shouldPauseRef.current = shouldPause;
     gameHandleRef.current?.setPaused(shouldPause);
     if (shouldPause) {
-      controlsRef.current = { left: false, right: false, jump: false, interact: false };
+      controlsRef.current = { jump: false, dash: false, drop: false };
     }
-  }, [panelId, paused, spawnPhase]);
+  }, [paused, spawnPhase, storyOverlay]);
 
   React.useEffect(() => {
-    const nextProgress: SavedGameProgress = {
-      completed: savedProgress.completed || snapshot.completed,
-      highScore: Math.max(savedProgress.highScore, snapshot.score),
-      discovered: [...new Set([...savedProgress.discovered, ...snapshot.discovered])],
-      checkpoints: [...new Set([...savedProgress.checkpoints, ...snapshot.checkpoints])],
+    const completedChapters = chronicleChapterIds.filter((chapterId) =>
+      snapshot.checkpoints.includes(chapterId),
+    );
+    const nextProgress = mergeChronicleProgress(savedProgress, {
+      completed: snapshot.completed,
+      completedChapters,
+      recoveredRecords: [...snapshot.recoveredRecords],
+      tutorialCompleted: snapshot.tutorialCompleted,
+      highScore: snapshot.completed ? snapshot.score : savedProgress.highScore,
+      bestTimeMs: snapshot.completed
+        ? snapshot.elapsedMs
+        : savedProgress.bestTimeMs,
       completedAt:
         snapshot.completed && !savedProgress.completedAt
           ? new Date().toISOString()
           : savedProgress.completedAt,
-    };
+    });
 
     const changed =
       nextProgress.completed !== savedProgress.completed ||
       nextProgress.highScore !== savedProgress.highScore ||
+      nextProgress.bestTimeMs !== savedProgress.bestTimeMs ||
       nextProgress.completedAt !== savedProgress.completedAt ||
-      nextProgress.discovered.length !== savedProgress.discovered.length ||
-      nextProgress.checkpoints.length !== savedProgress.checkpoints.length;
+      nextProgress.tutorialCompleted !== savedProgress.tutorialCompleted ||
+      nextProgress.recoveredRecords.join("|") !==
+        savedProgress.recoveredRecords.join("|") ||
+      nextProgress.completedChapters.join("|") !==
+        savedProgress.completedChapters.join("|");
 
     if (!changed) return;
     setSavedProgress(nextProgress);
@@ -253,13 +373,119 @@ export function GameExperience({ onExit }: GameExperienceProps) {
   }, [savedProgress, snapshot]);
 
   React.useEffect(() => {
+    if (snapshot.completed && !completionShownRef.current) {
+      completionShownRef.current = true;
+      overlayTriggerRef.current = stageRef.current;
+      setPaused(true);
+      setStoryOverlay("complete");
+    }
+  }, [snapshot.completed]);
+
+  React.useEffect(() => {
+    const preserveInteractiveKey = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Escape" &&
+        gameKeyCodes.has(event.code) &&
+        isInteractiveKeyboardTarget(event.target)
+      ) {
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener("keydown", preserveInteractiveKey, true);
+    window.addEventListener("keyup", preserveInteractiveKey, true);
+    return () => {
+      window.removeEventListener("keydown", preserveInteractiveKey, true);
+      window.removeEventListener("keyup", preserveInteractiveKey, true);
+    };
+  }, []);
+
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (isInteractiveKeyboardTarget(event.target) && event.key !== "Escape") {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      if (event.repeat && ["p", "l", "m", "r"].includes(key)) return;
+
+      const tutorialAction: GameAction | null =
+        event.code === "Space" || event.code === "ArrowUp"
+          ? "jump"
+          : event.code === "ShiftLeft" ||
+              event.code === "ShiftRight" ||
+              event.code === "KeyD"
+            ? "dash"
+            : event.code === "KeyS" ||
+                event.code === "ArrowDown" ||
+                key === "s" ||
+                key === "arrowdown"
+              ? "drop"
+              : null;
+      if (!snapshotRef.current.runStarted && !storyOverlay && tutorialAction) {
+        event.preventDefault();
+        performTutorialAction(tutorialAction);
+        return;
+      }
+
+      if (event.defaultPrevented) return;
+
+      if (key === "m" && !storyOverlay) {
+        event.preventDefault();
+        setSoundEnabled((current) => {
+          const next = !current;
+          try {
+            window.localStorage.setItem(gameSoundKey, next ? "on" : "off");
+          } catch {
+            // Sound remains usable for this session when storage is blocked.
+          }
+          return next;
+        });
+        return;
+      }
+
+      if (key === "r" && !storyOverlay) {
+        event.preventDefault();
+        restartLevel();
+        return;
+      }
+
+      if (key === "p" && !storyOverlay && !snapshot.completed) {
+        event.preventDefault();
+        if (!snapshot.runStarted) {
+          if (snapshot.tutorialStep !== "pause") return;
+          if (!tutorialPauseArmed) {
+            setTutorialPauseArmed(true);
+            setPaused(true);
+            showNotice("Training paused. Press P or Resume to continue.", "info");
+          } else {
+            setTutorialPauseArmed(false);
+            setPaused(false);
+            gameHandleRef.current?.completeTutorialAction("pause");
+          }
+          return;
+        }
+        setPaused((current) => !current);
+        return;
+      }
+
+      if (key === "l" && !storyOverlay) {
+        event.preventDefault();
+        overlayTriggerRef.current = document.activeElement as HTMLElement | null;
+        if (!snapshot.runStarted && snapshot.tutorialStep === "story-log") {
+          gameHandleRef.current?.completeTutorialAction("story-log");
+        }
+        setStoryOverlay("story-log");
+        setPaused(true);
+        return;
+      }
+
+      if (event.key !== "Escape") return;
       event.preventDefault();
-      if (panelId) {
-        setPanelId(null);
-        setPaused(false);
-        window.setTimeout(() => stageRef.current?.focus(), 0);
+      if (storyOverlay) {
+        setStoryOverlay(null);
+        setPaused(true);
+        window.setTimeout(() => overlayTriggerRef.current?.focus(), 0);
       } else {
         onExit();
       }
@@ -275,7 +501,17 @@ export function GameExperience({ onExit }: GameExperienceProps) {
       window.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [onExit, panelId]);
+  }, [
+    onExit,
+    performTutorialAction,
+    restartLevel,
+    showNotice,
+    snapshot.completed,
+    snapshot.runStarted,
+    snapshot.tutorialStep,
+    storyOverlay,
+    tutorialPauseArmed,
+  ]);
 
   React.useEffect(() => {
     const observer = new MutationObserver(() => gameHandleRef.current?.refreshTheme());
@@ -283,22 +519,79 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     return () => observer.disconnect();
   }, []);
 
-  const setGameHandle = React.useCallback((handle: SignalGameHandle | null) => {
+  React.useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => {
+      reducedMotionRef.current = motionQuery.matches;
+      setReducedMotionActive(motionQuery.matches);
+      gameHandleRef.current?.setReducedMotion(motionQuery.matches);
+    };
+    syncMotion();
+    motionQuery.addEventListener("change", syncMotion);
+    return () => motionQuery.removeEventListener("change", syncMotion);
+  }, []);
+
+  const setGameHandle = React.useCallback((handle: ChronicleGameHandle | null) => {
     gameHandleRef.current = handle;
-    if (handle) handle.setPaused(shouldPauseRef.current);
+    if (handle) {
+      handle.setReducedMotion(reducedMotionRef.current);
+      handle.setPaused(shouldPauseRef.current);
+    }
   }, []);
 
   const callbacks = React.useMemo(
     () => ({
-      onSnapshot: setSnapshot,
-      onOpenPanel: (nextPanelId: GamePanelId) => {
-        setPanelId(nextPanelId);
-        setPaused(true);
+      onSnapshot: (nextSnapshot: GameSnapshot) => {
+        snapshotRef.current = nextSnapshot;
+        runtimeReadyRef.current = true;
+        setSnapshot(nextSnapshot);
+        setRuntimeReady(true);
+        const queuedAction = queuedTutorialActionRef.current;
+        if (queuedAction && nextSnapshot.tutorialStep === queuedAction) {
+          queuedTutorialActionRef.current = null;
+          window.queueMicrotask(() =>
+            gameHandleRef.current?.performTutorialAction(queuedAction),
+          );
+        }
       },
+      onUnlock: setActiveUnlockId,
       onNotice: showNotice,
     }),
     [showNotice],
   );
+
+  const openStoryLog = React.useCallback(() => {
+    overlayTriggerRef.current = document.activeElement as HTMLElement | null;
+    if (!snapshot.runStarted && snapshot.tutorialStep === "story-log") {
+      gameHandleRef.current?.completeTutorialAction("story-log");
+    }
+    setStoryOverlay("story-log");
+    setPaused(true);
+  }, [snapshot.runStarted, snapshot.tutorialStep]);
+
+  const closeStoryOverlay = React.useCallback(() => {
+    setStoryOverlay(null);
+    setPaused(true);
+    window.setTimeout(() => overlayTriggerRef.current?.focus(), 0);
+  }, []);
+
+  const beginNormalRun = React.useCallback((skipWalkthrough = false) => {
+    gameHandleRef.current?.beginRun(skipWalkthrough);
+    setTutorialPauseArmed(false);
+    setStoryOverlay(null);
+    setPaused(false);
+    window.setTimeout(() => stageRef.current?.focus(), 0);
+  }, []);
+
+  const resumeFromStoryLog = React.useCallback(() => {
+    if (!snapshot.runStarted && snapshot.tutorialCompleted) {
+      beginNormalRun();
+      return;
+    }
+    setStoryOverlay(null);
+    setPaused(false);
+    window.setTimeout(() => stageRef.current?.focus(), 0);
+  }, [beginNormalRun, snapshot.runStarted, snapshot.tutorialCompleted]);
 
   const toggleSound = () => {
     const nextSoundState = !soundEnabled;
@@ -310,48 +603,66 @@ export function GameExperience({ onExit }: GameExperienceProps) {
     }
   };
 
-  const restartLevel = () => {
-    setPanelId(null);
-    setPaused(false);
-    setSnapshot(initialGameSnapshot);
-    setSpawnCycle((cycle) => cycle + 1);
-    gameHandleRef.current?.restart();
-    showNotice("Transient level state reset. High score preserved.", "info");
-  };
-
-  const closePanel = () => {
-    setPanelId(null);
-    setPaused(false);
-    window.setTimeout(() => stageRef.current?.focus(), 0);
-  };
-
   const gameStatus =
     spawnPhase === "dropping"
       ? "Deploying"
-      : panelId
-        ? "Terminal"
+      : storyOverlay
+        ? "Story"
         : paused
           ? "Paused"
           : snapshot.completed
             ? "Complete"
-            : "Running";
+            : snapshot.runStarted
+              ? "Running"
+              : "Training";
+  const activeChapter =
+    chronicleChapters[snapshot.chapterIndex] ?? chronicleChapters[0];
+  const journeyProgress = snapshot.journeyProgress;
+  const isPersonalBest =
+    snapshot.completed &&
+    snapshot.elapsedMs > 0 &&
+    (savedProgress.bestTimeMs === null ||
+      snapshot.elapsedMs <= savedProgress.bestTimeMs);
+  const tutorialStep = chronicleTutorialSteps.find(
+    (step) => step.id === snapshot.tutorialStep,
+  );
+  const tutorialStepIndex = chronicleTutorialSteps.findIndex(
+    (step) => step.id === snapshot.tutorialStep,
+  );
 
   return (
     <section
       aria-labelledby="game-runtime-title"
       data-game-state={gameStatus.toLowerCase()}
-      className="min-h-[100svh] bg-background pt-16"
+      data-chronicle-chapter={activeChapter.id}
+      data-journey-progress={journeyProgress}
+      data-player-state={snapshot.playerState}
+      data-dash-ready={snapshot.dashReady}
+      data-signal={snapshot.signal}
+      data-score={snapshot.score}
+      data-elapsed-ms={snapshot.elapsedMs}
+      data-best-time-ms={savedProgress.bestTimeMs ?? ""}
+      data-checkpoints={snapshot.checkpoints.length}
+      data-tutorial-step={snapshot.tutorialStep}
+      data-tutorial-completed={snapshot.tutorialCompleted}
+      data-run-started={snapshot.runStarted}
+      data-runtime-ready={runtimeReady}
+      data-recovered-records={snapshot.recoveredRecords.length}
+      data-latest-unlock={snapshot.latestUnlockId ?? ""}
+      data-reduced-motion={reducedMotionActive}
+      data-reward-motion={reducedMotionActive ? "settled" : "animated"}
+      className="min-h-[100svh] bg-background pt-[64px]"
     >
       <h1 id="game-runtime-title" className="sr-only">
-        IRON//SIGNAL playable portfolio
+        Chronicle Run playable story
       </h1>
 
       <div className={styles.hudBar}>
         <div className="mx-auto flex max-w-[96rem] flex-wrap items-center justify-between gap-2.5">
           <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <SystemLabel>{snapshot.zoneLabel}</SystemLabel>
+            <SystemLabel>{`Chapter ${activeChapter.index} // ${activeChapter.title}`}</SystemLabel>
             <StatusIndicator
-              tone={gameStatus === "Paused" || gameStatus === "Terminal" ? "idle" : gameStatus === "Complete" ? "active" : "info"}
+              tone={gameStatus === "Paused" || gameStatus === "Story" ? "idle" : gameStatus === "Complete" ? "active" : "info"}
               pulse={gameStatus === "Running"}
             >
               {gameStatus}
@@ -360,29 +671,81 @@ export function GameExperience({ onExit }: GameExperienceProps) {
 
           <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[0.625rem] uppercase tracking-[0.08em] text-ink-muted sm:text-xs">
             <div><dt className="sr-only">Signal</dt><dd>Signal {snapshot.signal}%</dd></div>
-            <div><dt className="sr-only">Cores</dt><dd className="text-primary">Cores {snapshot.cores.length}/4</dd></div>
+            <div><dt className="sr-only">Story records</dt><dd className="text-primary">Records {snapshot.recoveredRecords.length}/9</dd></div>
+            <div><dt className="sr-only">Time</dt><dd className="text-signal-yellow">Time {formatRunTime(snapshot.elapsedMs)}</dd></div>
+            <div><dt className="sr-only">Personal best time</dt><dd>Best {formatRunTime(savedProgress.bestTimeMs)}</dd></div>
             <div><dt className="sr-only">Score</dt><dd>Score {snapshot.score.toLocaleString()}</dd></div>
-            <div><dt className="sr-only">Multiplier</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
+            <div><dt className="sr-only">Momentum</dt><dd>×{snapshot.multiplier.toFixed(2)}</dd></div>
             <div className="hidden md:block"><dt className="sr-only">High score</dt><dd>High {savedProgress.highScore.toLocaleString()}</dd></div>
           </dl>
 
-          <div role="group" aria-label="Game controls" className="flex items-center gap-1.5">
+          <div
+            role="group"
+            aria-label="Game controls"
+            className="flex flex-wrap items-center gap-[6px]"
+          >
             <HudButton
               label="Start or resume"
               icon={<Play aria-hidden="true" className="h-4 w-4" />}
-              active={spawnPhase === "landed" && !paused && !panelId}
-              disabled={spawnPhase === "dropping" || (!paused && !panelId)}
+              active={
+                spawnPhase === "landed" &&
+                snapshot.runStarted &&
+                !paused &&
+                !storyOverlay &&
+                !snapshot.completed
+              }
+              disabled={
+                spawnPhase === "dropping" ||
+                snapshot.completed ||
+                (!paused &&
+                  !storyOverlay &&
+                  !(snapshot.tutorialCompleted && !snapshot.runStarted))
+              }
               onClick={() => {
-                setPanelId(null);
-                setPaused(false);
+                if (tutorialPauseArmed) {
+                  setTutorialPauseArmed(false);
+                  setPaused(false);
+                  gameHandleRef.current?.completeTutorialAction("pause");
+                } else if (
+                  snapshot.tutorialCompleted &&
+                  !snapshot.runStarted
+                ) {
+                  beginNormalRun();
+                } else {
+                  setStoryOverlay(null);
+                  setPaused(false);
+                }
               }}
             />
             <HudButton
               label="Pause"
               icon={<Pause aria-hidden="true" className="h-4 w-4" />}
-              active={paused && !panelId}
-              disabled={spawnPhase === "dropping" || paused || panelId !== null}
-              onClick={() => setPaused(true)}
+              active={paused && !storyOverlay}
+              disabled={
+                spawnPhase === "dropping" ||
+                paused ||
+                storyOverlay !== null ||
+                (!snapshot.runStarted && snapshot.tutorialStep !== "pause")
+              }
+              onClick={() => {
+                if (!snapshot.runStarted) {
+                  setTutorialPauseArmed(true);
+                  setPaused(true);
+                  showNotice(
+                    "Training paused. Select Resume to continue.",
+                    "info",
+                  );
+                  return;
+                }
+                setPaused(true);
+              }}
+            />
+            <HudButton
+              label="Open Story Log"
+              icon={<BookOpen aria-hidden="true" className="h-4 w-4" />}
+              active={storyOverlay === "story-log"}
+              disabled={spawnPhase === "dropping" || storyOverlay !== null}
+              onClick={openStoryLog}
             />
             <HudButton
               label={soundEnabled ? "Mute sound" : "Enable sound"}
@@ -393,6 +756,7 @@ export function GameExperience({ onExit }: GameExperienceProps) {
             <HudButton
               label="Restart level"
               icon={<RotateCcw aria-hidden="true" className="h-4 w-4" />}
+              disabled={!runtimeReady}
               onClick={restartLevel}
             />
             <HudButton
@@ -403,10 +767,36 @@ export function GameExperience({ onExit }: GameExperienceProps) {
             />
           </div>
         </div>
+        <div className={styles.journeyMeter} aria-label={`Journey progress: ${journeyProgress} percent`}>
+          <span style={{ width: `${journeyProgress}%` }} />
+        </div>
       </div>
 
+      <ol className={styles.chapterRail} aria-label="Chronicle chapters">
+        {chronicleChapters.map((chapter, index) => (
+          <li
+            key={chapter.id}
+            data-chapter-state={
+              index < snapshot.chapterIndex
+                ? "complete"
+                : index === snapshot.chapterIndex
+                  ? "active"
+                  : "ahead"
+            }
+          >
+            <span>{chapter.index}</span>
+            <strong>{chapter.title}</strong>
+          </li>
+        ))}
+      </ol>
+
       <div ref={stageRef} className={styles.stage} tabIndex={-1}>
-        <GameCanvas controls={controlsRef} callbacks={callbacks} onReady={setGameHandle} />
+        <GameCanvas
+          controls={controlsRef}
+          callbacks={callbacks}
+          onReady={setGameHandle}
+          recoveredRecords={initialProgress.recoveredRecords}
+        />
         <div className={styles.scanlines} aria-hidden="true" />
 
         {spawnPhase === "dropping" ? (
@@ -419,56 +809,167 @@ export function GameExperience({ onExit }: GameExperienceProps) {
           </div>
         ) : null}
 
-        {notice ? (
-          <div className={cn(styles.notice, styles[`notice${notice.tone[0].toUpperCase()}${notice.tone.slice(1)}`])} role="status" aria-live="polite">
+        {notice && snapshot.runStarted ? (
+          <div data-game-notice className={cn(styles.notice, styles[`notice${notice.tone[0].toUpperCase()}${notice.tone.slice(1)}`])} role="status" aria-live="polite">
             <RadioTower aria-hidden="true" className="h-4 w-4 shrink-0" />
             {notice.message}
           </div>
         ) : null}
 
-        {snapshot.nearbyLabel && !panelId && !paused && spawnPhase === "landed" ? (
-          <div className={styles.interactionPrompt} role="status">
-            <span className="border border-primary bg-primary px-2 py-1 font-mono text-[0.625rem] font-bold text-primary-foreground">E</span>
-            <span>{snapshot.nearbyLabel}</span>
-          </div>
+        {activeUnlockId && !storyOverlay ? (
+          <StoryUnlockCard
+            recordId={activeUnlockId}
+            onDismiss={() => setActiveUnlockId(null)}
+          />
         ) : null}
 
-        {paused && !panelId ? (
+        {tutorialStep && tutorialStep.id !== "complete" && !storyOverlay ? (
+          <aside
+            className={styles.tutorialPrompt}
+            role="status"
+            aria-live="polite"
+            data-tutorial-prompt
+            data-tutorial-position={tutorialStepIndex + 1}
+          >
+            <div className={styles.tutorialHeading}>
+              <span>
+                {savedProgress.tutorialCompleted
+                  ? "Replay walkthrough"
+                  : "Quick walkthrough"}
+              </span>
+              <b>{`${tutorialStepIndex + 1} / 5`}</b>
+            </div>
+            <div className={styles.tutorialAction}>
+              <kbd>{tutorialStep.keyLabel}</kbd>
+              <span>
+                <strong>{tutorialStep.title}</strong>
+                <small>{tutorialStep.instruction}</small>
+              </span>
+            </div>
+            <div className={styles.tutorialSteps} aria-hidden="true">
+              {chronicleTutorialSteps.slice(0, 5).map((step, index) => (
+                <i
+                  key={step.id}
+                  data-step-state={
+                    index < tutorialStepIndex
+                      ? "complete"
+                      : index === tutorialStepIndex
+                        ? "active"
+                        : "ahead"
+                  }
+                />
+              ))}
+            </div>
+            {savedProgress.tutorialCompleted ? (
+              <button
+                type="button"
+                className={styles.skipWalkthrough}
+                disabled={!runtimeReady}
+                onClick={() => beginNormalRun(true)}
+              >
+                Skip walkthrough
+              </button>
+            ) : null}
+          </aside>
+        ) : null}
+
+        {paused && !storyOverlay ? (
           <div className={styles.pauseOverlay} role="status">
             <Pause aria-hidden="true" className="h-7 w-7 text-primary" />
             <p className="mt-3 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Simulation paused</p>
             <button
               type="button"
               className="mt-4 border border-primary bg-primary px-4 py-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground"
-              onClick={() => setPaused(false)}
+              onClick={() => {
+                if (snapshot.completed) {
+                  setStoryOverlay("complete");
+                } else if (tutorialPauseArmed) {
+                  setTutorialPauseArmed(false);
+                  setPaused(false);
+                  gameHandleRef.current?.completeTutorialAction("pause");
+                } else if (
+                  snapshot.tutorialCompleted &&
+                  !snapshot.runStarted
+                ) {
+                  beginNormalRun();
+                } else {
+                  setPaused(false);
+                }
+              }}
             >
-              Resume
+              {snapshot.completed
+                ? "View completion recap"
+                : tutorialPauseArmed
+                  ? "Resume training"
+                  : snapshot.tutorialCompleted && !snapshot.runStarted
+                    ? "Start run"
+                    : "Resume"}
             </button>
           </div>
         ) : null}
 
         <div className={styles.touchControls} aria-label="Touch game controls">
-          <div className="flex gap-2">
-            <TouchButton action="left" label="Move left" icon={<ArrowLeft aria-hidden="true" />} controls={controlsRef} />
-            <TouchButton action="right" label="Move right" icon={<ArrowRight aria-hidden="true" />} controls={controlsRef} />
-          </div>
-          <div className="flex gap-2">
-            <TouchButton action="jump" label="Jump" icon={<ArrowUp aria-hidden="true" />} controls={controlsRef} />
-            <TouchButton action="interact" label="Interact" icon={<ArrowDown aria-hidden="true" />} controls={controlsRef} />
-          </div>
+          <TouchButton
+            action="jump"
+            label="Jump"
+            icon={<ArrowUp aria-hidden="true" />}
+            controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted) performTutorialAction("jump");
+            }}
+          />
+          <TouchButton
+            action="dash"
+            label="Dash"
+            icon={<Zap aria-hidden="true" />}
+            controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted) performTutorialAction("dash");
+            }}
+          />
+          <TouchButton
+            action="drop"
+            label="Fast drop"
+            icon={<ArrowDown aria-hidden="true" />}
+            controls={controlsRef}
+            onPress={() => {
+              if (!snapshot.runStarted) performTutorialAction("drop");
+            }}
+          />
         </div>
 
-        {panelId ? (
-          <SignalPanel panelId={panelId} snapshot={snapshot} onClose={closePanel} onExit={onExit} />
+        {storyOverlay ? (
+          <StoryLogDialog
+            mode={storyOverlay}
+            recoveredRecords={snapshot.recoveredRecords}
+            score={snapshot.score}
+            highScore={savedProgress.highScore}
+            elapsedMs={snapshot.elapsedMs}
+            bestTimeMs={savedProgress.bestTimeMs}
+            isPersonalBest={isPersonalBest}
+            runCompleted={snapshot.completed}
+            onClose={closeStoryOverlay}
+            onResume={resumeFromStoryLog}
+            onReplay={restartLevel}
+            onShowLog={() => setStoryOverlay("story-log")}
+            onShowRecap={() => setStoryOverlay("complete")}
+            onExit={onExit}
+          />
         ) : null}
       </div>
 
       <div className={styles.gameFooter}>
         <p className="flex items-center gap-2 font-mono uppercase tracking-[0.08em]">
           <Gamepad2 aria-hidden="true" className="h-4 w-4 text-primary" />
-          WASD / arrows move · Space jumps · E interacts
+          {gameStatus === "Running"
+            ? "Auto-run active · Space jumps · Shift dashes · S drops"
+            : snapshot.runStarted
+              ? "Run paused · Resume from the game controls"
+              : "Training paused · Complete the displayed action"}
         </p>
-        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">Escape exits safely</p>
+        <p className="font-mono text-[0.625rem] uppercase tracking-[0.08em]">
+          P pause · L log · R restart · M sound · Esc exit
+        </p>
       </div>
     </section>
   );
