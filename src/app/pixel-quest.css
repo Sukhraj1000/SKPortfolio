@@ -1542,7 +1542,7 @@
   height: 3.8rem;
   place-items: center;
   pointer-events: none;
-  transform: translateY(calc(var(--rail-index) * 3.8rem));
+  transform: translateY(calc(var(--rail-index) * 100%));
   transition: transform 420ms steps(7, end);
 }
 

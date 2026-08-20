@@ -602,6 +602,14 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(operator).toHaveAttribute("data-rail-index", "0");
     await expect(operator).toHaveAttribute("data-rail-direction", "up");
     await expectOperatorAligned("Profile");
+
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    await rail.getByRole("link", { name: "Projects" }).click();
+    await expect(operator).toHaveAttribute("data-rail-index", "1");
+    await expect(operator).toHaveAttribute("data-rail-direction", "down");
+    await expectOperatorAligned("Projects");
   });
 
   test("supports direct chapter anchors below the sticky header", async ({ page }) => {
