@@ -219,11 +219,12 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(currentRole).toContainText("Northrop Grumman");
     await expect(currentRole).toContainText("Sep 2025 — Present");
     await expect(currentRole).toContainText("Jinja");
+    await expect(currentRole).toContainText("agentic and AI-assisted development");
     await expect(currentRole).toContainText("multi-agent systems");
-    await expect(currentRole).toContainText("RAG workflows");
-    await expect(currentRole).toContainText("Model Context Protocol");
-    await expect(currentRole).toContainText("loop and graph engineering");
-    await expect(currentRole).toContainText("agent evaluations");
+    await expect(currentRole).not.toContainText(/\bRAG\b/i);
+    await expect(currentRole).not.toContainText(/Model Context Protocol|\bMCP\b/i);
+    await expect(currentRole).not.toContainText(/Loop (?:&|and) Graph Engineering/i);
+    await expect(currentRole).not.toContainText(/Agent Evaluations?/i);
 
     for (const record of await records.all()) {
       const details = record.locator("details");

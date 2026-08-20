@@ -16,6 +16,7 @@ import {
   resetChronicleStoryProgress,
 } from "../../src/components/game/chronicle-story";
 import {
+  capabilityGroups,
   experience,
   portfolioProfile,
   portfolioProjects,
@@ -75,6 +76,48 @@ test.describe("Chronicle Run story foundation", () => {
         expect(record.summary).toBe(source?.summary);
         expect(record.technologies).toEqual(source?.technologies.slice(0, 3));
       }
+    }
+
+    const currentRole = experience.find(
+      (entry) => entry.id === "northrop-software-engineer",
+    );
+    const skillsOnly = [
+      "RAG Workflows",
+      "Model Context Protocol (MCP)",
+      "Loop & Graph Engineering",
+      "Agent Evaluations",
+    ];
+    const roleEvidence = [
+      currentRole?.summary,
+      ...(currentRole?.highlights ?? []),
+      ...(currentRole?.technologies ?? []),
+    ].join(" ");
+    const skillsOnlyPatterns = [
+      /\bRAG\b/i,
+      /Model Context Protocol|\bMCP\b/i,
+      /Loop (?:&|and) Graph Engineering/i,
+      /Agent Evaluations?/i,
+    ];
+    for (const pattern of skillsOnlyPatterns) {
+      expect(roleEvidence).not.toMatch(pattern);
+    }
+
+    const aiSkills = capabilityGroups
+      .find((group) => group.id === "ai-automation")
+      ?.items.map((item) => item.name);
+    expect(aiSkills).toEqual(expect.arrayContaining(skillsOnly));
+
+    const currentRoleRecord = chronicleRecords.find(
+      (record) =>
+        record.kind === "experience" &&
+        record.sourceId === "northrop-software-engineer",
+    );
+    expect(currentRoleRecord?.summary).toBe(currentRole?.summary);
+    expect(currentRoleRecord?.technologies).toEqual(
+      currentRole?.technologies.slice(0, 3),
+    );
+    for (const pattern of skillsOnlyPatterns) {
+      expect(JSON.stringify(currentRoleRecord)).not.toMatch(pattern);
     }
 
     const education = chronicleRecords[0];

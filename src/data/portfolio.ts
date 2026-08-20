@@ -295,8 +295,8 @@ export const experience: readonly ExperienceEntry[] = [
       "Building secure full-stack applications, cloud services, and AI-enabled engineering workflows in a regulated delivery environment.",
     highlights: [
       "Build and test scalable applications using TypeScript, Python, Jinja, AWS, Infrastructure as Code, and PostgreSQL.",
-      "Apply agentic and AI-assisted development through multi-agent systems, RAG workflows, and Model Context Protocol integrations.",
-      "Use loop and graph engineering, agent evaluations, code review, and quality gates to improve reliability, maintainability, and delivery confidence.",
+      "Apply agentic and AI-assisted development through coordinated multi-agent systems and human-reviewed engineering workflows.",
+      "Use automated testing, code review, and quality gates to improve reliability, maintainability, and delivery confidence.",
     ],
     technologies: [
       "TypeScript",
@@ -308,10 +308,6 @@ export const experience: readonly ExperienceEntry[] = [
       "Agentic Development",
       "AI-Assisted Development",
       "Multi-Agent Systems",
-      "RAG Workflows",
-      "Model Context Protocol (MCP)",
-      "Loop & Graph Engineering",
-      "Agent Evaluations",
       "Secure Delivery",
     ],
   },
