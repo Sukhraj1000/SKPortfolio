@@ -20,7 +20,9 @@ export function HeroSection() {
         <QuestLabel>
           {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
-        <h1 id="hero-title">{portfolioProfile.name}</h1>
+        <h1 id="hero-title">
+          <span>Sukhraj</span>{" "}<em>Kalon</em>
+        </h1>
         <p className="pq-hero-role">{portfolioProfile.role}</p>
         <p className="pq-hero-summary" data-hero-summary>
           {portfolioProfile.positioning}
@@ -55,35 +57,40 @@ export function HeroSection() {
       </div>
 
       <div className="pq-hero-scene" data-motion="hero-scene" aria-hidden="true">
-        <div className="pq-scene-sky">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
+        <div className="pq-scene-window-bar">
+          <span>Portfolio route / Dispatch</span>
+          <strong>01: Profile</strong>
+        </div>
+        <div className="pq-scene-grid" />
+        <div className="pq-dispatch-stacks">
+          <span><i />Build<small>01</small></span>
+          <span><i />Verify<small>02</small></span>
+          <span><i />Deliver<small>03</small></span>
+        </div>
+        <div className="pq-signal-tower">
+          <i /><i /><i /><strong>Link / ready</strong>
         </div>
         <div className="pq-scene-terminal">
-          <span>Portfolio / Start</span>
-          <b>Profile ready</b>
-          <i>Chapter 01 / 05</i>
+          <i />
+          <b>Engineering route</b>
+          <span>5 chapters connected</span>
         </div>
         <div className="pq-scene-entry">
-          <span>Start</span>
+          <span>Start / 01</span>
           <i />
         </div>
         <div className="pq-hero-operator">
           <OperatorSprite size="large" />
         </div>
         <div className="pq-scene-route">
-          <i />
-          <i />
-          <i />
-          <span>→</span>
+          <i /><i /><i /><span>→</span>
         </div>
-        <div className="pq-scene-beacon"><i /></div>
+        <div className="pq-destination-console">
+          <i /><b>Next</b><small>Work</small>
+        </div>
         <div className="pq-scene-platform" />
         <div className="pq-scene-caption">
-          <span>Entry point</span>
+          <span><i /> Journey ready</span>
           <strong>Profile → selected work</strong>
         </div>
       </div>

@@ -69,14 +69,23 @@ const [rootHtml, gameHtml] = await Promise.all([
   readFile(gameHtmlPath, "utf8"),
 ]);
 
-assert(rootHtml.includes('data-portfolio-theme="pixel-quest"'), "Portfolio export is missing the Pixel Quest root.");
+assert(rootHtml.includes('data-portfolio-theme="orbital-engineering-journey"'), "Portfolio export is missing the Orbital Engineering Journey root.");
 for (const sectionId of ["home", "projects", "about", "loadout", "contact"]) {
   assert(rootHtml.includes(`id="${sectionId}"`), `Portfolio export is missing the ${sectionId} chapter.`);
 }
-assert(rootHtml.includes("Proof lives in what shipped."), "Portfolio export is missing the Projects story heading.");
-assert(rootHtml.includes("Every environment added a new constraint."), "Portfolio export is missing the Experience story heading.");
-assert(rootHtml.includes("Choose tools for the constraint."), "Portfolio export is missing the Skills story heading.");
-assert(rootHtml.includes("The story is still being written."), "Portfolio export is missing the Contact story heading.");
+assert(rootHtml.includes("Projects with"), "Portfolio export is missing the Projects story heading.");
+assert(rootHtml.includes("real gravity."), "Portfolio export is missing the Projects heading accent.");
+assert(rootHtml.includes("Engineering under"), "Portfolio export is missing the Experience story heading.");
+assert(rootHtml.includes("real constraints."), "Portfolio export is missing the Experience heading accent.");
+assert(rootHtml.includes("A working systems"), "Portfolio export is missing the Skills story heading.");
+assert(rootHtml.includes("constellation."), "Portfolio export is missing the Skills heading accent.");
+assert(rootHtml.includes("Continue the"), "Portfolio export is missing the Contact story heading.");
+assert(rootHtml.includes("conversation."), "Portfolio export is missing the Contact heading accent.");
+assert(rootHtml.includes("Portfolio route / Dispatch"), "Portfolio export is missing the grounded dispatch scene.");
+assert(rootHtml.includes("05 / Arrival bay"), "Portfolio export is missing the Contact arrival scene.");
+assert(rootHtml.includes('data-disclosure-kind="mission"'), "Portfolio export is missing project disclosures.");
+assert(rootHtml.includes('data-disclosure-kind="timeline"'), "Portfolio export is missing Experience disclosures.");
+assert(rootHtml.includes('data-disclosure-kind="toolkit"'), "Portfolio export is missing Skills disclosures.");
 assert(gameHtml.includes('id="game-training-title"'), "Game export is missing its training-shell heading.");
 assert(gameHtml.includes("Five actions, then run."), "Game export is missing its five-step walkthrough premise.");
 for (const action of ["Jump", "Dash", "Fast Drop", "Pause", "Story Log"]) {

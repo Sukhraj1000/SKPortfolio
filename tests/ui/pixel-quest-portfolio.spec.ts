@@ -40,20 +40,20 @@ async function readPixelQuestTokens(page: Page) {
   });
 }
 
-test.describe("Pixel Quest portfolio", () => {
+test.describe("Orbital Engineering Journey portfolio", () => {
   test("uses the canonical dark foundation for a first visit", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.locator("html")).toHaveClass(/dark/);
-    await expect(page.locator('[data-portfolio-theme="pixel-quest"]')).toHaveCount(1);
+    await expect(page.locator('[data-portfolio-theme="orbital-engineering-journey"]')).toHaveCount(1);
     await expect(page.locator(".pq-root")).toHaveCSS("color-scheme", "dark");
 
     expect(await readPixelQuestTokens(page)).toEqual({
-      background: "#0b1118",
-      foreground: "#eef2e7",
-      primary: "#d8ef72",
-      cyan: "#69d6e5",
-      line: "#3d565c",
+      background: "#04070d",
+      foreground: "#f0f4eb",
+      primary: "#ddf778",
+      cyan: "#67e4f6",
+      line: "#29434c",
     });
   });
 
@@ -72,11 +72,11 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
 
     expect(await readPixelQuestTokens(page)).toEqual({
-      background: "#0b1118",
-      foreground: "#eef2e7",
-      primary: "#d8ef72",
-      cyan: "#69d6e5",
-      line: "#3d565c",
+      background: "#04070d",
+      foreground: "#f0f4eb",
+      primary: "#ddf778",
+      cyan: "#67e4f6",
+      line: "#29434c",
     });
 
     await page.goto("/game/");
@@ -116,11 +116,17 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(hero.getByRole("button", { name: "Request private CV" })).toBeVisible();
     const openingScene = hero.locator(".pq-hero-scene");
     await expect(openingScene).toHaveAttribute("aria-hidden", "true");
-    await expect(openingScene.locator(".pq-scene-terminal")).toContainText(
-      "Portfolio / Start",
+    await expect(openingScene.locator(".pq-scene-window-bar")).toContainText(
+      "Portfolio route / Dispatch",
     );
-    await expect(openingScene.locator(".pq-scene-entry")).toContainText("Start");
+    await expect(openingScene.locator(".pq-scene-terminal")).toContainText(
+      "Engineering route",
+    );
+    await expect(openingScene.locator(".pq-dispatch-stacks > span")).toHaveCount(3);
+    await expect(openingScene.locator(".pq-scene-entry")).toContainText("Start / 01");
     await expect(openingScene.locator(".pq-scene-route")).toHaveCount(1);
+    await expect(openingScene.locator(".pq-destination-console")).toContainText("Next");
+    await expect(openingScene.locator('[class*="orbit"]')).toHaveCount(0);
     await expect(hero.locator(".pq-operator")).toHaveCount(1);
 
     const overflow = await page.evaluate(
@@ -143,13 +149,22 @@ test.describe("Pixel Quest portfolio", () => {
 
     const tymaura = page.locator('[data-project-record="tymaura"]');
     await expect(tymaura.getByRole("heading", { name: "Tymaura" })).toBeVisible();
-    await expect(tymaura.getByText("Problem", { exact: true })).toBeVisible();
-    await expect(tymaura.getByText("My role", { exact: true })).toBeVisible();
-    await expect(tymaura.getByText("Outcome", { exact: true })).toBeVisible();
+    await expect(tymaura.locator(".pq-project-snapshot")).toContainText("Full product");
+    await expect(tymaura.locator("[data-project-outcome]")).toBeVisible();
     await expect(tymaura.getByRole("link", { name: "Visit Tymaura" })).toHaveAttribute(
       "href",
       "https://tymaura.app",
     );
+    const tymauraDetails = tymaura.locator(".pq-project-details");
+    const tymauraSummary = tymauraDetails.locator("summary");
+    await expect(tymauraSummary).toContainText("Engineering details");
+    await tymauraSummary.focus();
+    await page.keyboard.press("Enter");
+    await expect(tymauraDetails).toHaveAttribute("open", "");
+    await expect(tymauraDetails.getByText("Problem", { exact: true })).toBeVisible();
+    await expect(tymauraDetails.getByText("My contribution", { exact: true })).toBeVisible();
+    await expect(tymauraDetails.getByText("Outcome", { exact: true })).toBeVisible();
+    await expect(tymauraSummary).toBeFocused();
 
     const skaltek = page.locator('[data-project-record="skaltek"]');
     await expect(skaltek.getByRole("heading", { name: "Skaltek" })).toBeVisible();
@@ -166,10 +181,16 @@ test.describe("Pixel Quest portfolio", () => {
     );
 
     for (const record of await page.locator("[data-project-record]").all()) {
-      await expect(record.locator(".pq-tech-list li").first()).toBeVisible();
+      const details = record.locator("details");
+      if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
+        await details.locator("summary").click();
+      }
+      await expect(details.locator(".pq-tech-list li").first()).toBeVisible();
     }
 
     for (const record of await featured.all()) {
+      await expect(record.locator(".pq-project-node")).toHaveCount(4);
+      await expect(record.locator(".pq-project-media-frame")).toHaveCount(1);
       const image = record.locator("img");
       const stage = record.locator("[data-project-media-stage]");
       const hud = record.locator(".pq-visual-hud");
@@ -288,7 +309,7 @@ test.describe("Pixel Quest portfolio", () => {
 
     const contact = page.locator("#contact");
     await expect(
-      contact.getByRole("heading", { name: "The story is still being written." }),
+      contact.getByRole("heading", { name: "Continue the conversation." }),
     ).toBeVisible();
     await expect(contact.locator(".pq-ending-scene")).toHaveAttribute("aria-hidden", "true");
     await expect(contact.locator(".pq-ending-door")).toHaveCount(1);
@@ -321,7 +342,7 @@ test.describe("Pixel Quest portfolio", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("runs story motion once and settles without moving focused actions", async ({ page }) => {
+  test("settles entry motion without moving focus while purposeful operator idles remain", async ({ page }) => {
     await page.goto("/");
 
     const heroCopy = page.locator('[data-motion="hero-copy"]');
@@ -355,7 +376,11 @@ test.describe("Pixel Quest portfolio", () => {
       await page.evaluate(() =>
         document
           .getAnimations()
-          .filter((animation) => animation.playState === "running").length,
+          .filter((animation) => animation.playState === "running")
+          .filter((animation) => {
+            const timing = animation.effect?.getComputedTiming();
+            return timing?.iterations !== Number.POSITIVE_INFINITY;
+          }).length,
       ),
     ).toBe(0);
   });
@@ -372,8 +397,10 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(
       page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
     ).toBeVisible();
-    await expect(page.locator(".pq-scene-terminal")).toContainText("Portfolio / Start");
+    await expect(page.locator(".pq-scene-window-bar")).toContainText("Portfolio route / Dispatch");
+    await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-route")).toHaveCount(1);
+    await expect(page.locator("#home, #contact").locator('[class*="orbit"]')).toHaveCount(0);
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Software Engineer", exact: true }).last()).toBeVisible();
@@ -384,6 +411,12 @@ test.describe("Pixel Quest portfolio", () => {
     });
     expect(finalState.opacity).toBe("1");
     expect(finalState.transform).toBe("none");
+
+    const projectDetails = page.locator(".pq-project-details").first();
+    await projectDetails.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(projectDetails).toHaveAttribute("open", "");
+    await expect(projectDetails.getByText("My contribution", { exact: true })).toBeVisible();
     await context.close();
   });
 
@@ -410,7 +443,15 @@ test.describe("Pixel Quest portfolio", () => {
       "transition-duration",
       "0s",
     );
+    await expect(page.locator("[data-rail-index]")).toHaveAttribute(
+      "data-rail-phase",
+      "settled",
+    );
     await expect(page.locator(".pq-rail-operator-cue")).toHaveCSS(
+      "animation-name",
+      "none",
+    );
+    await expect(page.locator("[data-rail-operator]")).toHaveCSS(
       "animation-name",
       "none",
     );
@@ -431,7 +472,7 @@ test.describe("Pixel Quest portfolio", () => {
       await expect(page.locator("[data-experience-record]")).toHaveCount(4);
       await expect(page.locator("[data-capability-record]")).toHaveCount(5);
       await expect(page.locator("#contact")).toContainText(
-        "The story is still being written.",
+        "Continue the conversation.",
       );
 
       const overflow = await page.evaluate(
@@ -483,16 +524,16 @@ test.describe("Pixel Quest portfolio", () => {
       document.documentElement.style.fontSize = "200%";
     });
 
-    await expect(page.getByRole("heading", { name: "Proof lives in what shipped." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Projects with real gravity." })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Every environment added a new constraint." }),
+      page.getByRole("heading", { name: "Engineering under real constraints." }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Choose tools for the constraint." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "A working systems constellation." })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "The story is still being written." }),
+      page.getByRole("heading", { name: "Continue the conversation." }),
     ).toBeVisible();
-    await expect(page.locator(".pq-scene-terminal")).toContainText("Portfolio / Start");
-    await expect(page.locator(".pq-scene-entry")).toContainText("Start");
+    await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
+    await expect(page.locator(".pq-scene-entry")).toContainText("Start / 01");
 
     for (const record of await page.locator('[data-project-tier="featured"]').all()) {
       const [mediaBox, stageBox, imageBox, hudBox] = await Promise.all([
@@ -582,7 +623,15 @@ test.describe("Pixel Quest portfolio", () => {
       "location",
     );
     await expect(operator).toHaveAttribute("data-rail-index", "0");
+    await expect(operator).toHaveAttribute("data-rail-phase", "settled");
     await expectOperatorAligned("Profile");
+    const [spriteBox, profileLabelBox] = await Promise.all([
+      operator.locator("[data-rail-operator]").boundingBox(),
+      rail.getByRole("link", { name: "Profile" }).locator("strong").boundingBox(),
+    ]);
+    expect(spriteBox?.width).toBeGreaterThanOrEqual(47);
+    expect(spriteBox?.height).toBeGreaterThanOrEqual(63);
+    expect(spriteBox && profileLabelBox ? boxesOverlap(spriteBox, profileLabelBox) : true).toBeFalsy();
 
     await rail.getByRole("link", { name: "Projects" }).click();
     await expect(page.locator("[data-chapter-status]")).toContainText("Projects");
@@ -592,7 +641,11 @@ test.describe("Pixel Quest portfolio", () => {
     );
     await expect(operator).toHaveAttribute("data-rail-index", "1");
     await expect(operator).toHaveAttribute("data-rail-direction", "down");
+    await expect(operator).toHaveAttribute("data-rail-phase", "travelling");
     await expectOperatorAligned("Projects");
+    await expect(operator).toHaveAttribute("data-rail-phase", "settled", {
+      timeout: 1_000,
+    });
     await expect(page.getByRole("progressbar", { name: "Portfolio journey progress" })).toHaveAttribute(
       "aria-valuenow",
       "40",
@@ -641,6 +694,42 @@ test.describe("Pixel Quest portfolio", () => {
     await expect(page.locator("[data-chapter-status]")).toContainText("Profile");
     await expect(page.locator("main section")).toHaveCount(5);
     await expect(page.getByRole("link", { name: "Enter Game mode" })).toBeVisible();
+  });
+
+  test("acknowledges cold Game activation immediately without preloading its runtime", async ({ page }) => {
+    const requests: string[] = [];
+    page.on("request", (request) => requests.push(request.url()));
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+
+    const gameLink = page.getByRole("link", { name: "Enter Game mode" });
+    await gameLink.evaluate((element) => {
+      element.addEventListener("click", (event) => event.preventDefault(), {
+        capture: true,
+      });
+    });
+    await gameLink.click();
+
+    const launchStatus = page.getByRole("status");
+    await expect(launchStatus).toBeVisible({ timeout: 500 });
+    await expect(launchStatus).toContainText("Opening Chronicle Run");
+    await expect(launchStatus).toContainText("Game runtime remains isolated");
+    await expect(gameLink).toHaveAttribute("aria-busy", "true");
+    await expect(launchStatus.locator(".pq-game-launch-operator")).toHaveCSS(
+      "animation-name",
+      "none",
+    );
+    await expect(launchStatus.locator(".pq-game-launch-progress i")).toHaveCSS(
+      "animation-name",
+      "none",
+    );
+
+    await gameLink.evaluate((element) => (element as HTMLAnchorElement).click());
+    await expect(page.locator('[data-game-launch-state="opening"]')).toHaveCount(1);
+    await expect(page).toHaveURL(/\/$/);
+    expect(requests.some((url) => url.includes("/game/assets/"))).toBeFalsy();
+    expect(requests.some((url) => url.includes("industrial-world-atlas"))).toBeFalsy();
+    expect(requests.some((url) => url.includes("phaser"))).toBeFalsy();
   });
 
   test("keeps Phaser and world assets behind explicit Game mode activation", async ({ page }) => {

@@ -1,9 +1,9 @@
-# Pixel Quest and Chronicle Run release QA
+# Orbital Engineering Journey and Chronicle Run release QA
 
 This checklist separates reproducible automated evidence from checks that still
 require a deployment preview, physical device, or real assistive technology.
-The recruiter-facing Pixel Quest portfolio and optional Chronicle Run game are
-validated as independent routes.
+The recruiter-facing Orbital Engineering Journey portfolio and optional
+Chronicle Run game are validated as independent routes.
 
 ## Automated release gates
 
@@ -22,9 +22,11 @@ npm audit
 - The complete five-chapter portfolio, canonical evidence, stable anchors, CV
   flow, contact actions, no-JavaScript content, the dark-only palette, reduced
   motion, 320px layout, 200% text, keyboard operation, and coarse-pointer targets.
-- Direct name/role Hero hierarchy, retired campaign wording, the opening checkpoint
-  and concluding door, chapter-aware rail travel, aligned featured-project media,
-  and current-role AI/agentic engineering evidence.
+- Direct name/role Hero hierarchy, retired campaign wording, the grounded dispatch
+  and arrival-bay scenes, near-native stateful rail travel, authored Tymaura/Skaltek
+  media windows, and correctly separated current-role versus personal AI evidence.
+- Native mission, timeline, and toolkit disclosures; immediate accessible Game
+  launch feedback; duplicate activation protection; and a static reduced-motion state.
 - The server-rendered Chronicle training fallback, direct Game transition,
   exactly five matching-input walkthrough steps, returning-player skip, and
   absence of game-world requests from the recruiter-facing Portfolio route.
@@ -67,8 +69,8 @@ excludes the legacy `nomodule` polyfill. It enforces a 200 kB budget per route:
 
 | Route | Initial scripts (gzip) | Budget |
 | --- | ---: | ---: |
-| Portfolio `/` | 169.3 kB | 200 kB |
-| Chronicle training route `/game/` | 170.3 kB | 200 kB |
+| Portfolio `/` | 170.1 kB | 200 kB |
+| Chronicle training route `/game/` | 170.8 kB | 200 kB |
 
 Phaser remains a separate lazy chunk and does not affect either initial-script
 measurement. The world atlas is approximately 466 kB and the character sheet
@@ -103,18 +105,27 @@ browser, preview URL, reviewer, and result.
   and direct engineering positioning; no visible legacy campaign wording or
   employer-qualified “at Northrop Grumman” title remains, while employer evidence
   is still present in Experience.
-- [ ] Scroll and use chapter links in both directions on desktop; confirm the rail
-  operator settles beside the active section, jumps down/up only as a decorative
-  cue, and updates instantly when reduced motion is enabled live.
-- [ ] Confirm the Hero scene reads as the route entry and the Contact door as the
-  conclusion with and without JavaScript.
+- [ ] Scroll and use chapter links in both directions on desktop; confirm the
+  near-native rail operator walks between rows, settles into chapter-specific
+  inspection/terminal poses without obscuring labels, and updates instantly to a
+  static pose when reduced motion is enabled live.
+- [ ] Confirm the Hero dispatch station reads as the route entry and the Contact
+  arrival bay as the conclusion with and without JavaScript; neither scene should
+  place the pixel character inside circular orbital graphics.
 - [ ] Inspect Tymaura and Skaltek media at 320px, 390px, tablet, desktop, and 200%
-  text; confirm both are centered and intentionally scaled without crop,
+  text; confirm both are integrated into distinct mission windows without crop,
   distortion, HUD collision, or horizontal overflow.
+- [ ] Expand project mission records, all Experience timeline records, and every
+  Skills toolkit using pointer and keyboard. Confirm labels, focus, announced
+  state, complete canonical evidence, and reduced-motion behavior remain clear.
 - [ ] Expand the current Software Engineer role and AI inventory; confirm Jinja,
-  agentic development, multi-agent systems, RAG, MCP, loop/graph engineering,
-  and agent evaluations are concise and consistent with the existing secure
-  full-stack and cloud evidence.
+  agentic development, and multi-agent systems remain in current-role evidence,
+  while RAG, MCP, loop/graph engineering, and agent evaluations appear only in
+  personal Skills.
+- [ ] Activate Game on a cold route; confirm “Opening Chronicle Run” appears
+  immediately, repeated activation is guarded, reduced motion is static, and the
+  existing five-step training shell follows without Portfolio-side Phaser or
+  world-asset preloading.
 
 ### Desktop keyboard
 
@@ -191,8 +202,9 @@ browser, preview URL, reviewer, and result.
 - [ ] Exercise direct `/`, `/game/`, and chapter-anchor refreshes on the actual
   static host, plus browser Back/Forward and remembered Portfolio return.
 - [ ] Inspect network requests: the Portfolio must not request Phaser, the
-  character sheet, or the industrial world atlas; those requests may begin only
-  after the visitor activates Game mode or opens `/game/` directly.
+  Chronicle character sheet, or the industrial world atlas; those requests may
+  begin only after the visitor activates Game mode or opens `/game/` directly.
+  The neutral Portfolio operator sheet may load on `/`.
 - [ ] Inspect the console throughout training, active, paused, unlock, Story Log,
   completion, timing, replay, refresh, and exit flows; no uncaught errors are
   acceptable.
