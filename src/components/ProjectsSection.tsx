@@ -65,18 +65,20 @@ function FeaturedProject({
           <span>Quest {questNumber}</span>
           <strong data-project-status>{project.status}</strong>
         </div>
-        {/* Static export uses the explicit dimensions and optional responsive raster sources below. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={project.image}
-          srcSet={project.imageSrcSet}
-          alt={project.imageAlt}
-          width={project.imageWidth}
-          height={project.imageHeight}
-          sizes="(min-width: 1152px) 36vw, (min-width: 768px) 60vw, 100vw"
-          loading="lazy"
-          decoding="async"
-        />
+        <div className="pq-project-media-stage" data-project-media-stage>
+          {/* Static export uses the explicit dimensions and optional responsive raster sources below. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={project.image}
+            srcSet={project.imageSrcSet}
+            alt={project.imageAlt}
+            width={project.imageWidth}
+            height={project.imageHeight}
+            sizes="(min-width: 1152px) 36vw, (min-width: 768px) 60vw, 100vw"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
         {project.id === "skaltek" ? (
           <div className="pq-signal-orbits" aria-hidden="true">
             <i />

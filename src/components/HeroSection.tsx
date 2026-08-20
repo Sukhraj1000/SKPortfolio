@@ -18,27 +18,17 @@ export function HeroSection() {
 
       <div className="pq-hero-copy" data-motion="hero-copy">
         <QuestLabel>
-          Player 01 / {portfolioProfile.role} / {portfolioProfile.location}
+          {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
-        <h1
-          id="hero-title"
-          aria-label={`${portfolioProfile.storyHeadline.before} ${portfolioProfile.storyHeadline.emphasis} ${portfolioProfile.storyHeadline.after}`}
-        >
-          {portfolioProfile.storyHeadline.before}{" "}
-          <em>{portfolioProfile.storyHeadline.emphasis}</em>{" "}
-          {portfolioProfile.storyHeadline.after}
-        </h1>
-        <p className="pq-hero-role">
-          {portfolioProfile.name} · {portfolioProfile.role} at{" "}
-          <strong>{portfolioProfile.employer}</strong>
-        </p>
+        <h1 id="hero-title">{portfolioProfile.name}</h1>
+        <p className="pq-hero-role">{portfolioProfile.role}</p>
         <p className="pq-hero-summary" data-hero-summary>
-          {portfolioProfile.summary} {portfolioProfile.journey}
+          {portfolioProfile.positioning}
         </p>
 
         <div className="pq-hero-actions">
           <QuestLink href="/#projects" variant="primary">
-            Start the story <span aria-hidden="true">→</span>
+            View selected work <span aria-hidden="true">→</span>
           </QuestLink>
           <div className="pq-hero-cv">
             <CVAccessDialog
@@ -50,15 +40,15 @@ export function HeroSection() {
 
         <dl className="pq-hero-proof">
           <div>
-            <dt>Current station</dt>
-            <dd>{portfolioProfile.employer}</dd>
+            <dt>Location</dt>
+            <dd>{portfolioProfile.location}</dd>
           </div>
           <div>
-            <dt>Class unlocked</dt>
+            <dt>Education</dt>
             <dd>{portfolioProfile.education}</dd>
           </div>
           <div>
-            <dt>Core toolkit</dt>
+            <dt>Focus</dt>
             <dd>{portfolioProfile.toolkit}</dd>
           </div>
         </dl>
@@ -73,18 +63,28 @@ export function HeroSection() {
           <i />
         </div>
         <div className="pq-scene-terminal">
-          <span>IRON//SIGNAL</span>
-          <b>Profile link</b>
-          <i>Online</i>
+          <span>Portfolio / Start</span>
+          <b>Profile ready</b>
+          <i>Chapter 01 / 05</i>
+        </div>
+        <div className="pq-scene-entry">
+          <span>Start</span>
+          <i />
         </div>
         <div className="pq-hero-operator">
           <OperatorSprite size="large" />
         </div>
+        <div className="pq-scene-route">
+          <i />
+          <i />
+          <i />
+          <span>→</span>
+        </div>
         <div className="pq-scene-beacon"><i /></div>
         <div className="pq-scene-platform" />
         <div className="pq-scene-caption">
-          <span>Origin point</span>
-          <strong>Curiosity → capability</strong>
+          <span>Entry point</span>
+          <strong>Profile → selected work</strong>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export function HeroSection() {
         data-motion="hero-console"
         aria-label="Current portfolio objective"
       >
-        <span className="pq-objective-label">Current objective</span>
+        <span className="pq-objective-label">Engineering approach</span>
         <p>{portfolioProfile.storyObjective}</p>
         <div className="pq-console-lines" aria-hidden="true">
           <i />

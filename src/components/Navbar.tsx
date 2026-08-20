@@ -14,7 +14,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CVAccessDialog, CVAccessDialogMobile } from "@/components/CVAccessDialog";
 import { portfolioProfile, storyChapters } from "@/data/portfolio";
 import {
@@ -92,9 +91,8 @@ function GameNavbar() {
           Game route // isolated runtime
         </p>
 
-        <div className="ml-auto flex items-center gap-[2px] xl:ml-0 xl:gap-2">
+        <div className="ml-auto flex items-center xl:ml-0">
           <GameModeControl portfolioReturnHref={portfolioReturnHref} />
-          <ThemeToggle className="h-[44px] w-[44px]" />
         </div>
       </div>
     </header>
@@ -181,7 +179,6 @@ function PortfolioNavbar() {
           >
             Game
           </Link>
-          <ThemeToggle className="pq-theme-toggle" />
           <div className="pq-header-cv">
             <CVAccessDialog buttonClassName="h-11 px-3" />
           </div>
