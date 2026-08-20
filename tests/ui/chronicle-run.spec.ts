@@ -15,7 +15,7 @@ test.describe("Chronicle Run", () => {
     page.on("request", (request) => requests.push(request.url()));
     await page.goto("/");
     await expect(
-      page.getByRole("heading", { name: /I build systems that/i }),
+      page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
     ).toBeVisible();
     await page.waitForTimeout(800);
     expect(
@@ -739,7 +739,7 @@ test.describe("Chronicle Run", () => {
       });
   });
 
-  test("updates theme and motion live and supports the documented runtime shortcuts", async ({
+  test("keeps the dark shell while updating motion and runtime shortcuts", async ({
     page,
   }) => {
     await page.addInitScript(
@@ -759,7 +759,7 @@ test.describe("Chronicle Run", () => {
       { key: progressKey },
     );
     await page.emulateMedia({
-      colorScheme: "dark",
+      colorScheme: "light",
       reducedMotion: "no-preference",
     });
     await page.goto("/game/");
@@ -780,20 +780,16 @@ test.describe("Chronicle Run", () => {
       .poll(() => page.evaluate(() => localStorage.getItem("iron-signal:game-sound")))
       .toBe("on");
 
-    const progressBeforeTheme = Number(
-      await runtime.getAttribute("data-journey-progress"),
-    );
-    await page.getByRole("button", { name: "Switch to day theme" }).click();
-    await expect(page.locator("html")).toHaveClass(/light/);
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(page.locator("html")).not.toHaveClass(/light/);
+    await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toHaveCount(0);
     await expect(page.locator("canvas")).toHaveCount(1);
-    await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
-      .toBeGreaterThanOrEqual(progressBeforeTheme);
 
     const progressBeforeMotion = Number(
       await runtime.getAttribute("data-journey-progress"),
     );
-    await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(runtime).toHaveAttribute("data-reduced-motion", "true");
     await expect(runtime).toHaveAttribute("data-reward-motion", "settled");
     await expect
@@ -832,7 +828,7 @@ test.describe("Chronicle Run", () => {
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(/\/#home$/);
     await expect(
-      page.getByRole("heading", { name: /I build systems that/i }),
+      page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
     ).toBeVisible();
   });
 
