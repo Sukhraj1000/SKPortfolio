@@ -1,13 +1,13 @@
 # SKPortfolio
 
-Sukhraj Kalon's software engineering portfolio, presented as a five-chapter Pixel Quest journey. The professional evidence remains server-rendered and directly readable; pixel scenes and finite motion provide an optional visual layer around it.
+Sukhraj Kalon's software engineering portfolio, presented as a dark five-chapter Orbital Engineering Journey. The professional evidence remains server-rendered and directly readable; grounded pixel scenes, authored project windows, progressive technical records, and purposeful character motion provide the visual layer around it.
 
 Production site: [sukhrajkalon.info](https://sukhrajkalon.info)
 
 ## Routes
 
 - `/` — recruiter-facing portfolio: Profile, Projects, Experience, Skills, and Contact.
-- `/game/` — optional **Chronicle Run** auto-runner through five chronological professional chapters. Selecting Game transitions directly into a paused five-step training shell; Phaser and world assets remain isolated from the Portfolio route and load only after Game mode activation.
+- `/game/` — optional **Chronicle Run** auto-runner through five chronological professional chapters. Selecting Game immediately displays an accessible dark launch state before transitioning into the paused five-step training shell; Phaser and world assets remain isolated from the Portfolio route and load only after explicit Game activation.
 
 No portfolio evidence is gated behind the game.
 
@@ -15,7 +15,7 @@ No portfolio evidence is gated behind the game.
 
 - Next.js 16 App Router and React 19
 - TypeScript and Tailwind CSS 4
-- Radix Dialog primitives and `next-themes`
+- Radix Dialog primitives
 - Playwright browser coverage
 - Phaser 3, isolated to the optional game runtime
 - Static HTML export for deployment without a Node.js server
@@ -55,18 +55,19 @@ The release checklist and remaining real-device checks are documented in [`docs/
 
 - Canonical professional content lives in [`src/data/portfolio.ts`](src/data/portfolio.ts).
 - Portfolio sections are predominantly server components.
-- [`PortfolioProgress.tsx`](src/components/pixel-quest/PortfolioProgress.tsx) owns one semantic chapter observer shared by the header and desktop rail.
-- [`PortfolioMotion.tsx`](src/components/pixel-quest/PortfolioMotion.tsx) progressively enhances visible-by-default content without an animation dependency or permanent frame loop.
-- Pixel Quest composition styles are scoped under `pq-` selectors in [`src/app/pixel-quest.css`](src/app/pixel-quest.css).
+- [`PortfolioProgress.tsx`](src/components/pixel-quest/PortfolioProgress.tsx) owns one semantic chapter observer shared by the header and desktop rail; the decorative rail operator follows that same active chapter without creating a second scroll system.
+- [`PortfolioMotion.tsx`](src/components/pixel-quest/PortfolioMotion.tsx) progressively enhances visible-by-default content without an animation dependency; the rail uses only low-frequency, stateful sprite-sheet cues tied to the shared chapter state.
+- Orbital Engineering Journey composition styles remain scoped under existing `pq-` selectors in [`src/app/pixel-quest.css`](src/app/pixel-quest.css). The server-rendered document uses one dark palette without a client-side theme provider or switch.
+- Projects, Experience, and Skills use native semantic disclosures. Their concise summaries and essential actions remain visible before expansion, while all detail content derives from the canonical portfolio data.
 - Portfolio code does not import Phaser, game scenes, game state, or world artwork.
 - Chronicle records in [`chronicle-story.ts`](src/components/game/chronicle-story.ts) adapt facts from the canonical portfolio data; the Phaser scene emits stable record IDs rather than copied professional text.
 - Chronicle progress is versioned, validated, and merged locally. Recovered records survive refresh until Restart or Replay begins a fresh `0/9` story run; tutorial completion, completion status, high score, and best time remain stored, while malformed or legacy values fail open.
 
 ## Accessibility and motion
 
-The portfolio supports keyboard navigation, visible focus, semantic headings and landmarks, native disclosure controls, dark and light themes, widths from 320 pixels, 200% text sizing, no-JavaScript content, and `prefers-reduced-motion`. Decorative sprites are pointer-inert and excluded from the accessibility tree.
+The portfolio uses one high-contrast dark presentation and supports keyboard navigation, visible focus, semantic headings and landmarks, native disclosure controls, widths from 320 pixels, 200% text sizing, no-JavaScript content, and live `prefers-reduced-motion` changes. The near-native rail character has traversal, arrival, idle, inspection, and terminal states in standard motion, but settles immediately and remains static under reduced motion. Decorative sprites are pointer-inert and excluded from the accessibility tree.
 
-Chronicle Run adds labelled keyboard and touch controls, an input-driven five-step walkthrough, forgiving reachable routes, larger animated rewards, pause-aware personal-best timing, non-blocking DOM unlock cards, a focus-contained Story Log, live theme and reduced-motion updates, and a direct Portfolio exit. The server-rendered training fallback remains informative when JavaScript is unavailable.
+Chronicle Run adds labelled keyboard and touch controls, an input-driven five-step walkthrough, forgiving reachable routes, larger animated rewards, pause-aware personal-best timing, non-blocking DOM unlock cards, a focus-contained Story Log, live reduced-motion updates, and a direct Portfolio exit. The server-rendered training fallback remains informative when JavaScript is unavailable. Existing local progress, sound, and return keys retain their original names for backward compatibility even though legacy campaign wording is absent from the rendered site.
 
 Automated accessibility checks supplement rather than replace real assistive-technology review.
 

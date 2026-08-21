@@ -36,10 +36,11 @@ export function QuestChip({
   return <li className={cn("pq-chip", className)} {...props} />;
 }
 
-interface QuestChapterHeadingProps extends React.ComponentProps<"header"> {
+interface QuestChapterHeadingProps
+  extends Omit<React.ComponentProps<"header">, "title"> {
   index: string;
   label: string;
-  title: string;
+  title: React.ReactNode;
   description: string;
   headingId: string;
 }

@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { flushSync } from "react-dom";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { CVAccessDialog, CVAccessDialogMobile } from "@/components/CVAccessDialog";
 import { portfolioProfile, storyChapters } from "@/data/portfolio";
 import {
@@ -26,6 +26,7 @@ import {
 } from "@/lib/game-mode";
 import { cn } from "@/lib/utils";
 import { usePortfolioProgress } from "@/components/pixel-quest/PortfolioProgress";
+import { OperatorSprite } from "@/components/pixel-quest/QuestPrimitives";
 
 function GameModeControl({ portfolioReturnHref }: { portfolioReturnHref: string }) {
   return (
@@ -92,9 +93,8 @@ function GameNavbar() {
           Game route // isolated runtime
         </p>
 
-        <div className="ml-auto flex items-center gap-[2px] xl:ml-0 xl:gap-2">
+        <div className="ml-auto flex items-center xl:ml-0">
           <GameModeControl portfolioReturnHref={portfolioReturnHref} />
-          <ThemeToggle className="h-[44px] w-[44px]" />
         </div>
       </div>
     </header>
@@ -105,11 +105,48 @@ function PortfolioNavbar() {
   const { activeSection, activeIndex, progress, selectSection } =
     usePortfolioProgress();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [gameLaunching, setGameLaunching] = React.useState(false);
+  const gameLaunchingRef = React.useRef(false);
+  const launchFallbackTimerRef = React.useRef<number | null>(null);
   const activeChapter = storyChapters[activeIndex] ?? storyChapters[0];
 
-  const handleGameEntry = React.useCallback(() => {
-    rememberPortfolioAnchor(activeSection);
-  }, [activeSection]);
+  React.useEffect(
+    () => () => {
+      if (launchFallbackTimerRef.current !== null) {
+        window.clearTimeout(launchFallbackTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const handleGameEntry = React.useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      rememberPortfolioAnchor(activeSection);
+
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        event.button !== 0
+      ) {
+        return;
+      }
+
+      if (gameLaunchingRef.current) {
+        event.preventDefault();
+        return;
+      }
+
+      gameLaunchingRef.current = true;
+      flushSync(() => setGameLaunching(true));
+      launchFallbackTimerRef.current = window.setTimeout(() => {
+        gameLaunchingRef.current = false;
+        setGameLaunching(false);
+      }, 10_000);
+    },
+    [activeSection],
+  );
 
   const activateChapter = React.useCallback(
     (sectionId: PortfolioStoryAnchor) => {
@@ -120,7 +157,8 @@ function PortfolioNavbar() {
   );
 
   return (
-    <header className="pq-header pq-scope" data-portfolio-header>
+    <>
+      <header className="pq-header pq-scope" data-portfolio-header>
       <div className="pq-header-inner">
         <Link
           href="/#home"
@@ -177,11 +215,12 @@ function PortfolioNavbar() {
             prefetch={false}
             className="pq-game-link"
             aria-label="Enter Game mode"
+            aria-disabled={gameLaunching || undefined}
+            aria-busy={gameLaunching || undefined}
             onClick={handleGameEntry}
           >
-            Game
+            Game <span aria-hidden="true">↗</span>
           </Link>
-          <ThemeToggle className="pq-theme-toggle" />
           <div className="pq-header-cv">
             <CVAccessDialog buttonClassName="h-11 px-3" />
           </div>
@@ -253,7 +292,28 @@ function PortfolioNavbar() {
           </div>
         </div>
       </div>
-    </header>
+      </header>
+
+      {gameLaunching ? (
+        <div
+          className="pq-game-launch-overlay pq-scope"
+          data-game-launch-state="opening"
+          role="status"
+          aria-live="assertive"
+          aria-atomic="true"
+          aria-busy="true"
+        >
+          <div className="pq-game-launch-grid" aria-hidden="true" />
+          <div className="pq-game-launch-copy">
+            <OperatorSprite size="large" className="pq-game-launch-operator" />
+            <p>Optional playable portfolio</p>
+            <h2>Opening Chronicle Run</h2>
+            <span className="pq-game-launch-progress" aria-hidden="true"><i /></span>
+            <strong>Preparing training shell · Game runtime remains isolated</strong>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
 

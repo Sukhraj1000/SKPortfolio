@@ -18,27 +18,19 @@ export function HeroSection() {
 
       <div className="pq-hero-copy" data-motion="hero-copy">
         <QuestLabel>
-          Player 01 / {portfolioProfile.role} / {portfolioProfile.location}
+          {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
-        <h1
-          id="hero-title"
-          aria-label={`${portfolioProfile.storyHeadline.before} ${portfolioProfile.storyHeadline.emphasis} ${portfolioProfile.storyHeadline.after}`}
-        >
-          {portfolioProfile.storyHeadline.before}{" "}
-          <em>{portfolioProfile.storyHeadline.emphasis}</em>{" "}
-          {portfolioProfile.storyHeadline.after}
+        <h1 id="hero-title">
+          <span>Sukhraj</span>{" "}<em>Kalon</em>
         </h1>
-        <p className="pq-hero-role">
-          {portfolioProfile.name} · {portfolioProfile.role} at{" "}
-          <strong>{portfolioProfile.employer}</strong>
-        </p>
+        <p className="pq-hero-role">{portfolioProfile.role}</p>
         <p className="pq-hero-summary" data-hero-summary>
-          {portfolioProfile.summary} {portfolioProfile.journey}
+          {portfolioProfile.positioning}
         </p>
 
         <div className="pq-hero-actions">
           <QuestLink href="/#projects" variant="primary">
-            Start the story <span aria-hidden="true">→</span>
+            View selected work <span aria-hidden="true">→</span>
           </QuestLink>
           <div className="pq-hero-cv">
             <CVAccessDialog
@@ -50,41 +42,56 @@ export function HeroSection() {
 
         <dl className="pq-hero-proof">
           <div>
-            <dt>Current station</dt>
-            <dd>{portfolioProfile.employer}</dd>
+            <dt>Location</dt>
+            <dd>{portfolioProfile.location}</dd>
           </div>
           <div>
-            <dt>Class unlocked</dt>
+            <dt>Education</dt>
             <dd>{portfolioProfile.education}</dd>
           </div>
           <div>
-            <dt>Core toolkit</dt>
+            <dt>Focus</dt>
             <dd>{portfolioProfile.toolkit}</dd>
           </div>
         </dl>
       </div>
 
       <div className="pq-hero-scene" data-motion="hero-scene" aria-hidden="true">
-        <div className="pq-scene-sky">
-          <i />
-          <i />
-          <i />
-          <i />
-          <i />
+        <div className="pq-scene-window-bar">
+          <span>Portfolio route / Dispatch</span>
+          <strong>01: Profile</strong>
+        </div>
+        <div className="pq-scene-grid" />
+        <div className="pq-dispatch-stacks">
+          <span><i />Build<small>01</small></span>
+          <span><i />Verify<small>02</small></span>
+          <span><i />Deliver<small>03</small></span>
+        </div>
+        <div className="pq-signal-tower">
+          <i /><i /><i /><strong>Link / ready</strong>
         </div>
         <div className="pq-scene-terminal">
-          <span>IRON//SIGNAL</span>
-          <b>Profile link</b>
-          <i>Online</i>
+          <i />
+          <b>Engineering route</b>
+          <span>5 chapters connected</span>
+        </div>
+        <div className="pq-scene-entry">
+          <span>Start / 01</span>
+          <i />
         </div>
         <div className="pq-hero-operator">
           <OperatorSprite size="large" />
         </div>
-        <div className="pq-scene-beacon"><i /></div>
+        <div className="pq-scene-route">
+          <i /><i /><i /><span>→</span>
+        </div>
+        <div className="pq-destination-console">
+          <i /><b>Next</b><small>Work</small>
+        </div>
         <div className="pq-scene-platform" />
         <div className="pq-scene-caption">
-          <span>Origin point</span>
-          <strong>Curiosity → capability</strong>
+          <span><i /> Journey ready</span>
+          <strong>Profile → selected work</strong>
         </div>
       </div>
 
@@ -93,7 +100,7 @@ export function HeroSection() {
         data-motion="hero-console"
         aria-label="Current portfolio objective"
       >
-        <span className="pq-objective-label">Current objective</span>
+        <span className="pq-objective-label">Engineering approach</span>
         <p>{portfolioProfile.storyObjective}</p>
         <div className="pq-console-lines" aria-hidden="true">
           <i />

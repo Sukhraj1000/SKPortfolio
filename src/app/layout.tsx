@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { PortfolioProgressProvider } from "@/components/pixel-quest/PortfolioProgress";
 
@@ -45,26 +44,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      data-theme="iron-signal"
-      data-scroll-behavior="smooth"
-      suppressHydrationWarning
-    >
+    <html lang="en" className="dark" data-scroll-behavior="smooth">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <PortfolioProgressProvider>
-            <Navbar />
-            <main>{children}</main>
-          </PortfolioProgressProvider>
-        </ThemeProvider>
+        <PortfolioProgressProvider>
+          <Navbar />
+          <main>{children}</main>
+        </PortfolioProgressProvider>
       </body>
     </html>
   );

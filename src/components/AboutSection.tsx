@@ -51,7 +51,11 @@ function ExperienceRecord({
         {entry.start} — {entry.end}
       </time>
       <div className="pq-level-body">
-        {entry.current ? <p className="pq-level-status">Current role</p> : null}
+        {entry.current ? (
+          <p className="pq-level-status">
+            {index === 0 ? "Current role" : "Concurrent role"}
+          </p>
+        ) : null}
         <h3 id={`field-log-${entry.id}-title`}>{entry.role}</h3>
         <strong>{entry.organisation}</strong>
         <p>{entry.summary}</p>
@@ -60,12 +64,15 @@ function ExperienceRecord({
           name="experience-path"
           open={index === 0}
           className="pq-level-details"
+          data-disclosure-kind="timeline"
         >
           <summary data-disclosure-action>
             <span className="when-closed">View responsibilities and stack</span>
             <span className="when-open">Hide responsibilities and stack</span>
           </summary>
           <div className="pq-level-details-panel">
+            <i className="pq-timeline-scan" aria-hidden="true" />
+            <h4>Responsibilities &amp; delivery evidence</h4>
             <ul aria-label={`${entry.role} responsibilities and impact`}>
               {entry.highlights.map((highlight) => (
                 <li key={highlight}>{highlight}</li>
@@ -117,7 +124,12 @@ function CapabilityRecord({
         <span>{supportingItems.length} supporting</span>
       </p>
 
-      <details name="capability-inventory" className="pq-inventory-details">
+      <details
+        name="capability-inventory"
+        className="pq-inventory-details"
+        data-disclosure-kind="toolkit"
+        open={group.id === "ai-automation"}
+      >
         <summary data-disclosure-action>
           <span className="when-closed">Open inventory</span>
           <span className="when-open">Close inventory</span>
@@ -163,10 +175,10 @@ export function AboutSection() {
       >
         <QuestChapterHeading
           index={experienceChapter.index}
-          label="Progress / Experience"
+          label="Experience"
           headingId="field-log-title"
-          title="Every environment added a new constraint."
-          description="Secure engineering, business operations, product delivery, and live technical systems all shaped the route."
+          title={<><span>Engineering under</span>{" "}<em>real constraints.</em></>}
+          description="Secure delivery, business operations, product work, and live systems shaped how I build."
         />
 
         <ol className="pq-level-path">
@@ -184,10 +196,10 @@ export function AboutSection() {
       >
         <QuestChapterHeading
           index={skillsChapter.index}
-          label="Toolkit / Skills"
+          label="Skills"
           headingId="loadout-title"
-          title="Choose tools for the constraint."
-          description="The inventory is grouped by how work gets delivered—not artificial percentage bars."
+          title={<><span>A working systems</span>{" "}<em>constellation.</em></>}
+          description="Capabilities are grouped by how they support delivery—not artificial percentage scores."
         />
 
         <div className="pq-inventory-grid">

@@ -129,9 +129,7 @@ test.describe("portfolio reading flow", () => {
       await page.goto("/");
 
       await expect(
-        page.getByRole("heading", {
-          name: "I build systems that hold up in the real world.",
-        }),
+        page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
       ).toBeVisible();
       await expectReadableText(page.locator("[data-hero-summary]"));
       await expect(
@@ -324,33 +322,28 @@ test.describe("portfolio reading flow", () => {
     await expect(cvTrigger).toBeFocused();
   });
 
-  test("meets representative contrast requirements in both themes", async ({
+  test("meets representative contrast requirements in the dark presentation", async ({
     page,
   }) => {
+    await page.emulateMedia({ colorScheme: "light" });
+    await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
     await page.goto("/");
+    await expect(page.locator("html")).toHaveClass(/dark/);
 
-    for (const theme of ["light", "dark"] as const) {
-      await page.evaluate((nextTheme) => {
-        window.localStorage.setItem("theme", nextTheme);
-      }, theme);
-      await page.reload();
-      await expect(page.locator("html")).toHaveClass(new RegExp(theme));
+    const tokens = await readThemeTokens(page);
+    const normalTextPairs = [
+      [tokens.foreground, tokens.background],
+      [tokens.foreground, tokens.surface],
+      [tokens.muted, tokens.background],
+      [tokens.muted, tokens.surface],
+      [tokens.primaryForeground, tokens.primary],
+    ];
 
-      const tokens = await readThemeTokens(page);
-      const normalTextPairs = [
-        [tokens.foreground, tokens.background],
-        [tokens.foreground, tokens.surface],
-        [tokens.muted, tokens.background],
-        [tokens.muted, tokens.surface],
-        [tokens.primaryForeground, tokens.primary],
-      ];
-
-      for (const [foreground, background] of normalTextPairs) {
-        expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
-      }
-
-      expect(contrastRatio(tokens.ring, tokens.background)).toBeGreaterThanOrEqual(3);
+    for (const [foreground, background] of normalTextPairs) {
+      expect(contrastRatio(foreground, background)).toBeGreaterThanOrEqual(4.5);
     }
+
+    expect(contrastRatio(tokens.ring, tokens.background)).toBeGreaterThanOrEqual(3);
   });
 
   test("settles immediately when reduced motion is requested", async ({ page }) => {
@@ -375,39 +368,32 @@ test.describe("portfolio reading flow", () => {
     await expect(page.locator("[data-hero-summary]")).toBeVisible();
   });
 
-  for (const theme of ["light", "dark"] as const) {
-    for (const viewport of releaseViewports) {
-      test(`renders the ${theme} portfolio at ${viewport.width}x${viewport.height}`, async ({
-        page,
-      }, testInfo) => {
-        await page.addInitScript((nextTheme) => {
-          window.localStorage.setItem("theme", nextTheme);
-        }, theme);
-        await page.setViewportSize(viewport);
-        await page.goto("/");
+  for (const viewport of releaseViewports) {
+    test(`renders the dark portfolio at ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }, testInfo) => {
+      await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
+      await page.emulateMedia({ colorScheme: "light" });
+      await page.setViewportSize(viewport);
+      await page.goto("/");
 
-        if (theme === "dark") {
-          await expect(page.locator("html")).toHaveClass(/dark/);
-        }
+      await expect(page.locator("html")).toHaveClass(/dark/);
+      await expect(page.locator("html")).not.toHaveClass(/light/);
+      await expect(
+        page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
+      ).toBeVisible();
+      await expect(page.locator("[data-project-record]")).toHaveCount(4);
+      await expect(page.locator("[data-experience-record]")).toHaveCount(4);
+      await expect(page.locator("[data-capability-record]")).toHaveCount(5);
+      await expectNoPageOverflow(page);
+      await expectHeaderControlsWithinViewport(page);
 
-        await expect(
-          page.getByRole("heading", {
-            name: "I build systems that hold up in the real world.",
-          }),
-        ).toBeVisible();
-        await expect(page.locator("[data-project-record]")).toHaveCount(4);
-        await expect(page.locator("[data-experience-record]")).toHaveCount(4);
-        await expect(page.locator("[data-capability-record]")).toHaveCount(5);
-        await expectNoPageOverflow(page);
-        await expectHeaderControlsWithinViewport(page);
-
-        if (captureVisualMatrix) {
-          await page.screenshot({
-            path: testInfo.outputPath("portfolio-full-page.png"),
-            fullPage: true,
-          });
-        }
-      });
-    }
+      if (captureVisualMatrix) {
+        await page.screenshot({
+          path: testInfo.outputPath("portfolio-full-page.png"),
+          fullPage: true,
+        });
+      }
+    });
   }
 });

@@ -1,9 +1,9 @@
-# Pixel Quest and Chronicle Run release QA
+# Orbital Engineering Journey and Chronicle Run release QA
 
 This checklist separates reproducible automated evidence from checks that still
 require a deployment preview, physical device, or real assistive technology.
-The recruiter-facing Pixel Quest portfolio and optional Chronicle Run game are
-validated as independent routes.
+The recruiter-facing Orbital Engineering Journey portfolio and optional
+Chronicle Run game are validated as independent routes.
 
 ## Automated release gates
 
@@ -20,8 +20,13 @@ npm audit
 `npm run qa:ui` covers:
 
 - The complete five-chapter portfolio, canonical evidence, stable anchors, CV
-  flow, contact actions, no-JavaScript content, themes, reduced motion, 320px
-  layout, 200% text, keyboard operation, and coarse-pointer targets.
+  flow, contact actions, no-JavaScript content, the dark-only palette, reduced
+  motion, 320px layout, 200% text, keyboard operation, and coarse-pointer targets.
+- Direct name/role Hero hierarchy, retired campaign wording, the grounded dispatch
+  and arrival-bay scenes, near-native stateful rail travel, authored Tymaura/Skaltek
+  media windows, and correctly separated current-role versus personal AI evidence.
+- Native mission, timeline, and toolkit disclosures; immediate accessible Game
+  launch feedback; duplicate activation protection; and a static reduced-motion state.
 - The server-rendered Chronicle training fallback, direct Game transition,
   exactly five matching-input walkthrough steps, returning-player skip, and
   absence of game-world requests from the recruiter-facing Portfolio route.
@@ -34,7 +39,7 @@ npm audit
   completion, elapsed time, personal best, recap, high score, and replay.
 - Focus containment and return, explicit resume behavior, keyboard and touch
   parity through the walkthrough and run, Restart readiness, interactive-element
-  key isolation, visibility/timer pause, safe Escape exit, live theme changes,
+  key isolation, visibility/timer pause, safe Escape exit, the fixed dark shell,
   live reduced-motion settling, 320px/200% reflow, and unlock/control/player
   non-overlap.
 - A complete finite run through Present Day using public Game activation and
@@ -64,8 +69,8 @@ excludes the legacy `nomodule` polyfill. It enforces a 200 kB budget per route:
 
 | Route | Initial scripts (gzip) | Budget |
 | --- | ---: | ---: |
-| Portfolio `/` | 170.8 kB | 200 kB |
-| Chronicle training route `/game/` | 171.9 kB | 200 kB |
+| Portfolio `/` | 170.1 kB | 200 kB |
+| Chronicle training route `/game/` | 170.8 kB | 200 kB |
 
 Phaser remains a separate lazy chunk and does not affect either initial-script
 measurement. The world atlas is approximately 466 kB and the character sheet
@@ -77,7 +82,7 @@ Automated Chromium checks cover the following dimensions. Local screenshots are
 review artifacts under the ignored `test-results/` or `/tmp` directories and
 must not be committed.
 
-| Surface | 320px | 390px | 768px | 1440px | 200% text | Dark/light | Reduced motion |
+| Surface | 320px | 390px | 768px | 1440px | 200% text | Dark-only | Reduced motion |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Portfolio reading flow | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
 | Chronicle training shell | Pass | Pass | Pass | Pass | Pass | Pass | Pass |
@@ -89,10 +94,38 @@ must not be committed.
 The matrix demonstrates DOM reflow, semantics, and browser behavior. It is not a
 substitute for the real-device and screen-reader checks below.
 
-## Manual gameplay review on deployment preview
+## Manual portfolio and gameplay review on deployment preview
 
 Complete every unchecked item before production approval and record the device,
 browser, preview URL, reviewer, and result.
+
+### Portfolio presentation
+
+- [ ] Confirm the opening viewport leads with Sukhraj Kalon, Software Engineer,
+  and direct engineering positioning; no visible legacy campaign wording or
+  employer-qualified “at Northrop Grumman” title remains, while employer evidence
+  is still present in Experience.
+- [ ] Scroll and use chapter links in both directions on desktop; confirm the
+  near-native rail operator walks between rows, settles into chapter-specific
+  inspection/terminal poses without obscuring labels, and updates instantly to a
+  static pose when reduced motion is enabled live.
+- [ ] Confirm the Hero dispatch station reads as the route entry and the Contact
+  arrival bay as the conclusion with and without JavaScript; neither scene should
+  place the pixel character inside circular orbital graphics.
+- [ ] Inspect Tymaura and Skaltek media at 320px, 390px, tablet, desktop, and 200%
+  text; confirm both are integrated into distinct mission windows without crop,
+  distortion, HUD collision, or horizontal overflow.
+- [ ] Expand project mission records, all Experience timeline records, and every
+  Skills toolkit using pointer and keyboard. Confirm labels, focus, announced
+  state, complete canonical evidence, and reduced-motion behavior remain clear.
+- [ ] Expand the current Software Engineer role and AI inventory; confirm Jinja,
+  agentic development, and multi-agent systems remain in current-role evidence,
+  while RAG, MCP, loop/graph engineering, and agent evaluations appear only in
+  personal Skills.
+- [ ] Activate Game on a cold route; confirm “Opening Chronicle Run” appears
+  immediately, repeated activation is guarded, reduced motion is static, and the
+  existing five-step training shell follows without Portfolio-side Phaser or
+  world-asset preloading.
 
 ### Desktop keyboard
 
@@ -106,8 +139,8 @@ browser, preview URL, reviewer, and result.
 - [ ] During the Jump tutorial step, focus a different HUD/touch button and the
   Portfolio return link; confirm gameplay keys do not advance the walkthrough,
   then refocus the stage and confirm the matching input does.
-- [ ] Inspect the main route floor in both themes; confirm it reads as one solid
-  industrial deck with a clear top edge and long structural spans rather than a
+- [ ] Inspect the main route floor in the dark presentation; confirm it reads as
+  one solid industrial deck with a clear top edge and long structural spans rather than a
   row of square atlas blocks.
 - [ ] Take every optional upper-route entrance at least once; confirm each jump
   has forgiving clearance, lower routes remain unobstructed, continuous upper
@@ -137,10 +170,11 @@ browser, preview URL, reviewer, and result.
 - [ ] Confirm the Story Log and recap scroll internally, actions remain reachable,
   and returning to gameplay restores focus and requires explicit Resume.
 
-### Themes and motion
+### Dark presentation and motion
 
-- [ ] Switch Day/Night during active play, during an unlock, and in the Story Log;
-  confirm the world and DOM remain legible without restart or progress loss.
+- [ ] Start with an operating-system light preference and a stale saved light
+  preference; confirm Portfolio, training, active play, unlock cards, Story Log,
+  and recap remain dark and expose no theme switch without restart or progress loss.
 - [ ] Start with reduced motion enabled, then toggle it live. Confirm camera
   easing, parallax differentiation, pickup bob/pulse, character angle/afterimage,
   particles, flashes, shakes, and spatial UI motion settle while route physics,
@@ -168,8 +202,9 @@ browser, preview URL, reviewer, and result.
 - [ ] Exercise direct `/`, `/game/`, and chapter-anchor refreshes on the actual
   static host, plus browser Back/Forward and remembered Portfolio return.
 - [ ] Inspect network requests: the Portfolio must not request Phaser, the
-  character sheet, or the industrial world atlas; those requests may begin only
-  after the visitor activates Game mode or opens `/game/` directly.
+  Chronicle character sheet, or the industrial world atlas; those requests may
+  begin only after the visitor activates Game mode or opens `/game/` directly.
+  The neutral Portfolio operator sheet may load on `/`.
 - [ ] Inspect the console throughout training, active, paused, unlock, Story Log,
   completion, timing, replay, refresh, and exit flows; no uncaught errors are
   acceptable.
