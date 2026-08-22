@@ -70,22 +70,25 @@ export function HeroSection() {
         <div className="pq-signal-tower">
           <i /><i /><i /><strong>Link / ready</strong>
         </div>
-        <div className="pq-scene-terminal">
+        <div className="pq-scene-terminal" data-profile-equipment="terminal">
           <i />
           <b>Engineering route</b>
           <span>5 chapters connected</span>
         </div>
-        <div className="pq-scene-entry">
+        <div className="pq-scene-entry" data-profile-start>
           <span>Start / 01</span>
           <i />
         </div>
-        <div className="pq-hero-operator">
+        <div className="pq-operator-berth" data-operator-berth>
+          <i /><i /><i />
+        </div>
+        <div className="pq-hero-operator" data-profile-operator>
           <OperatorSprite size="large" />
         </div>
-        <div className="pq-scene-route">
+        <div className="pq-scene-route" data-profile-route>
           <i /><i /><i /><span>→</span>
         </div>
-        <div className="pq-destination-console">
+        <div className="pq-destination-console" data-profile-equipment="destination">
           <i /><b>Next</b><small>Work</small>
         </div>
         <div className="pq-scene-platform" />

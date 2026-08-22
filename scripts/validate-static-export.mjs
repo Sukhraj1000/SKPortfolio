@@ -82,10 +82,13 @@ assert(rootHtml.includes("constellation."), "Portfolio export is missing the Ski
 assert(rootHtml.includes("Continue the"), "Portfolio export is missing the Contact story heading.");
 assert(rootHtml.includes("conversation."), "Portfolio export is missing the Contact heading accent.");
 assert(rootHtml.includes("Portfolio route / Dispatch"), "Portfolio export is missing the grounded dispatch scene.");
+assert(rootHtml.includes("data-operator-berth"), "Portfolio export is missing the clean Profile operator berth.");
 assert(rootHtml.includes("05 / Arrival bay"), "Portfolio export is missing the Contact arrival scene.");
 assert(rootHtml.includes('data-disclosure-kind="mission"'), "Portfolio export is missing project disclosures.");
 assert(rootHtml.includes('data-disclosure-kind="timeline"'), "Portfolio export is missing Experience disclosures.");
 assert(rootHtml.includes('data-disclosure-kind="toolkit"'), "Portfolio export is missing Skills disclosures.");
+assert(gameHtml.includes('data-game-header="true"'), "Game export is missing the orbital Game navigation.");
+assert(gameHtml.includes('data-game-theme="orbital-engineering-journey"'), "Game export is missing the orbital token scope.");
 assert(gameHtml.includes('id="game-training-title"'), "Game export is missing its training-shell heading.");
 assert(gameHtml.includes("Five actions, then run."), "Game export is missing its five-step walkthrough premise.");
 for (const action of ["Jump", "Dash", "Fast Drop", "Pause", "Story Log"]) {

@@ -47,6 +47,7 @@
   --steel: #71878a;
   --signal-green: var(--pq-mint);
   --signal-cyan: var(--pq-cyan);
+  --signal-yellow: var(--pq-gold);
   --signal-red: var(--pq-coral);
   --celestial-sun: var(--pq-gold);
   --celestial-moon: var(--pq-cyan);
@@ -314,6 +315,97 @@
 .pq-game-link:hover { border-color: var(--pq-cyan); color: var(--pq-cyan); }
 .pq-header-cv { display: none; }
 .pq-mobile-menu { display: block; }
+
+/* Shared orbital Game route */
+.pq-game-header .pq-header-inner { justify-content: space-between; }
+
+.pq-game-runtime-label {
+  display: none;
+  margin: 0 0 0 auto;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--pq-muted);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pq-game-runtime-label i {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--pq-mint);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--pq-mint) 13%, transparent);
+}
+
+.pq-game-mode-control {
+  display: grid;
+  min-height: 44px;
+  flex: none;
+  grid-template-columns: repeat(2, auto);
+  border: 1px solid var(--border-strong);
+  background: var(--pq-night);
+  padding: 2px;
+  box-shadow: 4px 4px 0 var(--pq-shadow);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pq-game-mode-tab {
+  display: grid;
+  min-width: 4.7rem;
+  min-height: 40px;
+  place-items: center;
+  padding-inline: 0.7rem;
+  color: var(--pq-muted);
+  text-decoration: none;
+}
+
+.pq-game-mode-tab:hover { background: var(--pq-panel); color: var(--pq-cyan); }
+.pq-game-mode-tab.is-current {
+  border-left: 1px solid var(--pq-line);
+  background: var(--pq-lime);
+  color: var(--pq-void);
+}
+.pq-game-mode-full { display: inline; }
+.pq-game-mode-short { display: none; }
+
+.pq-game-fallback,
+.pq-game-runtime {
+  color-scheme: dark;
+  background-color: var(--pq-void);
+  color: var(--pq-paper);
+}
+
+.pq-game-fallback {
+  background-image:
+    linear-gradient(var(--pq-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pq-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.pq-game-fallback-panel {
+  position: relative;
+  border-width: 1px;
+  background: color-mix(in srgb, var(--pq-night) 96%, transparent);
+  box-shadow: 8px 8px 0 var(--pq-shadow), 0 0 54px rgba(103, 228, 246, 0.05);
+}
+
+.pq-game-fallback-panel::before {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 4rem;
+  height: 4rem;
+  border-top: 2px solid var(--pq-cyan);
+  border-left: 2px solid var(--pq-cyan);
+  pointer-events: none;
+  content: "";
+}
 
 /* Profile hero */
 .pq-hero {
@@ -1715,6 +1807,13 @@
   .pq-mobile-menu { display: none; }
   .pq-header-cv { display: block; }
   .pq-story-status { margin-left: 0.8rem; }
+  .pq-game-runtime-label { display: flex; }
+}
+
+@media (max-width: 24rem) {
+  .pq-game-mode-full { display: none; }
+  .pq-game-mode-short { display: inline; }
+  .pq-game-mode-tab { min-width: 4rem; padding-inline: 0.45rem; }
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -1870,8 +1969,64 @@
 .pq-scene-terminal i { display: none; }
 .pq-scene-terminal b { margin: 0; color: var(--pq-paper); font-size: 0.61rem; letter-spacing: 0.08em; }
 .pq-scene-terminal span { margin-top: 0.3rem; color: var(--ink-faint); font-size: 0.52rem; }
-.pq-scene-entry { bottom: 7rem; left: 5%; }
-.pq-scene-route { right: 18%; bottom: 8.9rem; left: 34%; }
+.pq-scene-entry {
+  bottom: 8.35rem;
+  left: 3%;
+  grid-template-columns: auto 1.5rem;
+  align-items: center;
+  gap: 0.45rem;
+  justify-items: start;
+}
+.pq-scene-entry i {
+  width: 1.5rem;
+  height: 2px;
+  margin: 0;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--pq-lime) 36%, transparent);
+}
+.pq-operator-berth {
+  position: absolute;
+  z-index: 2;
+  bottom: 4.75rem;
+  left: 15.4%;
+  width: 9.5rem;
+  height: 10rem;
+  border-right: 1px solid rgba(103, 228, 246, 0.28);
+  border-left: 1px solid rgba(103, 228, 246, 0.28);
+  background: linear-gradient(180deg, rgba(103, 228, 246, 0.025), rgba(103, 228, 246, 0.09));
+  clip-path: polygon(12% 0, 88% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
+}
+.pq-operator-berth::before {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.3rem;
+  left: 0.75rem;
+  height: 0.45rem;
+  border: 1px solid var(--pq-cyan);
+  background: rgba(103, 228, 246, 0.14);
+  box-shadow: 0 0 18px rgba(103, 228, 246, 0.18);
+  content: "";
+}
+.pq-operator-berth::after {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 42%;
+  height: 2px;
+  background: var(--pq-lime);
+  content: "";
+  transform: translateX(-50%);
+}
+.pq-operator-berth > i {
+  position: absolute;
+  top: 1.2rem;
+  bottom: 1.2rem;
+  width: 1px;
+  background: linear-gradient(transparent, rgba(103, 228, 246, 0.22), transparent);
+}
+.pq-operator-berth > i:nth-child(1) { left: 25%; }
+.pq-operator-berth > i:nth-child(2) { left: 50%; }
+.pq-operator-berth > i:nth-child(3) { left: 75%; }
+.pq-scene-route { right: 18%; bottom: 8.9rem; left: 38%; }
 .pq-hero-operator { bottom: 5.2rem; left: 19%; }
 .pq-destination-console { position: absolute; z-index: 5; right: 8%; bottom: 5.4rem; display: grid; width: 5.6rem; height: 8.6rem; align-content: end; gap: 0.2rem; border: 2px solid var(--pq-cyan); padding: 0.65rem; background: linear-gradient(155deg, rgba(103, 228, 246, 0.2), #0a1b25); box-shadow: 0 0 34px rgba(103, 228, 246, 0.28); clip-path: polygon(0 0, 78% 0, 100% 15%, 100% 100%, 0 100%); }
 .pq-destination-console i { position: absolute; top: 0.8rem; right: 0.8rem; left: 0.8rem; height: 2.6rem; border: 1px solid rgba(103, 228, 246, 0.5); background: repeating-linear-gradient(0deg, rgba(221, 247, 120, 0.15) 0 2px, transparent 2px 6px); }
@@ -2145,9 +2300,12 @@
   .pq-signal-tower { top: 9rem; left: 4%; width: 27%; height: 7rem; }
   .pq-signal-tower strong { display: none; }
   .pq-scene-terminal { top: 8.8rem; right: 4%; width: 57%; min-height: 6.8rem; }
-  .pq-hero-operator { left: 10%; bottom: 4.9rem; transform: scale(0.76); transform-origin: bottom left; }
+  .pq-scene-entry { left: 3%; }
+  .pq-operator-berth { bottom: 4.75rem; left: 27%; width: 6rem; height: 6.5rem; }
+  .pq-hero-operator { left: 33%; bottom: 5.15rem; transform: none; }
+  .pq-hero-operator .pq-operator { width: 48px; height: 64px; background-size: 192px 256px; }
   .pq-destination-console { right: 4%; bottom: 5.4rem; transform: scale(0.82); transform-origin: bottom right; }
-  .pq-scene-route { right: 23%; left: 34%; }
+  .pq-scene-route { right: 23%; left: 58%; }
   .pq-chapter-heading h2,
   .pq-ending-copy h2 { font-size: clamp(1.8rem, 15vw, 4.7rem); }
   .pq-project-visual { min-height: 26rem; box-shadow: 5px 5px 0 var(--pq-shadow); }

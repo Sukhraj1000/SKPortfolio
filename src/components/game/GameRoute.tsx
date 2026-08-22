@@ -40,9 +40,10 @@ function TrainingShellFallback({
   return (
     <section
       aria-labelledby="game-training-title"
-      className="min-h-[100svh] bg-background px-4 pb-12 pt-28"
+      className="pq-scope pq-game-fallback min-h-[100svh] bg-background px-4 pb-12 pt-32"
+      data-game-theme="orbital-engineering-journey"
     >
-      <div className="mx-auto grid max-w-3xl gap-6 border border-border-strong bg-surface p-5 shadow-[6px_6px_0_var(--shadow-strong)] sm:p-8">
+      <div className="pq-game-fallback-panel mx-auto grid max-w-3xl gap-6 border border-border-strong bg-surface p-5 shadow-[6px_6px_0_var(--shadow-strong)] sm:p-8">
         <SystemLabel tone="cyan">Chronicle Run // Quick walkthrough</SystemLabel>
         <div>
           <h1

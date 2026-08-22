@@ -138,6 +138,78 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     expect(requests.some((url) => url.includes("phaser"))).toBeFalsy();
   });
 
+  for (const profileViewport of [
+    { width: 390, height: 844, operatorWidth: 48 },
+    { width: 1440, height: 900, operatorWidth: 96 },
+  ]) {
+    test(`keeps the Profile operator station clean at ${profileViewport.width}px`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.setViewportSize(profileViewport);
+      await page.goto("/");
+
+      const operator = page.locator("[data-profile-operator]");
+      const operatorSprite = operator.locator(".pq-operator");
+      const berth = page.locator("[data-operator-berth]");
+      const start = page.locator("[data-profile-start]");
+      const route = page.locator("[data-profile-route]");
+      const terminal = page.locator('[data-profile-equipment="terminal"]');
+      const destination = page.locator('[data-profile-equipment="destination"]');
+
+      await expect(operatorSprite).toHaveCSS(
+        "width",
+        `${profileViewport.operatorWidth}px`,
+      );
+      await expect(operatorSprite).toHaveCSS(
+        "height",
+        `${(profileViewport.operatorWidth * 4) / 3}px`,
+      );
+      await expect(operator).toHaveCSS("animation-name", "none");
+
+      const [operatorBox, berthBox, startBox, routeBox, terminalBox, destinationBox] =
+        await Promise.all([
+          operator.boundingBox(),
+          berth.boundingBox(),
+          start.boundingBox(),
+          route.boundingBox(),
+          terminal.boundingBox(),
+          destination.boundingBox(),
+        ]);
+
+      expect(operatorBox).not.toBeNull();
+      expect(berthBox).not.toBeNull();
+      expect(startBox).not.toBeNull();
+      expect(routeBox).not.toBeNull();
+      expect(terminalBox).not.toBeNull();
+      expect(destinationBox).not.toBeNull();
+      if (
+        !operatorBox ||
+        !berthBox ||
+        !startBox ||
+        !routeBox ||
+        !terminalBox ||
+        !destinationBox
+      ) {
+        return;
+      }
+
+      expect(operatorBox.x).toBeGreaterThan(berthBox.x);
+      expect(operatorBox.x + operatorBox.width).toBeLessThan(
+        berthBox.x + berthBox.width,
+      );
+      expect(operatorBox.y + operatorBox.height).toBeLessThanOrEqual(
+        berthBox.y + berthBox.height,
+      );
+      expect(operatorBox.x - (startBox.x + startBox.width)).toBeGreaterThanOrEqual(8);
+      expect(routeBox.x - (operatorBox.x + operatorBox.width)).toBeGreaterThanOrEqual(8);
+      expect(boxesOverlap(operatorBox, startBox)).toBe(false);
+      expect(boxesOverlap(operatorBox, routeBox)).toBe(false);
+      expect(boxesOverlap(operatorBox, terminalBox)).toBe(false);
+      expect(boxesOverlap(operatorBox, destinationBox)).toBe(false);
+    });
+  }
+
   test("presents two featured project quests and two supporting builds", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/#projects");
@@ -400,6 +472,11 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(page.locator(".pq-scene-window-bar")).toContainText("Portfolio route / Dispatch");
     await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-route")).toHaveCount(1);
+    await expect(page.locator("[data-operator-berth]")).toHaveCount(1);
+    await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS(
+      "width",
+      "48px",
+    );
     await expect(page.locator("#home, #contact").locator('[class*="orbit"]')).toHaveCount(0);
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();

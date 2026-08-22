@@ -42,6 +42,60 @@ test.describe("Chronicle Run", () => {
     );
   });
 
+  test("continues the orbital visual system through Game navigation and runtime", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+    await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
+    await page.goto("/game/");
+
+    const header = page.locator("[data-game-header]");
+    const runtime = page.locator('[data-game-theme="orbital-engineering-journey"]');
+    await expect(header).toHaveCount(1);
+    await expect(header.locator(".pq-brand-pixel")).toContainText("SK");
+    await expect(
+      header.getByRole("link", { name: "Sukhraj Kalon, exit Game mode" }),
+    ).toHaveAttribute("href", "/#home");
+    await expect(header.getByText("Game route // isolated runtime")).toBeVisible();
+    await expect(header.locator('[aria-current="page"]')).toContainText("Game");
+    await expect(runtime).toHaveCSS("background-color", "rgb(4, 7, 13)");
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
+
+    const tokens = await runtime.evaluate((element) => {
+      const styles = window.getComputedStyle(element);
+      const token = (name: string) => styles.getPropertyValue(name).trim();
+      return {
+        background: token("--background"),
+        foreground: token("--foreground"),
+        primary: token("--primary"),
+        cyan: token("--signal-cyan"),
+        yellow: token("--signal-yellow"),
+        line: token("--border"),
+      };
+    });
+    expect(tokens).toEqual({
+      background: "#04070d",
+      foreground: "#f0f4eb",
+      primary: "#ddf778",
+      cyan: "#67e4f6",
+      yellow: "#f0c969",
+      line: "#29434c",
+    });
+
+    const phaserHostBackground = await page.getByRole("application").evaluate(
+      (element) =>
+        window.getComputedStyle(element).getPropertyValue("--background").trim(),
+    );
+    expect(phaserHostBackground).toBe(tokens.background);
+
+    const portfolioExit = header.getByRole("link", {
+      name: "Return to Portfolio mode",
+    });
+    await portfolioExit.focus();
+    await expect(portfolioExit).toBeFocused();
+    await expect(portfolioExit).toHaveCSS("outline-style", "solid");
+  });
+
   test("transitions directly into the paused five-step training shell", async ({
     page,
   }) => {
@@ -181,6 +235,10 @@ test.describe("Chronicle Run", () => {
     await expect(
       page.getByRole("heading", { name: "Five actions, then run." }),
     ).toBeVisible();
+    await expect(page.locator("[data-game-header]")).toHaveCount(1);
+    await expect(
+      page.locator('[data-game-theme="orbital-engineering-journey"]'),
+    ).toHaveCSS("background-color", "rgb(4, 7, 13)");
     await expect(
       page.getByText("Loading the paused training stage.", { exact: false }),
     ).toBeVisible();

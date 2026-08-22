@@ -23,13 +23,15 @@ npm audit
   flow, contact actions, no-JavaScript content, the dark-only palette, reduced
   motion, 320px layout, 200% text, keyboard operation, and coarse-pointer targets.
 - Direct name/role Hero hierarchy, retired campaign wording, the grounded dispatch
-  and arrival-bay scenes, near-native stateful rail travel, authored Tymaura/Skaltek
-  media windows, and correctly separated current-role versus personal AI evidence.
+  and arrival-bay scenes, a clean integer-scaled Profile operator berth, near-native
+  stateful rail travel, authored Tymaura/Skaltek media windows, and correctly
+  separated current-role versus personal AI evidence.
 - Native mission, timeline, and toolkit disclosures; immediate accessible Game
   launch feedback; duplicate activation protection; and a static reduced-motion state.
 - The server-rendered Chronicle training fallback, direct Game transition,
-  exactly five matching-input walkthrough steps, returning-player skip, and
-  absence of game-world requests from the recruiter-facing Portfolio route.
+  orbital Game navigation and token continuity through the Phaser host, exactly
+  five matching-input walkthrough steps, returning-player skip, and absence of
+  game-world requests from the recruiter-facing Portfolio route.
 - Auto-run, forgiving buffered jump, dash, fast-drop, safe one-way optional
   routes, momentum, hazards, checkpoints, quick recovery, and chronological
   chapters, including a measured reachability margin for every upper entrance.
@@ -52,8 +54,9 @@ vulnerabilities. Static validation confirms:
 
 - `/index.html`, `/game/index.html`, `404.html`, `.htaccess`, and `robots.txt`
   are exported.
-- Portfolio chapters and the Chronicle five-action fallback and direct
-  Portfolio return are present in server-rendered HTML.
+- Portfolio chapters, the clean Profile operator berth, and the Chronicle
+  five-action fallback, orbital token scope/navigation, and direct Portfolio
+  return are present in server-rendered HTML.
 - Local `href` and `src` references resolve to exported files.
 - The Chronicle character sheet, world atlas, and inventory exist and remain
   within explicit transfer budgets.
@@ -69,8 +72,8 @@ excludes the legacy `nomodule` polyfill. It enforces a 200 kB budget per route:
 
 | Route | Initial scripts (gzip) | Budget |
 | --- | ---: | ---: |
-| Portfolio `/` | 170.1 kB | 200 kB |
-| Chronicle training route `/game/` | 170.8 kB | 200 kB |
+| Portfolio `/` | 169.9 kB | 200 kB |
+| Chronicle training route `/game/` | 170.6 kB | 200 kB |
 
 Phaser remains a separate lazy chunk and does not affect either initial-script
 measurement. The world atlas is approximately 466 kB and the character sheet
@@ -111,7 +114,9 @@ browser, preview URL, reviewer, and result.
   static pose when reduced motion is enabled live.
 - [ ] Confirm the Hero dispatch station reads as the route entry and the Contact
   arrival bay as the conclusion with and without JavaScript; neither scene should
-  place the pixel character inside circular orbital graphics.
+  place the pixel character inside circular orbital graphics. At desktop and
+  compact widths, verify the Profile operator is crisp and grounded inside its
+  angular berth with clear space from the start label, route, and equipment.
 - [ ] Inspect Tymaura and Skaltek media at 320px, 390px, tablet, desktop, and 200%
   text; confirm both are integrated into distinct mission windows without crop,
   distortion, HUD collision, or horizontal overflow.
@@ -175,6 +180,9 @@ browser, preview URL, reviewer, and result.
 - [ ] Start with an operating-system light preference and a stale saved light
   preference; confirm Portfolio, training, active play, unlock cards, Story Log,
   and recap remain dark and expose no theme switch without restart or progress loss.
+  Confirm the Game header, surfaces, borders, focus, controls, and world palette
+  continue the portfolio's near-black/cyan/lime orbital system rather than the
+  older blue-grey presentation.
 - [ ] Start with reduced motion enabled, then toggle it live. Confirm camera
   easing, parallax differentiation, pickup bob/pulse, character angle/afterimage,
   particles, flashes, shakes, and spatial UI motion settle while route physics,

@@ -31,6 +31,7 @@
   --color-steel: var(--steel);
   --color-signal-green: var(--signal-green);
   --color-signal-cyan: var(--signal-cyan);
+  --color-signal-yellow: var(--signal-yellow);
   --color-signal-red: var(--signal-red);
   --color-sun: var(--celestial-sun);
   --color-moon: var(--celestial-moon);
@@ -73,6 +74,7 @@
   --steel: #7d8e94;
   --signal-green: #91aa83;
   --signal-cyan: #78b8cf;
+  --signal-yellow: #d6b750;
   --signal-red: #d8786e;
   --celestial-sun: #d6b750;
   --celestial-moon: #d9e3e7;

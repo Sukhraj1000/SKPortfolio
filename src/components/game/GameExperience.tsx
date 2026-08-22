@@ -651,7 +651,8 @@ export function GameExperience({
       data-latest-unlock={snapshot.latestUnlockId ?? ""}
       data-reduced-motion={reducedMotionActive}
       data-reward-motion={reducedMotionActive ? "settled" : "animated"}
-      className="min-h-[100svh] bg-background pt-[64px]"
+      data-game-theme="orbital-engineering-journey"
+      className="pq-scope pq-game-runtime min-h-[100svh] bg-background pt-[76px]"
     >
       <h1 id="game-runtime-title" className="sr-only">
         Chronicle Run playable story

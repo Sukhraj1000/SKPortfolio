@@ -49,7 +49,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Origin",
     start: 0,
     end: CHAPTER_WIDTH,
-    tint: 0x315f78,
+    tint: 0x67e4f6,
   },
   {
     id: "live-systems",
@@ -57,7 +57,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Live Systems",
     start: CHAPTER_WIDTH,
     end: CHAPTER_WIDTH * 2,
-    tint: 0xc79b2e,
+    tint: 0xf0c969,
   },
   {
     id: "secure-engineering",
@@ -65,7 +65,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Secure Engineering",
     start: CHAPTER_WIDTH * 2,
     end: CHAPTER_WIDTH * 3,
-    tint: 0x315f78,
+    tint: 0x8bd59b,
   },
   {
     id: "build-lab",
@@ -73,7 +73,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Build Lab",
     start: CHAPTER_WIDTH * 3,
     end: CHAPTER_WIDTH * 4,
-    tint: 0xa94743,
+    tint: 0x9d90ff,
   },
   {
     id: "present-day",
@@ -81,7 +81,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Present Day",
     start: CHAPTER_WIDTH * 4,
     end: WORLD_WIDTH,
-    tint: 0x5e765f,
+    tint: 0xddf778,
   },
 ] as const;
 
@@ -127,21 +127,22 @@ const checkpointDefinitions = [
   })),
 ].sort((first, second) => first.x - second.x);
 
-function readThemePalette() {
-  const styles = window.getComputedStyle(document.documentElement);
+function readThemePalette(themeHost: HTMLElement) {
+  const styles = window.getComputedStyle(themeHost);
   const color = (property: string, fallback: string) =>
     Phaser.Display.Color.HexStringToColor(
       styles.getPropertyValue(property).trim() || fallback,
     ).color;
 
   return {
-    background: color("--background", "#07101d"),
-    foreground: color("--foreground", "#edf2ef"),
-    surface: color("--surface", "#111f2b"),
-    surfaceHigh: color("--surface-high", "#1c303d"),
-    primary: color("--primary", "#78b8cf"),
-    yellow: color("--signal-yellow", "#c79b2e"),
-    red: color("--signal-red", "#a94743"),
+    background: color("--background", "#04070d"),
+    foreground: color("--foreground", "#f0f4eb"),
+    surface: color("--surface", "#080e17"),
+    surfaceHigh: color("--surface-high", "#13222e"),
+    primary: color("--primary", "#ddf778"),
+    cyan: color("--signal-cyan", "#67e4f6"),
+    yellow: color("--signal-yellow", "#f0c969"),
+    red: color("--signal-red", "#ef806d"),
   };
 }
 
@@ -443,7 +444,7 @@ export function createChronicleGame({
     private createAtmosphereTextures() {
       if (!this.textures.exists("chronicle-far-city")) {
         const far = this.make.graphics({ x: 0, y: 0 }, false);
-        far.fillStyle(0x13283d, 1);
+        far.fillStyle(0x0d1621, 1);
         [
           [0, 90, 70, 190],
           [92, 45, 96, 235],
@@ -451,7 +452,7 @@ export function createChronicleGame({
           [318, 20, 112, 260],
           [454, 78, 58, 202],
         ].forEach(([x, y, width, height]) => far.fillRect(x, y, width, height));
-        far.fillStyle(0x78b8cf, 0.24);
+        far.fillStyle(0x67e4f6, 0.24);
         for (let x = 18; x < 512; x += 42) {
           for (let y = 82; y < 260; y += 46) far.fillRect(x, y, 3, 8);
         }
@@ -461,14 +462,14 @@ export function createChronicleGame({
 
       if (!this.textures.exists("chronicle-near-city")) {
         const near = this.make.graphics({ x: 0, y: 0 }, false);
-        near.fillStyle(0x091522, 1);
+        near.fillStyle(0x080e17, 1);
         [
           [0, 100, 110, 180],
           [142, 38, 122, 242],
           [296, 82, 96, 198],
           [426, 18, 86, 262],
         ].forEach(([x, y, width, height]) => near.fillRect(x, y, width, height));
-        near.lineStyle(2, 0xa94743, 0.22);
+        near.lineStyle(2, 0xef806d, 0.22);
         for (let x = 24; x < 512; x += 64) near.lineBetween(x, 60, x, 280);
         near.generateTexture("chronicle-near-city", 512, 280);
         near.destroy();
@@ -501,10 +502,11 @@ export function createChronicleGame({
 
     private createAtmosphere() {
       this.createAtmosphereTextures();
+      const palette = readThemePalette(parent);
       const skyBands = [
-        { y: 90, height: 180, color: 0x08111f },
-        { y: 280, height: 210, color: 0x102844 },
-        { y: 505, height: 170, color: 0x7c4545 },
+        { y: 90, height: 180, color: palette.background },
+        { y: 280, height: 210, color: palette.surface },
+        { y: 505, height: 170, color: palette.surfaceHigh },
       ];
       skyBands.forEach((band) => {
         const layer = this.add
@@ -521,7 +523,7 @@ export function createChronicleGame({
       });
 
       this.add
-        .circle(920, 215, 108, 0xffd58a, 0.84)
+        .circle(920, 215, 108, palette.yellow, 0.78)
         .setScrollFactor(0.04)
         .setDepth(-35);
 
@@ -557,7 +559,7 @@ export function createChronicleGame({
             {
               fontFamily: "monospace",
               fontSize: "20px",
-              color: "#78b8cf",
+              color: "#67e4f6",
               letterSpacing: 2,
             },
           )
@@ -658,7 +660,7 @@ export function createChronicleGame({
       depth: number,
     ) {
       const width = right - left;
-      const palette = readThemePalette();
+      const palette = readThemePalette(parent);
       const centerX = left + width / 2;
       const base = this.add
         .rectangle(centerX, top + height / 2, width, height, palette.surface, 1)
@@ -827,7 +829,7 @@ export function createChronicleGame({
           const y = route.y - 96;
           const halo = this.add
             .circle(x, y, 31)
-            .setStrokeStyle(3, 0x78b8cf, 0.72)
+            .setStrokeStyle(3, 0x67e4f6, 0.72)
             .setDepth(11);
           const node = this.addWorldSprite(
             nodes,
@@ -838,7 +840,7 @@ export function createChronicleGame({
           );
           node.setDataEnabled();
           node.setData("halo", halo);
-          node.setTint(0x9bd9ea);
+          node.setTint(0x8bd59b);
           node.setDepth(12);
           this.registerRewardMotion(node, 7, 1.05, 720 + offset * 18);
           this.registerRewardMotion(halo, 7, 1.16, 720 + offset * 18);
@@ -854,7 +856,7 @@ export function createChronicleGame({
           this.stopRewardMotion(halo);
           halo.destroy();
         }
-        this.createCatchEffect(node.x, node.y, 0x78b8cf);
+        this.createCatchEffect(node.x, node.y, 0x67e4f6);
         node.disableBody(true, true);
         if (this.runStarted) {
           this.score += Math.round(125 * this.multiplier);
@@ -872,10 +874,10 @@ export function createChronicleGame({
         const y = FLOOR_Y - 94;
         const color =
           record.kind === "education"
-            ? 0xc79b2e
+            ? 0xf0c969
             : record.kind === "experience"
-              ? 0x78b8cf
-              : 0xa94743;
+              ? 0x67e4f6
+              : 0x9d90ff;
         const halo = this.add
           .circle(x, y, 43)
           .setStrokeStyle(4, color, 0.82)
@@ -1079,7 +1081,7 @@ export function createChronicleGame({
         .setScale(1.15)
         .setDepth(13)
         .setAlpha(0.34)
-        .setTint(0x78b8cf);
+        .setTint(0x67e4f6);
       this.tweens.add({
         targets: trail,
         x: trail.x - 24,
@@ -1097,7 +1099,7 @@ export function createChronicleGame({
             this.player.x + direction * 10,
             this.player.y + 28,
             4,
-            0xc79b2e,
+            0xf0c969,
             0.46,
           )
           .setDepth(13);
@@ -1210,7 +1212,7 @@ export function createChronicleGame({
       this.multiplier = 1;
       this.score = Math.max(0, this.score - 125);
       this.player.play("sk-glitch", true);
-      this.player.setTint(0xa94743);
+      this.player.setTint(0xef806d);
       this.player.setVelocity(0, 0);
       this.player.setPosition(this.respawnX, this.respawnY);
       this.lastScoredX = this.respawnX;
@@ -1312,7 +1314,7 @@ export function createChronicleGame({
     }
 
     refreshTheme() {
-      const palette = readThemePalette();
+      const palette = readThemePalette(parent);
       this.cameras.main.setBackgroundColor(palette.background);
       this.chapterLabels.forEach((label) => {
         label.setColor(`#${palette.primary.toString(16).padStart(6, "0")}`);
@@ -1339,7 +1341,7 @@ export function createChronicleGame({
     parent,
     width: parent.clientWidth || 960,
     height: parent.clientHeight || 600,
-    backgroundColor: "#07101d",
+    backgroundColor: "#04070d",
     pixelArt: true,
     antialias: false,
     roundPixels: true,

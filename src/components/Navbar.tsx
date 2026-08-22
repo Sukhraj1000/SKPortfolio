@@ -33,23 +33,23 @@ function GameModeControl({ portfolioReturnHref }: { portfolioReturnHref: string 
     <div
       role="group"
       aria-label="Portfolio experience mode"
-      className="grid min-h-[44px] shrink-0 grid-cols-[auto_auto] border border-border-strong bg-surface p-0.5 font-mono text-sm font-semibold uppercase tracking-[0.04em]"
+      className="pq-game-mode-control"
     >
       <Link
         href={portfolioReturnHref}
-        className="grid place-items-center px-1 text-ink-muted transition-colors hover:bg-surface-raised hover:text-foreground sm:px-2.5"
+        className="pq-game-mode-tab"
         aria-label="Return to Portfolio mode"
         title="Return to Portfolio mode"
       >
-        <span aria-hidden="true" className="hidden min-[480px]:inline">
+        <span aria-hidden="true" className="pq-game-mode-full">
           Portfolio
         </span>
-        <span aria-hidden="true" className="min-[480px]:hidden">
+        <span aria-hidden="true" className="pq-game-mode-short">
           Port.
         </span>
       </Link>
       <span
-        className="grid place-items-center border-l border-border bg-primary px-1 text-primary-foreground sm:px-2"
+        className="pq-game-mode-tab is-current"
         aria-current="page"
         title="Game mode selected"
       >
@@ -69,33 +69,27 @@ function GameNavbar() {
   }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border-strong bg-background shadow-[0_3px_0_var(--shadow-soft)]">
-      <div className="section-shell flex h-[64px] items-center gap-2 lg:gap-4">
+    <header className="pq-header pq-scope pq-game-header" data-game-header>
+      <div className="pq-header-inner">
         <Link
           href={portfolioReturnHref}
-          className="group hidden shrink-0 items-center gap-2 md:flex"
+          className="pq-brand"
           aria-label={`${portfolioProfile.name}, exit Game mode`}
         >
-          <span className="grid h-11 w-11 place-items-center border border-primary bg-primary font-mono text-sm font-bold text-primary-foreground shadow-[2px_2px_0_var(--shadow-strong)] transition-transform group-hover:-translate-y-0.5">
+          <span className="pq-brand-pixel" aria-hidden="true">
             {portfolioProfile.initials}
           </span>
-          <span className="hidden leading-none sm:block">
-            <span className="block text-sm font-semibold text-foreground">
-              {portfolioProfile.name}
-            </span>
-            <span className="mt-1 block font-mono text-sm uppercase tracking-[0.06em] text-ink-muted">
-              Software Engineer
-            </span>
+          <span className="pq-brand-copy">
+            <strong>{portfolioProfile.name}</strong>
+            <small>{portfolioProfile.role}</small>
           </span>
         </Link>
 
-        <p className="ml-auto hidden font-mono text-xs font-semibold uppercase tracking-[0.1em] text-ink-muted xl:block">
-          Game route // isolated runtime
+        <p className="pq-game-runtime-label">
+          <i aria-hidden="true" /> Game route // isolated runtime
         </p>
 
-        <div className="ml-auto flex items-center xl:ml-0">
-          <GameModeControl portfolioReturnHref={portfolioReturnHref} />
-        </div>
+        <GameModeControl portfolioReturnHref={portfolioReturnHref} />
       </div>
     </header>
   );
