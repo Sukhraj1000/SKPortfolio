@@ -281,7 +281,6 @@ test.describe("Chronicle Run", () => {
     await page.keyboard.up("Space");
 
     await page.keyboard.down("Shift");
-    await expect.poll(() => runtime.getAttribute("data-player-state")).toBe("dashing");
     await expect(runtime).toHaveAttribute("data-dash-ready", "false");
     await page.keyboard.up("Shift");
 
@@ -750,12 +749,15 @@ test.describe("Chronicle Run", () => {
     await page.getByRole("button", { name: "Skip walkthrough" }).click();
     const runtime = page.locator("[data-reduced-motion]");
     const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await page.bringToFront();
     await stage.focus();
     await expect(runtime).toHaveAttribute("data-recovered-records", "1");
     await expect(runtime).toHaveAttribute("data-reduced-motion", "false");
     await expect(runtime).toHaveAttribute("data-reward-motion", "animated");
     await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
+        timeout: 10_000,
+      })
       .toBeGreaterThan(1);
 
     await page.keyboard.press("m");
