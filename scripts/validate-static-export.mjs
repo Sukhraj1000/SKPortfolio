@@ -5,6 +5,8 @@ import { gzipSync } from "node:zlib";
 const outputRoot = path.resolve("out");
 const rootHtmlPath = path.join(outputRoot, "index.html");
 const gameHtmlPath = path.join(outputRoot, "game", "index.html");
+const netlifyHeadersPath = path.join(outputRoot, "_headers");
+const apacheHeadersPath = path.join(outputRoot, ".htaccess");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -55,10 +57,22 @@ async function assertLocalReferencesExist(html, pageLabel) {
   }
 }
 
-const [rootHtml, gameHtml] = await Promise.all([
+const [rootHtml, gameHtml, netlifyHeaders, apacheHeaders] = await Promise.all([
   readFile(rootHtmlPath, "utf8"),
   readFile(gameHtmlPath, "utf8"),
+  readFile(netlifyHeadersPath, "utf8"),
+  readFile(apacheHeadersPath, "utf8"),
 ]);
+
+for (const [label, policy] of [
+  ["Netlify", netlifyHeaders],
+  ["Apache", apacheHeaders],
+]) {
+  assert(
+    policy.includes("img-src 'self' blob: data:"),
+    `${label} CSP must allow Phaser-generated blob image URLs.`,
+  );
+}
 
 assert(
   rootHtml.includes('data-portfolio-theme="orbital-engineering-journey"'),
