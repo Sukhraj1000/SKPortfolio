@@ -79,6 +79,8 @@ Confirm these contexts from the first green pull-request run, then require them 
 
 Also block force pushes/deletion and require review conversations to be resolved. Repository settings are verified separately because workflow files cannot enforce their own branch protection.
 
+PR #21 established the remote baseline on 2026-08-23: dependency graph and alerts are enabled; Release assurance run `32633679914` and CodeQL run `32633679903` passed; and `main` protection requires the seven app-bound contexts above with strict up-to-date branches, admin enforcement, resolved conversations, and force-push/deletion blocking.
+
 ## Current production bundle
 
 The static release validator sums each modern initial script after gzip and
