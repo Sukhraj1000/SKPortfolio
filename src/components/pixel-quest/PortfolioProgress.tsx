@@ -1,11 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
-import {
-  portfolioStoryAnchors,
-  type PortfolioStoryAnchor,
-} from "@/lib/game-mode";
+import { portfolioStoryAnchors, type PortfolioStoryAnchor } from "@/lib/game-mode";
 
 interface PortfolioProgressValue {
   activeSection: PortfolioStoryAnchor;
@@ -21,20 +17,15 @@ const defaultProgress: PortfolioProgressValue = {
   selectSection: () => undefined,
 };
 
-const PortfolioProgressContext =
-  React.createContext<PortfolioProgressValue>(defaultProgress);
+const PortfolioProgressContext = React.createContext<PortfolioProgressValue>(defaultProgress);
 
-export function PortfolioProgressProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const [activeSection, setActiveSection] =
-    React.useState<PortfolioStoryAnchor>(portfolioStoryAnchors[0]);
+export function PortfolioProgressProvider({ children }: { children: React.ReactNode }) {
+  const [activeSection, setActiveSection] = React.useState<PortfolioStoryAnchor>(
+    portfolioStoryAnchors[0],
+  );
 
   React.useEffect(() => {
-    if (pathname !== "/" || !("IntersectionObserver" in window)) return;
+    if (!("IntersectionObserver" in window)) return;
 
     const sections = portfolioStoryAnchors.flatMap((sectionId) => {
       const section = document.getElementById(sectionId);
@@ -45,8 +36,7 @@ export function PortfolioProgressProvider({
     const visibleSections = new Set<PortfolioStoryAnchor>();
     const syncActiveSection = () => {
       const active = portfolioStoryAnchors.reduce<PortfolioStoryAnchor | null>(
-        (current, sectionId) =>
-          visibleSections.has(sectionId) ? sectionId : current,
+        (current, sectionId) => (visibleSections.has(sectionId) ? sectionId : current),
         null,
       );
       if (active) setActiveSection(active);
@@ -70,11 +60,9 @@ export function PortfolioProgressProvider({
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, [pathname]);
+  }, []);
 
   React.useEffect(() => {
-    if (pathname !== "/") return;
-
     const hash = window.location.hash.slice(1);
     if (!portfolioStoryAnchors.includes(hash as PortfolioStoryAnchor)) return;
     const sectionId = hash as PortfolioStoryAnchor;
@@ -111,7 +99,7 @@ export function PortfolioProgressProvider({
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [pathname]);
+  }, []);
 
   const activeIndex = portfolioStoryAnchors.indexOf(activeSection);
 
@@ -132,9 +120,7 @@ export function PortfolioProgressProvider({
   );
 
   return (
-    <PortfolioProgressContext.Provider value={value}>
-      {children}
-    </PortfolioProgressContext.Provider>
+    <PortfolioProgressContext.Provider value={value}>{children}</PortfolioProgressContext.Provider>
   );
 }
 

@@ -11,11 +11,7 @@ import {
 } from "@/components/game/chronicle-story";
 import { Button } from "@/components/ui/button";
 import { SystemLabel } from "@/components/ui/system-label";
-import {
-  defaultPortfolioHref,
-  gameProgressKey,
-  readPortfolioReturnHref,
-} from "@/lib/game-mode";
+import { defaultPortfolioHref, gameProgressKey, readPortfolioReturnHref } from "@/lib/game-mode";
 
 const GameExperience = React.lazy(() =>
   import("@/components/game/GameExperience").then((module) => ({
@@ -32,17 +28,14 @@ function readReadyProgress() {
   }
 }
 
-function TrainingShellFallback({
-  portfolioReturnHref,
-}: {
-  portfolioReturnHref: string;
-}) {
+function TrainingShellFallback({ portfolioReturnHref }: { portfolioReturnHref: string }) {
   return (
     <section
       aria-labelledby="game-training-title"
-      className="min-h-[100svh] bg-background px-4 pb-12 pt-28"
+      className="pq-scope pq-game-fallback min-h-[100svh] bg-background px-4 pb-12 pt-32"
+      data-game-theme="orbital-engineering-journey"
     >
-      <div className="mx-auto grid max-w-3xl gap-6 border border-border-strong bg-surface p-5 shadow-[6px_6px_0_var(--shadow-strong)] sm:p-8">
+      <div className="pq-game-fallback-panel mx-auto grid max-w-3xl gap-6 border border-border-strong bg-surface p-5 shadow-[6px_6px_0_var(--shadow-strong)] sm:p-8">
         <SystemLabel tone="cyan">Chronicle Run // Quick walkthrough</SystemLabel>
         <div>
           <h1
@@ -52,19 +45,13 @@ function TrainingShellFallback({
             Five actions, then run.
           </h1>
           <p className="mt-4 max-w-2xl leading-7 text-ink-muted">
-            Game mode opens directly into a short input walkthrough. Complete
-            Jump, Dash, Fast Drop, Pause, and Story Log, then auto-run through
-            five chapters of Sukhraj&apos;s professional story.
+            Game mode opens directly into a short input walkthrough. Complete Jump, Dash, Fast Drop,
+            Pause, and Story Log, then auto-run through five chapters of Sukhraj&apos;s professional
+            story.
           </p>
         </div>
         <ol className="grid gap-px bg-border font-mono text-xs font-semibold uppercase tracking-[0.06em] sm:grid-cols-5">
-          {[
-            "Jump",
-            "Dash",
-            "Fast Drop",
-            "Pause",
-            "Story Log",
-          ].map((step, index) => (
+          {["Jump", "Dash", "Fast Drop", "Pause", "Story Log"].map((step, index) => (
             <li key={step} className="bg-background p-3 text-foreground">
               <span className="mr-2 text-primary">{index + 1}/5</span>
               {step}
@@ -72,9 +59,8 @@ function TrainingShellFallback({
           ))}
         </ol>
         <p className="font-mono text-xs uppercase tracking-[0.06em] text-ink-muted">
-          Loading the paused training stage. This optional game will not move
-          until the walkthrough is complete; the full Portfolio remains
-          available below.
+          Loading the paused training stage. This optional game will not move until the walkthrough
+          is complete; the full Portfolio remains available below.
         </p>
         <Button variant="outline" asChild className="w-fit max-w-full">
           <Link href={portfolioReturnHref}>
@@ -90,9 +76,7 @@ function TrainingShellFallback({
 export function GameRoute() {
   const router = useRouter();
   const [hydrated, setHydrated] = React.useState(false);
-  const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(
-    defaultPortfolioHref,
-  );
+  const [portfolioReturnHref, setPortfolioReturnHref] = React.useState(defaultPortfolioHref);
   const [savedProgress, setSavedProgress] =
     React.useState<ChronicleProgress>(emptyChronicleProgress);
 
@@ -111,9 +95,7 @@ export function GameRoute() {
   }
 
   return (
-    <React.Suspense
-      fallback={<TrainingShellFallback portfolioReturnHref={portfolioReturnHref} />}
-    >
+    <React.Suspense fallback={<TrainingShellFallback portfolioReturnHref={portfolioReturnHref} />}>
       <GameExperience onExit={exitGame} initialProgress={savedProgress} />
     </React.Suspense>
   );

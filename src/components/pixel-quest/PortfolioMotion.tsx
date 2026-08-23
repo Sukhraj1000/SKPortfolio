@@ -27,11 +27,15 @@ export function PortfolioMotion() {
       target.dataset.motionState = state;
     };
 
-    const completeAll = () => {
+    const stopEnhancements = () => {
       observer?.disconnect();
       observer = null;
       timers.forEach((timer) => window.clearTimeout(timer));
       timers.clear();
+    };
+
+    const completeAll = () => {
+      stopEnhancements();
       targets.forEach((target) => setState(target, "complete"));
     };
 
@@ -40,9 +44,13 @@ export function PortfolioMotion() {
       completeAll();
     };
 
-    if (reducedMotion.matches || !("IntersectionObserver" in window)) {
-      reduce();
-    } else {
+    const enhance = () => {
+      if (!("IntersectionObserver" in window)) {
+        reduce();
+        return;
+      }
+
+      stopEnhancements();
       root.dataset.motionMode = "enhanced";
       targets.forEach((target) => setState(target, "idle"));
 
@@ -67,10 +75,14 @@ export function PortfolioMotion() {
         { threshold: 0.12, rootMargin: "0px 0px -8%" },
       );
       targets.forEach((target) => observer?.observe(target));
-    }
+    };
+
+    if (reducedMotion.matches) reduce();
+    else enhance();
 
     const handlePreferenceChange = (event: MediaQueryListEvent) => {
       if (event.matches) reduce();
+      else enhance();
     };
     const handleVisibilityChange = () => {
       if (document.hidden) completeAll();
@@ -80,8 +92,7 @@ export function PortfolioMotion() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      observer?.disconnect();
-      timers.forEach((timer) => window.clearTimeout(timer));
+      stopEnhancements();
       reducedMotion.removeEventListener("change", handlePreferenceChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       delete root.dataset.motionMode;

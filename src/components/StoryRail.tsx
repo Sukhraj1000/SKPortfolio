@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { storyChapters } from "@/data/portfolio";
-import { portfolioStoryAnchors } from "@/lib/game-mode";
 import { cn } from "@/lib/utils";
 import { OperatorSprite } from "@/components/pixel-quest/QuestPrimitives";
 import { usePortfolioProgress } from "@/components/pixel-quest/PortfolioProgress";
@@ -16,22 +15,6 @@ interface RailMovement {
   direction: RailDirection;
   phase: RailPhase;
 }
-
-const chapterStates = [
-  "Standing by",
-  "Inspecting build",
-  "Reviewing record",
-  "Tooling linked",
-  "Channel open",
-] as const;
-
-const chapterNotes = [
-  "Identity",
-  "Selected work",
-  "Delivery record",
-  "Working toolkit",
-  "Next step",
-] as const;
 
 export function StoryRail() {
   const { activeSection, activeIndex, selectSection } = usePortfolioProgress();
@@ -88,16 +71,19 @@ export function StoryRail() {
             style={{ "--rail-index": activeIndex } as React.CSSProperties}
             aria-hidden="true"
           >
-            <span className="pq-rail-trail"><i /><i /><i /></span>
+            <span className="pq-rail-trail">
+              <i />
+              <i />
+              <i />
+            </span>
             <span key={movement.chapter} className="pq-rail-operator-cue">
               <OperatorSprite data-rail-operator />
             </span>
             <span className="pq-rail-ping">{activeChapter.index}</span>
           </div>
           <ol>
-            {storyChapters.map((chapter, index) => {
-              const sectionId = portfolioStoryAnchors[index];
-              const active = activeSection === sectionId;
+            {storyChapters.map((chapter) => {
+              const active = activeSection === chapter.anchor;
               return (
                 <li
                   key={chapter.id}
@@ -107,11 +93,11 @@ export function StoryRail() {
                   <Link
                     href={chapter.href}
                     aria-current={active ? "location" : undefined}
-                    onClick={() => selectSection(sectionId)}
+                    onClick={() => selectSection(chapter.anchor)}
                   >
                     <span>{chapter.index}</span>
                     <strong>{chapter.portfolioLabel}</strong>
-                    <small>{chapterNotes[index]}</small>
+                    <small>{chapter.railNote}</small>
                   </Link>
                 </li>
               );
@@ -120,8 +106,15 @@ export function StoryRail() {
         </div>
         <div className="pq-rail-readout" aria-hidden="true">
           <span>Active coordinate</span>
-          <strong>{activeChapter.portfolioLabel.toUpperCase()}_{activeChapter.index}</strong>
-          <small><i /> {movement.phase === "travelling" ? `Traversing ${movement.direction}` : chapterStates[activeIndex]}</small>
+          <strong>
+            {activeChapter.portfolioLabel.toUpperCase()}_{activeChapter.index}
+          </strong>
+          <small>
+            <i />{" "}
+            {movement.phase === "travelling"
+              ? `Traversing ${movement.direction}`
+              : activeChapter.railState}
+          </small>
         </div>
       </div>
     </nav>

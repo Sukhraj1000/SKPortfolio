@@ -1,7 +1,4 @@
-import {
-  QuestChapterHeading,
-  QuestChip,
-} from "@/components/pixel-quest/QuestPrimitives";
+import { QuestChapterHeading, QuestChip } from "@/components/pixel-quest/QuestPrimitives";
 import {
   capabilityGroups,
   experience,
@@ -12,30 +9,14 @@ import {
 
 const experienceChapter = storyChapters[2];
 const skillsChapter = storyChapters[3];
-const experienceOrder = [
-  "northrop-software-engineer",
-  "endeavour-data",
-  "northrop-intern",
-  "techfront-led-technician",
-] as const;
-
-const chronologicalExperience = experienceOrder.flatMap((id) => {
-  const entry = experience.find((item) => item.id === id);
-  return entry ? [entry] : [];
-});
+const orderedExperience = experience;
 
 // capabilityGroups is the authoritative current skills list. The former scrolling
 // ticker duplicated these entries and included unsubstantiated legacy labels,
 // so it is deliberately retired rather than implying that every old label is current.
 
-function ExperienceRecord({
-  entry,
-  index,
-}: {
-  entry: ExperienceEntry;
-  index: number;
-}) {
-  const levelNumber = String(chronologicalExperience.length - index).padStart(2, "0");
+function ExperienceRecord({ entry, index }: { entry: ExperienceEntry; index: number }) {
+  const levelNumber = String(orderedExperience.length - index).padStart(2, "0");
 
   return (
     <li
@@ -52,9 +33,7 @@ function ExperienceRecord({
       </time>
       <div className="pq-level-body">
         {entry.current ? (
-          <p className="pq-level-status">
-            {index === 0 ? "Current role" : "Concurrent role"}
-          </p>
+          <p className="pq-level-status">{index === 0 ? "Current role" : "Concurrent role"}</p>
         ) : null}
         <h3 id={`field-log-${entry.id}-title`}>{entry.role}</h3>
         <strong>{entry.organisation}</strong>
@@ -66,7 +45,10 @@ function ExperienceRecord({
           className="pq-level-details"
           data-disclosure-kind="timeline"
         >
-          <summary data-disclosure-action>
+          <summary
+            data-disclosure-action
+            aria-label={`View ${entry.role} at ${entry.organisation} responsibilities and stack`}
+          >
             <span className="when-closed">View responsibilities and stack</span>
             <span className="when-open">Hide responsibilities and stack</span>
           </summary>
@@ -93,17 +75,9 @@ function ExperienceRecord({
 const inventoryIcons = ["</>", "DB", "☁", "AI", "SYS"] as const;
 const inventorySlots = ["A1", "B2", "C3", "D4", "E5"] as const;
 
-function CapabilityRecord({
-  group,
-  index,
-}: {
-  group: CapabilityGroup;
-  index: number;
-}) {
+function CapabilityRecord({ group, index }: { group: CapabilityGroup; index: number }) {
   const primaryItems = group.items.filter((item) => item.level === "primary");
-  const supportingItems = group.items.filter(
-    (item) => item.level === "supporting",
-  );
+  const supportingItems = group.items.filter((item) => item.level === "supporting");
 
   return (
     <article
@@ -130,7 +104,7 @@ function CapabilityRecord({
         data-disclosure-kind="toolkit"
         open={group.id === "ai-automation"}
       >
-        <summary data-disclosure-action>
+        <summary data-disclosure-action aria-label={`Open ${group.title} inventory`}>
           <span className="when-closed">Open inventory</span>
           <span className="when-open">Close inventory</span>
         </summary>
@@ -177,12 +151,16 @@ export function AboutSection() {
           index={experienceChapter.index}
           label="Experience"
           headingId="field-log-title"
-          title={<><span>Engineering under</span>{" "}<em>real constraints.</em></>}
+          title={
+            <>
+              <span>Engineering under</span> <em>real constraints.</em>
+            </>
+          }
           description="Secure delivery, business operations, product work, and live systems shaped how I build."
         />
 
         <ol className="pq-level-path">
-          {chronologicalExperience.map((entry, index) => (
+          {orderedExperience.map((entry, index) => (
             <ExperienceRecord key={entry.id} entry={entry} index={index} />
           ))}
         </ol>
@@ -198,7 +176,11 @@ export function AboutSection() {
           index={skillsChapter.index}
           label="Skills"
           headingId="loadout-title"
-          title={<><span>A working systems</span>{" "}<em>constellation.</em></>}
+          title={
+            <>
+              <span>A working systems</span> <em>constellation.</em>
+            </>
+          }
           description="Capabilities are grouped by how they support delivery—not artificial percentage scores."
         />
 
@@ -209,9 +191,9 @@ export function AboutSection() {
         </div>
 
         <p className="pq-inventory-note">
-          Primary marks the technologies used most directly to deliver each capability.
-          Supporting tools remain part of the working method without implying a percentage
-          or artificial proficiency score.
+          Primary marks the technologies used most directly to deliver each capability. Supporting
+          tools remain part of the working method without implying a percentage or artificial
+          proficiency score.
         </p>
       </section>
     </>

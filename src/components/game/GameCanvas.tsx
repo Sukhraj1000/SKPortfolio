@@ -23,7 +23,10 @@ export function GameCanvas({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const initialRecoveredRecordsRef = React.useRef(recoveredRecords);
   const callbacksRef = React.useRef(callbacks);
-  callbacksRef.current = callbacks;
+
+  React.useEffect(() => {
+    callbacksRef.current = callbacks;
+  }, [callbacks]);
 
   React.useEffect(() => {
     let disposed = false;
@@ -31,9 +34,7 @@ export function GameCanvas({
 
     const boot = async () => {
       if (!containerRef.current) return;
-      const { createChronicleGame } = await import(
-        "@/components/game/phaser/createChronicleGame"
-      );
+      const { createChronicleGame } = await import("@/components/game/phaser/createChronicleGame");
       if (disposed || !containerRef.current) return;
 
       handle = createChronicleGame({

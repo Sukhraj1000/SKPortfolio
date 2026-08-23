@@ -6,33 +6,73 @@ import {
 import {
   portfolioProjects,
   storyChapters,
+  type FeaturedProject,
+  type FeaturedProjectId,
   type PortfolioProject,
 } from "@/data/portfolio";
 import { cn } from "@/lib/utils";
 
 const projectsChapter = storyChapters[1];
-const featuredProjects = portfolioProjects.slice(0, 2);
-const supportingProjects = portfolioProjects.slice(2);
+const allProjects: readonly PortfolioProject[] = portfolioProjects;
+const featuredProjects = allProjects.filter(
+  (project): project is FeaturedProject => project.tier === "featured",
+);
+const supportingProjects = allProjects.filter((project) => project.tier === "supporting");
 
-const featuredOverview: Record<
-  string,
-  readonly [
+interface FeaturedProjectPresentation {
+  mission: string;
+  nodes: readonly [
+    { code: string; label: string },
+    { code: string; label: string },
+    { code: string; label: string },
+    { code: string; label: string },
+  ];
+  stageNote: string;
+  footerLabel: string;
+  domain: string;
+  overview: readonly [
     { label: string; value: string },
     { label: string; value: string },
     { label: string; value: string },
-  ]
-> = {
-  tymaura: [
-    { label: "Status", value: "Production" },
-    { label: "Scope", value: "Full product" },
-    { label: "Surface", value: "Web platform" },
-  ],
-  skaltek: [
-    { label: "Status", value: "Production" },
-    { label: "Scope", value: "AI workflows" },
-    { label: "Control", value: "Human review" },
-  ],
-};
+  ];
+}
+
+const featuredProjectPresentation = {
+  tymaura: {
+    mission: "Event operations",
+    nodes: [
+      { code: "01", label: "Vendors" },
+      { code: "02", label: "Guests" },
+      { code: "03", label: "Admin" },
+      { code: "04", label: "Messages" },
+    ],
+    stageNote: "One coordinated product surface",
+    footerLabel: "Production platform",
+    domain: "tymaura.app",
+    overview: [
+      { label: "Status", value: "Production" },
+      { label: "Scope", value: "Full product" },
+      { label: "Surface", value: "Web platform" },
+    ],
+  },
+  skaltek: {
+    mission: "AI systems",
+    nodes: [
+      { code: "", label: "Research" },
+      { code: "", label: "Review" },
+      { code: "", label: "Delivery" },
+      { code: "", label: "Observe" },
+    ],
+    stageNote: "Human review remains in the loop",
+    footerLabel: "Monitored workflows",
+    domain: "skaltek.co.uk",
+    overview: [
+      { label: "Status", value: "Production" },
+      { label: "Scope", value: "AI workflows" },
+      { label: "Control", value: "Human review" },
+    ],
+  },
+} as const satisfies Record<FeaturedProjectId, FeaturedProjectPresentation>;
 
 function ProjectLinks({ project }: { project: PortfolioProject }) {
   return (
@@ -78,37 +118,34 @@ function DisclosureLabel({ noun }: { noun: string }) {
   );
 }
 
-function ProjectStage({ project, questNumber }: { project: PortfolioProject; questNumber: string }) {
-  const isTymaura = project.id === "tymaura";
+function ProjectStage({ project, questNumber }: { project: FeaturedProject; questNumber: string }) {
+  const presentation = featuredProjectPresentation[project.id];
 
   return (
-    <div
-      className={cn("pq-project-visual", `pq-project-visual-${project.id}`)}
-      data-project-media
-    >
-      <div className="pq-visual-hud">
+    <div className={cn("pq-project-visual", `pq-project-visual-${project.id}`)} data-project-media>
+      <div className="pq-visual-hud" aria-hidden="true">
         <span>
-          Mission {questNumber} / {isTymaura ? "Event operations" : "AI systems"}
+          Mission {questNumber} / {presentation.mission}
         </span>
         <strong data-project-status>{project.status}</strong>
       </div>
 
       <div className="pq-project-media-stage" data-project-media-stage>
         <div className="pq-project-network" aria-hidden="true">
-          <i /><i /><i />
+          <i />
+          <i />
+          <i />
         </div>
-        <span className="pq-project-node is-a">
-          <i>{isTymaura ? "01" : ""}</i><b>{isTymaura ? "Vendors" : "Research"}</b>
-        </span>
-        <span className="pq-project-node is-b">
-          <i>{isTymaura ? "02" : ""}</i><b>{isTymaura ? "Guests" : "Review"}</b>
-        </span>
-        <span className="pq-project-node is-c">
-          <i>{isTymaura ? "03" : ""}</i><b>{isTymaura ? "Admin" : "Delivery"}</b>
-        </span>
-        <span className="pq-project-node is-d">
-          <i>{isTymaura ? "04" : ""}</i><b>{isTymaura ? "Messages" : "Observe"}</b>
-        </span>
+        {presentation.nodes.map((node, index) => (
+          <span
+            key={node.label}
+            className={cn("pq-project-node", `is-${String.fromCharCode(97 + index)}`)}
+            aria-hidden="true"
+          >
+            <i>{node.code}</i>
+            <b>{node.label}</b>
+          </span>
+        ))}
         <div className="pq-project-media-frame">
           {/* Static export keeps source media intrinsic and uncropped. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -123,30 +160,24 @@ function ProjectStage({ project, questNumber }: { project: PortfolioProject; que
             decoding="async"
           />
         </div>
-        <span className="pq-project-stage-note">
-          {isTymaura
-            ? "One coordinated product surface"
-            : "Human review remains in the loop"}
+        <span className="pq-project-stage-note" aria-hidden="true">
+          {presentation.stageNote}
         </span>
       </div>
 
-      <div className="pq-visual-footer">
-        <span><i /> {isTymaura ? "Production platform" : "Monitored workflows"}</span>
-        <strong>{isTymaura ? "tymaura.app" : "skaltek.co.uk"} ↗</strong>
+      <div className="pq-visual-footer" aria-hidden="true">
+        <span>
+          <i /> {presentation.footerLabel}
+        </span>
+        <strong>{presentation.domain} ↗</strong>
       </div>
     </div>
   );
 }
 
-function FeaturedProject({
-  project,
-  index,
-}: {
-  project: PortfolioProject;
-  index: number;
-}) {
+function FeaturedProjectRecord({ project, index }: { project: FeaturedProject; index: number }) {
   const questNumber = String(index + 1).padStart(2, "0");
-  const overview = featuredOverview[project.id] ?? featuredOverview.tymaura;
+  const presentation = featuredProjectPresentation[project.id];
 
   return (
     <article
@@ -167,7 +198,7 @@ function FeaturedProject({
         <p className="pq-project-summary">{project.summary}</p>
 
         <ul className="pq-project-snapshot" aria-label={`${project.title} overview`}>
-          {overview.map((item) => (
+          {presentation.overview.map((item) => (
             <li key={item.label}>
               <span>{item.label}</span>
               <strong>{item.value}</strong>
@@ -186,7 +217,10 @@ function FeaturedProject({
           className="pq-project-details"
           data-disclosure-kind="mission"
         >
-          <summary data-disclosure-action>
+          <summary
+            data-disclosure-action
+            aria-label={`Toggle ${project.title} engineering details`}
+          >
             <DisclosureLabel noun="Mission record" />
           </summary>
           <div className="pq-project-details-panel">
@@ -213,14 +247,8 @@ function FeaturedProject({
   );
 }
 
-function SupportingProject({
-  project,
-  index,
-}: {
-  project: PortfolioProject;
-  index: number;
-}) {
-  const questNumber = String(index + 3).padStart(2, "0");
+function SupportingProject({ project, index }: { project: PortfolioProject; index: number }) {
+  const questNumber = String(index + featuredProjects.length + 1).padStart(2, "0");
 
   return (
     <article
@@ -235,7 +263,8 @@ function SupportingProject({
         {questNumber}
       </span>
       <p className="pq-project-type" data-project-kind data-project-status>
-        {project.status}{project.grade ? ` · ${project.grade}` : ""}
+        {project.status}
+        {project.grade ? ` · ${project.grade}` : ""}
       </p>
       <h3 id={`project-${project.id}-title`}>{project.title}</h3>
       <p className="pq-project-summary">{project.summary}</p>
@@ -244,7 +273,7 @@ function SupportingProject({
       </p>
 
       <details className="pq-build-notes" data-disclosure-kind="mission">
-        <summary data-disclosure-action>
+        <summary data-disclosure-action aria-label={`Toggle ${project.title} engineering details`}>
           <span className="when-closed">Open project record</span>
           <span className="when-open">Close project record</span>
         </summary>
@@ -280,13 +309,17 @@ export function ProjectsSection() {
         index={projectsChapter.index}
         label="Selected work"
         headingId="projects-title"
-        title={<><span>Projects with</span>{" "}<em>real gravity.</em></>}
+        title={
+          <>
+            <span>Projects with</span> <em>real gravity.</em>
+          </>
+        }
         description="Two live products lead the story. Each window shows what the system coordinates, what I owned, and what shipped."
       />
 
       <div className="pq-featured-quests">
         {featuredProjects.map((project, index) => (
-          <FeaturedProject key={project.id} project={project} index={index} />
+          <FeaturedProjectRecord key={project.id} project={project} index={index} />
         ))}
       </div>
 

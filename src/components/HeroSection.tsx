@@ -1,19 +1,10 @@
 import { CVAccessDialog } from "@/components/CVAccessDialog";
-import {
-  OperatorSprite,
-  QuestLabel,
-  QuestLink,
-} from "@/components/pixel-quest/QuestPrimitives";
+import { OperatorSprite, QuestLabel, QuestLink } from "@/components/pixel-quest/QuestPrimitives";
 import { portfolioProfile } from "@/data/portfolio";
 
 export function HeroSection() {
   return (
-    <section
-      id="home"
-      data-chapter="01"
-      aria-labelledby="hero-title"
-      className="pq-hero"
-    >
+    <section id="home" data-chapter="01" aria-labelledby="hero-title" className="pq-hero">
       <div className="pq-hero-grid" aria-hidden="true" />
 
       <div className="pq-hero-copy" data-motion="hero-copy">
@@ -21,7 +12,7 @@ export function HeroSection() {
           {portfolioProfile.role} / {portfolioProfile.location}
         </QuestLabel>
         <h1 id="hero-title">
-          <span>Sukhraj</span>{" "}<em>Kalon</em>
+          <span>Sukhraj</span> <em>Kalon</em>
         </h1>
         <p className="pq-hero-role">{portfolioProfile.role}</p>
         <p className="pq-hero-summary" data-hero-summary>
@@ -33,10 +24,7 @@ export function HeroSection() {
             View selected work <span aria-hidden="true">→</span>
           </QuestLink>
           <div className="pq-hero-cv">
-            <CVAccessDialog
-              buttonText="Request private CV"
-              buttonClassName="pq-button"
-            />
+            <CVAccessDialog buttonText="Request private CV" buttonClassName="pq-button" />
           </div>
         </div>
 
@@ -63,34 +51,58 @@ export function HeroSection() {
         </div>
         <div className="pq-scene-grid" />
         <div className="pq-dispatch-stacks">
-          <span><i />Build<small>01</small></span>
-          <span><i />Verify<small>02</small></span>
-          <span><i />Deliver<small>03</small></span>
+          <span>
+            <i />
+            Build<small>01</small>
+          </span>
+          <span>
+            <i />
+            Verify<small>02</small>
+          </span>
+          <span>
+            <i />
+            Deliver<small>03</small>
+          </span>
         </div>
         <div className="pq-signal-tower">
-          <i /><i /><i /><strong>Link / ready</strong>
+          <i />
+          <i />
+          <i />
+          <strong>Link / ready</strong>
         </div>
-        <div className="pq-scene-terminal">
+        <div className="pq-scene-terminal" data-profile-equipment="terminal">
           <i />
           <b>Engineering route</b>
           <span>5 chapters connected</span>
         </div>
-        <div className="pq-scene-entry">
+        <div className="pq-scene-entry" data-profile-start>
           <span>Start / 01</span>
           <i />
         </div>
-        <div className="pq-hero-operator">
+        <div className="pq-operator-berth" data-operator-berth>
+          <i />
+          <i />
+          <i />
+        </div>
+        <div className="pq-hero-operator" data-profile-operator>
           <OperatorSprite size="large" />
         </div>
-        <div className="pq-scene-route">
-          <i /><i /><i /><span>→</span>
+        <div className="pq-scene-route" data-profile-route>
+          <i />
+          <i />
+          <i />
+          <span>→</span>
         </div>
-        <div className="pq-destination-console">
-          <i /><b>Next</b><small>Work</small>
+        <div className="pq-destination-console" data-profile-equipment="destination">
+          <i />
+          <b>Next</b>
+          <small>Work</small>
         </div>
         <div className="pq-scene-platform" />
         <div className="pq-scene-caption">
-          <span><i /> Journey ready</span>
+          <span>
+            <i /> Journey ready
+          </span>
           <strong>Profile → selected work</strong>
         </div>
       </div>

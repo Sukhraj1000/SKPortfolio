@@ -4,11 +4,7 @@ import type {
   ChronicleTutorialStepId,
 } from "@/components/game/chronicle-story";
 
-export type ChroniclePlayerState =
-  | "grounded"
-  | "jumping"
-  | "falling"
-  | "dashing";
+export type ChroniclePlayerState = "grounded" | "jumping" | "falling" | "dashing";
 
 export type GameAction = "jump" | "dash" | "drop";
 
@@ -52,7 +48,6 @@ export interface ChronicleGameHandle {
   completeTutorialAction: (action: "pause" | "story-log") => void;
   beginRun: (skipWalkthrough?: boolean) => void;
   restart: () => void;
-  refreshTheme: () => void;
 }
 
 export const initialGameSnapshot: GameSnapshot = {

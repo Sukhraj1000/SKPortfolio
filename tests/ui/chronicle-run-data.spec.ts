@@ -38,9 +38,7 @@ test.describe("Chronicle Run story foundation", () => {
       "03",
       "04",
     ]);
-    expect(chronicleRecords.map((record) => record.id)).toEqual(
-      chronicleRecordIds,
-    );
+    expect(chronicleRecords.map((record) => record.id)).toEqual(chronicleRecordIds);
     expect(new Set(chronicleRecordIds).size).toBe(9);
   });
 
@@ -67,9 +65,7 @@ test.describe("Chronicle Run story foundation", () => {
       }
 
       if (record.kind === "project") {
-        const source = portfolioProjects.find(
-          (project) => project.id === record.sourceId,
-        );
+        const source = portfolioProjects.find((project) => project.id === record.sourceId);
         expect(source).toBeDefined();
         expect(record.title).toBe(source?.title);
         expect(record.context).toBe(source?.kind);
@@ -78,9 +74,7 @@ test.describe("Chronicle Run story foundation", () => {
       }
     }
 
-    const currentRole = experience.find(
-      (entry) => entry.id === "northrop-software-engineer",
-    );
+    const currentRole = experience.find((entry) => entry.id === "northrop-software-engineer");
     const skillsOnly = [
       "RAG Workflows",
       "Model Context Protocol (MCP)",
@@ -108,14 +102,10 @@ test.describe("Chronicle Run story foundation", () => {
     expect(aiSkills).toEqual(expect.arrayContaining(skillsOnly));
 
     const currentRoleRecord = chronicleRecords.find(
-      (record) =>
-        record.kind === "experience" &&
-        record.sourceId === "northrop-software-engineer",
+      (record) => record.kind === "experience" && record.sourceId === "northrop-software-engineer",
     );
     expect(currentRoleRecord?.summary).toBe(currentRole?.summary);
-    expect(currentRoleRecord?.technologies).toEqual(
-      currentRole?.technologies.slice(0, 3),
-    );
+    expect(currentRoleRecord?.technologies).toEqual(currentRole?.technologies.slice(0, 3));
     for (const pattern of skillsOnlyPatterns) {
       expect(JSON.stringify(currentRoleRecord)).not.toMatch(pattern);
     }
@@ -139,12 +129,7 @@ test.describe("Chronicle Run story foundation", () => {
           "education:first-class-computer-science",
           "project:tymaura",
         ],
-        completedChapters: [
-          "build-lab",
-          "origin",
-          "origin",
-          "not-a-chapter",
-        ],
+        completedChapters: ["build-lab", "origin", "origin", "not-a-chapter"],
         tutorialCompleted: true,
         completed: false,
         highScore: 422.9,
@@ -152,10 +137,7 @@ test.describe("Chronicle Run story foundation", () => {
       }),
     ).toEqual({
       version: CHRONICLE_PROGRESS_VERSION,
-      recoveredRecords: [
-        "education:first-class-computer-science",
-        "project:tymaura",
-      ],
+      recoveredRecords: ["education:first-class-computer-science", "project:tymaura"],
       completedChapters: ["origin", "build-lab"],
       tutorialCompleted: true,
       completed: false,
@@ -165,9 +147,7 @@ test.describe("Chronicle Run story foundation", () => {
   });
 
   test("fails open for malformed and legacy progress", () => {
-    expect(parseChronicleProgress("{broken-json")).toEqual(
-      emptyChronicleProgress,
-    );
+    expect(parseChronicleProgress("{broken-json")).toEqual(emptyChronicleProgress);
     expect(parseChronicleProgress(null)).toEqual(emptyChronicleProgress);
     expect(
       parseChronicleProgress({
@@ -212,10 +192,7 @@ test.describe("Chronicle Run story foundation", () => {
         bestTimeMs: 78_000,
       },
       {
-        recoveredRecords: [
-          "education:first-class-computer-science",
-          "project:tymaura",
-        ],
+        recoveredRecords: ["education:first-class-computer-science", "project:tymaura"],
         completedChapters: ["secure-engineering", "origin"],
         tutorialCompleted: true,
         completed: true,
@@ -227,10 +204,7 @@ test.describe("Chronicle Run story foundation", () => {
 
     expect(merged).toEqual({
       version: CHRONICLE_PROGRESS_VERSION,
-      recoveredRecords: [
-        "education:first-class-computer-science",
-        "project:tymaura",
-      ],
+      recoveredRecords: ["education:first-class-computer-science", "project:tymaura"],
       completedChapters: ["origin", "secure-engineering"],
       tutorialCompleted: true,
       completed: true,
@@ -238,12 +212,8 @@ test.describe("Chronicle Run story foundation", () => {
       bestTimeMs: 78_000,
       completedAt: "2026-08-15T12:00:00.000Z",
     });
-    expect(
-      mergeChronicleProgress(merged, { bestTimeMs: 70_250 }).bestTimeMs,
-    ).toBe(70_250);
-    expect(
-      mergeChronicleProgress(merged, { bestTimeMs: Number.NaN }).bestTimeMs,
-    ).toBe(78_000);
+    expect(mergeChronicleProgress(merged, { bestTimeMs: 70_250 }).bestTimeMs).toBe(70_250);
+    expect(mergeChronicleProgress(merged, { bestTimeMs: Number.NaN }).bestTimeMs).toBe(78_000);
     expect(resetChronicleStoryProgress(merged)).toEqual({
       ...merged,
       recoveredRecords: [],

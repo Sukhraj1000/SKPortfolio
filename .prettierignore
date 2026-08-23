@@ -1,0 +1,23 @@
+# Dependencies and generated output
+node_modules/
+.next/
+out/
+build/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+package-lock.json
+
+# Local planning, prototypes, and private agent instructions
+openspec/
+design-lab/
+design-reference/
+.agents/
+AGENTS.md
+CLAUDE.md
+
+# Binary and generated public assets
+public/**/*.png
+public/**/*.webp
+public/**/*.woff2

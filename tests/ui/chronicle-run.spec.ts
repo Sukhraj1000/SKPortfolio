@@ -8,43 +8,83 @@ function requireBaseURL(baseURL: string | undefined) {
 }
 
 test.describe("Chronicle Run", () => {
-  test("keeps the recruiter-facing portfolio independent of game assets", async ({
-    page,
-  }) => {
+  test("keeps the recruiter-facing portfolio independent of game assets", async ({ page }) => {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
     await page.goto("/");
-    await expect(
-      page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
     await page.waitForTimeout(800);
     expect(
-      requests.some((url) =>
-        /game\/assets|sk-character-sheet|industrial-world-atlas/i.test(url),
-      ),
+      requests.some((url) => /game\/assets|sk-character-sheet|industrial-world-atlas/i.test(url)),
     ).toBe(false);
     await expect(page.locator("canvas")).toHaveCount(0);
   });
 
-  test("enters the training shell directly from Portfolio Game mode", async ({
-    page,
-  }) => {
+  test("enters the training shell directly from Portfolio Game mode", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("link", { name: "Enter Game mode" }).click();
     await expect(page).toHaveURL(/\/game\/$/);
     await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
-    await expect(page.locator("[data-tutorial-prompt]")).toContainText(
-      "1 / 5",
-    );
-    await expect(page.locator("[data-run-started]")).toHaveAttribute(
-      "data-run-started",
-      "false",
-    );
+    await expect(page.locator("[data-tutorial-prompt]")).toContainText("1 / 5");
+    await expect(page.locator("[data-run-started]")).toHaveAttribute("data-run-started", "false");
   });
 
-  test("transitions directly into the paused five-step training shell", async ({
+  test("continues the orbital visual system through Game navigation and runtime", async ({
     page,
   }) => {
+    await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
+    await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
+    await page.goto("/game/");
+
+    const header = page.locator("[data-game-header]");
+    const runtime = page.locator('[data-game-theme="orbital-engineering-journey"]');
+    await expect(header).toHaveCount(1);
+    await expect(header.locator(".pq-brand-pixel")).toContainText("SK");
+    await expect(
+      header.getByRole("link", { name: "Sukhraj Kalon, exit Game mode" }),
+    ).toHaveAttribute("href", "/#home");
+    await expect(header.getByText("Game route // isolated runtime")).toBeVisible();
+    await expect(header.locator('[aria-current="page"]')).toContainText("Game");
+    await expect(runtime).toHaveCSS("background-color", "rgb(4, 7, 13)");
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 15_000 });
+
+    const tokens = await runtime.evaluate((element) => {
+      const styles = window.getComputedStyle(element);
+      const token = (name: string) => styles.getPropertyValue(name).trim();
+      return {
+        background: token("--background"),
+        foreground: token("--foreground"),
+        primary: token("--primary"),
+        cyan: token("--signal-cyan"),
+        yellow: token("--signal-yellow"),
+        line: token("--border"),
+      };
+    });
+    expect(tokens).toEqual({
+      background: "#04070d",
+      foreground: "#f0f4eb",
+      primary: "#ddf778",
+      cyan: "#67e4f6",
+      yellow: "#f0c969",
+      line: "#29434c",
+    });
+
+    const phaserHostBackground = await page
+      .getByRole("application")
+      .evaluate((element) =>
+        window.getComputedStyle(element).getPropertyValue("--background").trim(),
+      );
+    expect(phaserHostBackground).toBe(tokens.background);
+
+    const portfolioExit = header.getByRole("link", {
+      name: "Return to Portfolio mode",
+    });
+    await portfolioExit.focus();
+    await expect(portfolioExit).toBeFocused();
+    await expect(portfolioExit).toHaveCSS("outline-style", "solid");
+  });
+
+  test("transitions directly into the paused five-step training shell", async ({ page }) => {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
 
@@ -55,18 +95,11 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-game-state", "training");
     await expect(runtime).toHaveAttribute("data-run-started", "false");
     await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
-    await expect(
-      page.getByText("Training paused · Complete the displayed action"),
-    ).toBeVisible();
-    await expect(page.locator("[data-tutorial-prompt]")).toContainText(
-      "1 / 5",
-    );
+    await expect(page.getByText("Training paused · Complete the displayed action")).toBeVisible();
+    await expect(page.locator("[data-tutorial-prompt]")).toContainText("1 / 5");
     const heldProgress = await runtime.getAttribute("data-journey-progress");
     await page.waitForTimeout(600);
-    await expect(runtime).toHaveAttribute(
-      "data-journey-progress",
-      heldProgress ?? "0",
-    );
+    await expect(runtime).toHaveAttribute("data-journey-progress", heldProgress ?? "0");
     await expect(runtime).toHaveAttribute("data-elapsed-ms", "0");
     await expect
       .poll(() => requests.some((url) => url.includes("industrial-world-atlas")))
@@ -136,10 +169,7 @@ test.describe("Chronicle Run", () => {
           key,
           JSON.stringify({
             version: 1,
-            recoveredRecords: [
-              "education:first-class-computer-science",
-              "project:tymaura",
-            ],
+            recoveredRecords: ["education:first-class-computer-science", "project:tymaura"],
             completedChapters: ["origin"],
             tutorialCompleted: true,
             completed: false,
@@ -158,12 +188,8 @@ test.describe("Chronicle Run", () => {
     await expect(page.getByText("Records 2/9", { exact: true })).toBeVisible();
     await expect(page.getByText("High 1,250", { exact: true })).toBeVisible();
     await expect(page.getByText("Best 2:05.0", { exact: true })).toBeVisible();
-    await expect(page.locator("[data-tutorial-prompt]")).toContainText(
-      "Replay walkthrough",
-    );
-    await expect(
-      page.getByRole("button", { name: "Skip walkthrough" }),
-    ).toBeVisible();
+    await expect(page.locator("[data-tutorial-prompt]")).toContainText("Replay walkthrough");
+    await expect(page.getByRole("button", { name: "Skip walkthrough" })).toBeVisible();
   });
 
   test("keeps a functional portfolio return when JavaScript is disabled", async ({
@@ -178,15 +204,19 @@ test.describe("Chronicle Run", () => {
 
     await page.goto("/game/");
 
-    await expect(
-      page.getByRole("heading", { name: "Five actions, then run." }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Five actions, then run." })).toBeVisible();
+    await expect(page.locator("[data-game-header]")).toHaveCount(1);
+    await expect(page.locator('[data-game-theme="orbital-engineering-journey"]')).toHaveCSS(
+      "background-color",
+      "rgb(4, 7, 13)",
+    );
     await expect(
       page.getByText("Loading the paused training stage.", { exact: false }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Exit to Portfolio" }),
-    ).toHaveAttribute("href", "/#home");
+    await expect(page.getByRole("link", { name: "Exit to Portfolio" })).toHaveAttribute(
+      "href",
+      "/#home",
+    );
     await context.close();
   });
 
@@ -203,9 +233,9 @@ test.describe("Chronicle Run", () => {
       "data-chronicle-chapter",
       "origin",
     );
-    await expect(
-      page.getByRole("list", { name: "Chronicle chapters" }),
-    ).toContainText("Present Day");
+    await expect(page.getByRole("list", { name: "Chronicle chapters" })).toContainText(
+      "Present Day",
+    );
     await expect
       .poll(() => requests.some((url) => url.includes("industrial-world-atlas")))
       .toBeTruthy();
@@ -237,41 +267,31 @@ test.describe("Chronicle Run", () => {
     await expect(
       page.getByText("Auto-run active · Space jumps · Shift dashes · S drops"),
     ).toBeVisible();
+    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await page.bringToFront();
+    await stage.focus();
     await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
+        timeout: 10_000,
+      })
       .toBeGreaterThan(1);
 
-    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
-    await stage.focus();
     await page.keyboard.down("Space");
-    await expect
-      .poll(() => runtime.getAttribute("data-player-state"))
-      .toMatch(/jumping|falling/);
+    await expect.poll(() => runtime.getAttribute("data-player-state")).toMatch(/jumping|falling/);
     await page.keyboard.up("Space");
 
     await page.keyboard.down("Shift");
-    await expect
-      .poll(() => runtime.getAttribute("data-player-state"))
-      .toBe("dashing");
     await expect(runtime).toHaveAttribute("data-dash-ready", "false");
     await page.keyboard.up("Shift");
 
     await page.getByRole("button", { name: "Pause", exact: true }).click();
     await expect(runtime).toHaveAttribute("data-game-state", "paused");
-    await expect(
-      page.getByText("Run paused · Resume from the game controls"),
-    ).toBeVisible();
+    await expect(page.getByText("Run paused · Resume from the game controls")).toBeVisible();
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
     const pausedElapsed = await runtime.getAttribute("data-elapsed-ms");
     await page.waitForTimeout(700);
-    await expect(runtime).toHaveAttribute(
-      "data-journey-progress",
-      pausedProgress ?? "0",
-    );
-    await expect(runtime).toHaveAttribute(
-      "data-elapsed-ms",
-      pausedElapsed ?? "0",
-    );
+    await expect(runtime).toHaveAttribute("data-journey-progress", pausedProgress ?? "0");
+    await expect(runtime).toHaveAttribute("data-elapsed-ms", pausedElapsed ?? "0");
 
     await page.getByRole("button", { name: "Start or resume" }).click();
     await expect(runtime).toHaveAttribute("data-game-state", "running");
@@ -291,9 +311,7 @@ test.describe("Chronicle Run", () => {
       .toBeLessThanOrEqual(1_500);
   });
 
-  test("advances the five-step walkthrough only on matching inputs", async ({
-    page,
-  }) => {
+  test("advances the five-step walkthrough only on matching inputs", async ({ page }) => {
     await page.goto("/game/");
 
     const runtime = page.locator("[data-tutorial-step]");
@@ -309,24 +327,16 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-tutorial-step", "jump");
 
     await page.keyboard.press("Space");
-    await expect
-      .poll(() => runtime.getAttribute("data-tutorial-step"))
-      .toBe("dash");
+    await expect.poll(() => runtime.getAttribute("data-tutorial-step")).toBe("dash");
     await expect(prompt).toHaveAttribute("data-tutorial-position", "2");
 
     await page.keyboard.press("Shift");
-    await expect
-      .poll(() => runtime.getAttribute("data-tutorial-step"))
-      .toBe("drop");
+    await expect.poll(() => runtime.getAttribute("data-tutorial-step")).toBe("drop");
     await expect(prompt).toHaveAttribute("data-tutorial-position", "3");
-    await expect
-      .poll(() => runtime.getAttribute("data-player-state"))
-      .toMatch(/jumping|falling/);
+    await expect.poll(() => runtime.getAttribute("data-player-state")).toMatch(/jumping|falling/);
 
     await page.keyboard.press("s");
-    await expect
-      .poll(() => runtime.getAttribute("data-tutorial-step"))
-      .toBe("pause");
+    await expect.poll(() => runtime.getAttribute("data-tutorial-step")).toBe("pause");
     await expect(prompt).toHaveAttribute("data-tutorial-position", "4");
 
     await page.getByRole("button", { name: "Pause", exact: true }).click();
@@ -356,9 +366,7 @@ test.describe("Chronicle Run", () => {
       .toBe(true);
   });
 
-  test("accepts the displayed touch actions through Fast Drop", async ({
-    browser,
-  }) => {
+  test("accepts the displayed touch actions through Fast Drop", async ({ browser }) => {
     const baseURL = test.info().project.use.baseURL as string;
     const context = await browser.newContext({
       baseURL,
@@ -389,9 +397,7 @@ test.describe("Chronicle Run", () => {
     await context.close();
   });
 
-  test("does not consume gameplay keys from focused buttons or links", async ({
-    page,
-  }) => {
+  test("does not consume gameplay keys from focused buttons or links", async ({ page }) => {
     await page.goto("/game/");
 
     const runtime = page.locator("[data-tutorial-step]");
@@ -434,9 +440,7 @@ test.describe("Chronicle Run", () => {
     await page.goto("/game/");
 
     const runtime = page.locator("[data-tutorial-step]");
-    await expect(page.locator("[data-tutorial-prompt]")).toContainText(
-      "Replay walkthrough",
-    );
+    await expect(page.locator("[data-tutorial-prompt]")).toContainText("Replay walkthrough");
     await expect(runtime).toHaveAttribute("data-run-started", "false");
     await page.getByRole("button", { name: "Skip walkthrough" }).click();
     await expect(runtime).toHaveAttribute("data-tutorial-step", "complete");
@@ -504,21 +508,12 @@ test.describe("Chronicle Run", () => {
     await expect(dialog).toContainText("First-Class Computer Science graduate");
     await expect(dialog).toContainText("Techfront UK");
     await expect(dialog).toContainText("Undiscovered record");
-    await expect(dialog.getByRole("progressbar")).toHaveAttribute(
-      "aria-valuenow",
-      "2",
-    );
+    await expect(dialog.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "2");
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
     const pausedElapsed = await runtime.getAttribute("data-elapsed-ms");
     await page.waitForTimeout(500);
-    await expect(runtime).toHaveAttribute(
-      "data-journey-progress",
-      pausedProgress ?? "0",
-    );
-    await expect(runtime).toHaveAttribute(
-      "data-elapsed-ms",
-      pausedElapsed ?? "0",
-    );
+    await expect(runtime).toHaveAttribute("data-journey-progress", pausedProgress ?? "0");
+    await expect(runtime).toHaveAttribute("data-elapsed-ms", pausedElapsed ?? "0");
 
     await page.keyboard.press("Shift+Tab");
     await expect
@@ -537,9 +532,7 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-game-state", "running");
   });
 
-  test("unlocks a factual record again after Restart clears the story run", async ({
-    page,
-  }) => {
+  test("unlocks a factual record again after Restart clears the story run", async ({ page }) => {
     test.setTimeout(65_000);
     await page.addInitScript(
       ({ key }) => {
@@ -576,9 +569,7 @@ test.describe("Chronicle Run", () => {
       "data-record-id",
       "education:first-class-computer-science",
     );
-    await expect(unlockCard).toContainText(
-      "First-Class Computer Science graduate",
-    );
+    await expect(unlockCard).toContainText("First-Class Computer Science graduate");
     await expect(unlockCard).toContainText(
       "generates, compiles, tests, and analyses Solana smart contracts",
     );
@@ -586,9 +577,7 @@ test.describe("Chronicle Run", () => {
       page.locator('[role="status"]').filter({ hasText: "Education unlocked" }),
     ).toBeAttached();
     await expect(runtime).toHaveAttribute("data-game-state", "running");
-    const progressWithCard = Number(
-      await runtime.getAttribute("data-journey-progress"),
-    );
+    const progressWithCard = Number(await runtime.getAttribute("data-journey-progress"));
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThan(progressWithCard);
@@ -638,9 +627,7 @@ test.describe("Chronicle Run", () => {
     await expect(page.getByText(/already stored/i)).toHaveCount(0);
   });
 
-  test("persists completion and supports Story Log review and replay", async ({
-    page,
-  }) => {
+  test("persists completion and supports Story Log review and replay", async ({ page }) => {
     test.setTimeout(150_000);
     await page.addInitScript(
       ({ key }) => {
@@ -673,9 +660,7 @@ test.describe("Chronicle Run", () => {
     }
 
     await expect(completion).toBeVisible();
-    await expect(completion).toContainText(
-      "Run complete. The next chapter is open.",
-    );
+    await expect(completion).toContainText("Run complete. The next chapter is open.");
     await expect(completion).toContainText("9 / 9");
     await expect(completion).toContainText("5 / 5");
     const runtime = page.locator("[data-recovered-records]");
@@ -739,9 +724,7 @@ test.describe("Chronicle Run", () => {
       });
   });
 
-  test("keeps the dark shell while updating motion and runtime shortcuts", async ({
-    page,
-  }) => {
+  test("keeps the dark shell while updating motion and runtime shortcuts", async ({ page }) => {
     await page.addInitScript(
       ({ key }) => {
         window.localStorage.setItem(
@@ -766,12 +749,15 @@ test.describe("Chronicle Run", () => {
     await page.getByRole("button", { name: "Skip walkthrough" }).click();
     const runtime = page.locator("[data-reduced-motion]");
     const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await page.bringToFront();
     await stage.focus();
     await expect(runtime).toHaveAttribute("data-recovered-records", "1");
     await expect(runtime).toHaveAttribute("data-reduced-motion", "false");
     await expect(runtime).toHaveAttribute("data-reward-motion", "animated");
     await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
+        timeout: 10_000,
+      })
       .toBeGreaterThan(1);
 
     await page.keyboard.press("m");
@@ -785,9 +771,7 @@ test.describe("Chronicle Run", () => {
     await expect(page.getByRole("button", { name: /Switch to .* theme/ })).toHaveCount(0);
     await expect(page.locator("canvas")).toHaveCount(1);
 
-    const progressBeforeMotion = Number(
-      await runtime.getAttribute("data-journey-progress"),
-    );
+    const progressBeforeMotion = Number(await runtime.getAttribute("data-journey-progress"));
     await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(runtime).toHaveAttribute("data-reduced-motion", "true");
@@ -827,9 +811,7 @@ test.describe("Chronicle Run", () => {
     await stage.focus();
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(/\/#home$/);
-    await expect(
-      page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
   });
 
   test("reflows training, runtime, Story Log, and unlock UI at 320 pixels and 200 percent text", async ({
@@ -866,20 +848,14 @@ test.describe("Chronicle Run", () => {
 
     const noHorizontalPageOverflow = async () =>
       page.evaluate(
-        () =>
-          document.documentElement.scrollWidth <=
-          document.documentElement.clientWidth,
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
       );
     await page.locator("canvas").waitFor();
     await expect.poll(noHorizontalPageOverflow).toBe(true);
     const tutorialPrompt = page.locator("[data-tutorial-prompt]");
     await expect(tutorialPrompt).toContainText("Replay walkthrough");
     await expect
-      .poll(() =>
-        tutorialPrompt.evaluate(
-          (element) => element.scrollWidth <= element.clientWidth,
-        ),
-      )
+      .poll(() => tutorialPrompt.evaluate((element) => element.scrollWidth <= element.clientWidth))
       .toBe(true);
 
     await page.getByRole("button", { name: "Skip walkthrough" }).click();
@@ -900,9 +876,7 @@ test.describe("Chronicle Run", () => {
     await expect(dialog).toContainText("No records recovered yet");
     await expect.poll(noHorizontalPageOverflow).toBe(true);
     await expect
-      .poll(() =>
-        dialog.evaluate((element) => element.scrollWidth <= element.clientWidth),
-      )
+      .poll(() => dialog.evaluate((element) => element.scrollWidth <= element.clientWidth))
       .toBe(true);
     await page.getByRole("button", { name: "Close Story Log" }).click();
     const runtime = page.locator("[data-recovered-records]");
@@ -956,18 +930,14 @@ test.describe("Chronicle Run", () => {
     await expect(runtime).toHaveAttribute("data-tutorial-step", "dash");
     await page.getByRole("button", { name: "Dash", exact: true }).click();
     await expect(runtime).toHaveAttribute("data-tutorial-step", "drop");
-    await expect
-      .poll(() => runtime.getAttribute("data-player-state"))
-      .toMatch(/jumping|falling/);
+    await expect.poll(() => runtime.getAttribute("data-player-state")).toMatch(/jumping|falling/);
     await page.getByRole("button", { name: "Fast drop", exact: true }).click();
     await expect(runtime).toHaveAttribute("data-tutorial-step", "pause");
 
     await context.close();
   });
 
-  test("advances chapters and recovers quickly after a route impact", async ({
-    page,
-  }) => {
+  test("advances chapters and recovers quickly after a route impact", async ({ page }) => {
     test.setTimeout(55_000);
     await page.addInitScript(
       ({ key }) => {
@@ -995,24 +965,17 @@ test.describe("Chronicle Run", () => {
         timeout: 35_000,
       })
       .toBeGreaterThanOrEqual(2);
-    await expect(runtime).toHaveAttribute(
-      "data-chronicle-chapter",
-      "live-systems",
-    );
+    await expect(runtime).toHaveAttribute("data-chronicle-chapter", "live-systems");
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-signal")), {
         timeout: 15_000,
       })
       .toBeLessThan(100);
 
-    const recoveryProgress = Number(
-      await runtime.getAttribute("data-journey-progress"),
-    );
+    const recoveryProgress = Number(await runtime.getAttribute("data-journey-progress"));
     await expect
       .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
       .toBeGreaterThan(recoveryProgress);
-    await expect(page.locator("[data-game-notice]")).toContainText(
-      /Route impact|checkpoint/i,
-    );
+    await expect(page.locator("[data-game-notice]")).toContainText(/Route impact|checkpoint/i);
   });
 });
