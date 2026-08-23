@@ -86,6 +86,7 @@ After the first green run, protect `main` with these workflow/job checks:
 - `Compatibility UI / webkit`
 - `Dependency review`
 - `CodeQL / JavaScript-TypeScript`
+- `CodeQL` (GitHub code-scanning result)
 
 Require branches to be current, block force pushes and deletion, and require review conversations to be resolved. Exact check contexts must be confirmed from the first real workflow run before enabling the rules.
 

@@ -75,6 +75,7 @@ Confirm these contexts from the first green pull-request run, then require them 
 - `Compatibility UI / webkit`
 - `Dependency review`
 - `CodeQL / JavaScript-TypeScript`
+- `CodeQL` (GitHub code-scanning result)
 
 Also block force pushes/deletion and require review conversations to be resolved. Repository settings are verified separately because workflow files cannot enforce their own branch protection.
 

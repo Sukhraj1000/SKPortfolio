@@ -108,6 +108,7 @@ const requiredChecks = [
   "Compatibility UI / webkit",
   "Dependency review",
   "CodeQL / JavaScript-TypeScript",
+  "CodeQL",
 ];
 for (const requiredCheck of requiredChecks) {
   assert(readme.includes(`\`${requiredCheck}\``), `README omits required check: ${requiredCheck}.`);
