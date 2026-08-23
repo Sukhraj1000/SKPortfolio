@@ -267,12 +267,15 @@ test.describe("Chronicle Run", () => {
     await expect(
       page.getByText("Auto-run active · Space jumps · Shift dashes · S drops"),
     ).toBeVisible();
+    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
+    await page.bringToFront();
+    await stage.focus();
     await expect
-      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")))
+      .poll(async () => Number(await runtime.getAttribute("data-journey-progress")), {
+        timeout: 10_000,
+      })
       .toBeGreaterThan(1);
 
-    const stage = page.getByRole("application", { name: /Chronicle Run auto-runner/ });
-    await stage.focus();
     await page.keyboard.down("Space");
     await expect.poll(() => runtime.getAttribute("data-player-state")).toMatch(/jumping|falling/);
     await page.keyboard.up("Space");

@@ -23,6 +23,7 @@ import type {
 const CHAPTER_WIDTH = 6_000;
 const WORLD_WIDTH = CHAPTER_WIDTH * 5;
 const WORLD_HEIGHT = 720;
+const RENDER_SEGMENT_WIDTH = 4_096;
 const FLOOR_Y = chronicleFloorY;
 const RUN_SPEED = chronicleRoutePhysics.runSpeed;
 const DASH_SPEED = chronicleRoutePhysics.dashSpeed;
@@ -178,7 +179,10 @@ export function createChronicleGame({
     private tutorialStepIndex = tutorialAlreadyCompleted ? chronicleTutorialSteps.length - 1 : 0;
     private runStarted = tutorialAlreadyCompleted;
     private dropPracticePrepared = false;
-    private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
+    private parallaxLayers: Array<{
+      layer: Phaser.GameObjects.TileSprite;
+      standardScrollFactor: number;
+    }> = [];
     private rewardMotions: Array<{
       target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc;
       tween: Phaser.Tweens.Tween;
@@ -452,15 +456,16 @@ export function createChronicleGame({
 
       this.add.circle(920, 215, 108, palette.yellow, 0.78).setScrollFactor(0.04).setDepth(-35);
 
-      const farCity = this.add
-        .tileSprite(WORLD_WIDTH / 2, 420, WORLD_WIDTH, 280, "chronicle-far-city")
-        .setScrollFactor(0.1)
-        .setDepth(-30);
-      const nearCity = this.add
-        .tileSprite(WORLD_WIDTH / 2, 500, WORLD_WIDTH, 280, "chronicle-near-city")
-        .setScrollFactor(0.28)
-        .setDepth(-20);
-      this.parallaxLayers.push(farCity, nearCity);
+      this.createTileStrip(0, WORLD_WIDTH, 420, 280, "chronicle-far-city", -30).forEach((layer) => {
+        layer.setScrollFactor(0.1);
+        this.parallaxLayers.push({ layer, standardScrollFactor: 0.1 });
+      });
+      this.createTileStrip(0, WORLD_WIDTH, 500, 280, "chronicle-near-city", -20).forEach(
+        (layer) => {
+          layer.setScrollFactor(0.28);
+          this.parallaxLayers.push({ layer, standardScrollFactor: 0.28 });
+        },
+      );
 
       chapters.forEach((chapter) => {
         const width = chapter.end - chapter.start;
@@ -569,6 +574,26 @@ export function createChronicleGame({
       return platforms;
     }
 
+    private createTileStrip(
+      left: number,
+      right: number,
+      y: number,
+      height: number,
+      texture: string,
+      depth: number,
+    ) {
+      const layers: Phaser.GameObjects.TileSprite[] = [];
+      for (let segmentLeft = left; segmentLeft < right; segmentLeft += RENDER_SEGMENT_WIDTH) {
+        const width = Math.min(RENDER_SEGMENT_WIDTH, right - segmentLeft);
+        const layer = this.add
+          .tileSprite(segmentLeft + width / 2, y, width, height, texture)
+          .setDepth(depth);
+        layer.tilePositionX = segmentLeft;
+        layers.push(layer);
+      }
+      return layers;
+    }
+
     private addDeckSurface(
       left: number,
       right: number,
@@ -593,11 +618,14 @@ export function createChronicleGame({
         )
         .setDepth(depth - 0.1);
       this.add.rectangle(centerX, top + 2, width, 4, palette.primary, 0.76).setDepth(depth + 0.1);
-      this.add
-        .tileSprite(centerX, top + height / 2, width, height, "chronicle-deck-detail")
-        .setTint(palette.foreground)
-        .setAlpha(0.34)
-        .setDepth(depth);
+      this.createTileStrip(
+        left,
+        right,
+        top + height / 2,
+        height,
+        "chronicle-deck-detail",
+        depth,
+      ).forEach((detail) => detail.setTint(palette.foreground).setAlpha(0.34));
     }
 
     private addWorldSprite(
@@ -878,8 +906,8 @@ export function createChronicleGame({
     }
 
     private configureParallax() {
-      this.parallaxLayers.forEach((layer, index) => {
-        layer.setScrollFactor(reducedMotion ? 1 : index === 0 ? 0.1 : 0.28);
+      this.parallaxLayers.forEach(({ layer, standardScrollFactor }) => {
+        layer.setScrollFactor(reducedMotion ? 1 : standardScrollFactor);
       });
     }
 

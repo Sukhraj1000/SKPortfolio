@@ -80,12 +80,12 @@ GitHub Actions runs the same release contract on pull requests and `main`, using
 
 After the first green run, protect `main` with these workflow/job checks:
 
-- `Release assurance / Quality / export`
-- `Release assurance / Chromium UI`
-- `Release assurance / Compatibility UI / firefox`
-- `Release assurance / Compatibility UI / webkit`
-- `Release assurance / Dependency review`
-- `CodeQL / CodeQL / JavaScript-TypeScript`
+- `Quality / export`
+- `Chromium UI`
+- `Compatibility UI / firefox`
+- `Compatibility UI / webkit`
+- `Dependency review`
+- `CodeQL / JavaScript-TypeScript`
 
 Require branches to be current, block force pushes and deletion, and require review conversations to be resolved. Exact check contexts must be confirmed from the first real workflow run before enabling the rules.
 

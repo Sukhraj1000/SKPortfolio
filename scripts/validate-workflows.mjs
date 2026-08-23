@@ -9,11 +9,12 @@ function count(source, pattern) {
   return [...source.matchAll(pattern)].length;
 }
 
-const [releaseWorkflow, codeqlWorkflow, dependabot, packageSource] = await Promise.all([
+const [releaseWorkflow, codeqlWorkflow, dependabot, packageSource, readme] = await Promise.all([
   readFile(".github/workflows/release-assurance.yml", "utf8"),
   readFile(".github/workflows/codeql.yml", "utf8"),
   readFile(".github/dependabot.yml", "utf8"),
   readFile("package.json", "utf8"),
+  readFile("README.md", "utf8"),
 ]);
 const workflows = [releaseWorkflow, codeqlWorkflow];
 const packageJson = JSON.parse(packageSource);
@@ -99,5 +100,34 @@ assert(
   "Dependabot must cover npm and Actions while excluding automatic major migrations.",
 );
 assert(!dependabot.includes("automerge"), "Dependency updates must remain human-reviewed.");
+
+const requiredChecks = [
+  "Quality / export",
+  "Chromium UI",
+  "Compatibility UI / firefox",
+  "Compatibility UI / webkit",
+  "Dependency review",
+  "CodeQL / JavaScript-TypeScript",
+];
+for (const requiredCheck of requiredChecks) {
+  assert(readme.includes(`\`${requiredCheck}\``), `README omits required check: ${requiredCheck}.`);
+}
+for (const staticCheck of [
+  "Quality / export",
+  "Chromium UI",
+  "Dependency review",
+  "CodeQL / JavaScript-TypeScript",
+]) {
+  assert(
+    releaseWorkflow.includes(staticCheck) || codeqlWorkflow.includes(staticCheck),
+    `Workflow job is missing the documented check: ${staticCheck}.`,
+  );
+}
+assert(
+  releaseWorkflow.includes("Compatibility UI / ${{ matrix.engine }}") &&
+    releaseWorkflow.includes("engine: firefox") &&
+    releaseWorkflow.includes("engine: webkit"),
+  "Compatibility matrix does not produce the documented Firefox/WebKit checks.",
+);
 
 console.log("Workflow security and release-parity validation passed.");

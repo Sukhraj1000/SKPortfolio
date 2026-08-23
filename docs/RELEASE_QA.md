@@ -69,12 +69,12 @@ The tracked GitHub Actions workflows use `.nvmrc`, `npm ci`, npm download cachin
 
 Confirm these contexts from the first green pull-request run, then require them on an up-to-date `main` branch:
 
-- `Release assurance / Quality / export`
-- `Release assurance / Chromium UI`
-- `Release assurance / Compatibility UI / firefox`
-- `Release assurance / Compatibility UI / webkit`
-- `Release assurance / Dependency review`
-- `CodeQL / CodeQL / JavaScript-TypeScript`
+- `Quality / export`
+- `Chromium UI`
+- `Compatibility UI / firefox`
+- `Compatibility UI / webkit`
+- `Dependency review`
+- `CodeQL / JavaScript-TypeScript`
 
 Also block force pushes/deletion and require review conversations to be resolved. Repository settings are verified separately because workflow files cannot enforce their own branch protection.
 
