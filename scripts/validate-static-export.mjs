@@ -102,6 +102,7 @@ for (const [label, html] of [["Portfolio", rootHtml], ["Game training fallback",
 
 for (const requiredOutput of [
   ".htaccess",
+  "_headers",
   "robots.txt",
   "404.html",
   "game/assets/sk-character-sheet.png",
