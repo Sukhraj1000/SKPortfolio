@@ -181,6 +181,7 @@ for (const [label, html] of [
 
 for (const requiredOutput of [
   ".htaccess",
+  "_headers",
   "robots.txt",
   "sitemap.xml",
   "404.html",
