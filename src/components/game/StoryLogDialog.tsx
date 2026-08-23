@@ -1,16 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  BookOpen,
-  Check,
-  LockKeyhole,
-  LogOut,
-  Play,
-  RotateCcw,
-  Trophy,
-  X,
-} from "lucide-react";
+import { BookOpen, Check, LockKeyhole, LogOut, Play, RotateCcw, Trophy, X } from "lucide-react";
 import {
   chronicleChapters,
   chronicleRecords,
@@ -59,10 +50,7 @@ export function StoryLogDialog({
 }: StoryLogDialogProps) {
   const dialogRef = React.useRef<HTMLElement>(null);
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
-  const recoveredSet = React.useMemo(
-    () => new Set(recoveredRecords),
-    [recoveredRecords],
-  );
+  const recoveredSet = React.useMemo(() => new Set(recoveredRecords), [recoveredRecords]);
 
   React.useEffect(() => {
     closeButtonRef.current?.focus();
@@ -116,15 +104,9 @@ export function StoryLogDialog({
         <div className={styles.storyDialogHeader}>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {mode === "complete" ? (
-              <Trophy
-                aria-hidden="true"
-                className="h-4 w-4 text-signal-yellow max-sm:hidden"
-              />
+              <Trophy aria-hidden="true" className="h-4 w-4 text-signal-yellow max-sm:hidden" />
             ) : (
-              <BookOpen
-                aria-hidden="true"
-                className="h-4 w-4 text-primary max-sm:hidden"
-              />
+              <BookOpen aria-hidden="true" className="h-4 w-4 text-primary max-sm:hidden" />
             )}
             <StatusIndicator tone={mode === "complete" ? "active" : "info"}>
               Gameplay paused
@@ -146,9 +128,9 @@ export function StoryLogDialog({
             <SystemLabel tone="green">Chapter 04 // Present Day</SystemLabel>
             <h2 id={titleId}>Run complete. The next chapter is open.</h2>
             <p id={descriptionId}>
-              You reached Present Day through five chapters of real work. Replay
-              for a cleaner route, inspect the records you recovered, or return
-              to the complete recruiter-facing portfolio.
+              You reached Present Day through five chapters of real work. Replay for a cleaner
+              route, inspect the records you recovered, or return to the complete recruiter-facing
+              portfolio.
             </p>
 
             <dl className={styles.recapStats}>
@@ -192,19 +174,11 @@ export function StoryLogDialog({
                 <RotateCcw aria-hidden="true" />
                 Replay run
               </Button>
-              <Button
-                className={styles.storyAction}
-                variant="outline"
-                onClick={onShowLog}
-              >
+              <Button className={styles.storyAction} variant="outline" onClick={onShowLog}>
                 <BookOpen aria-hidden="true" />
                 Open Story Log
               </Button>
-              <Button
-                className={styles.storyAction}
-                variant="ghost"
-                onClick={onExit}
-              >
+              <Button className={styles.storyAction} variant="ghost" onClick={onExit}>
                 <LogOut aria-hidden="true" />
                 Exit to Portfolio
               </Button>

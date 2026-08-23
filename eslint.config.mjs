@@ -6,11 +6,14 @@ export default defineConfig([
   ...nextVitals,
   ...nextTypeScript,
   {
-    // These React Compiler-oriented rules reject intentional client hydration
-    // and imperative Phaser input/ref bridges used by this static application.
+    files: [
+      "src/components/game/GameExperience.tsx",
+      "src/components/game/GameRoute.tsx",
+      "src/components/navigation/GameNavbar.tsx",
+    ],
+    // These hydration and Phaser lifecycle effects intentionally synchronize
+    // browser-only storage/runtime state after the static server render.
     rules: {
-      "react-hooks/immutability": "off",
-      "react-hooks/refs": "off",
       "react-hooks/set-state-in-effect": "off",
     },
   },

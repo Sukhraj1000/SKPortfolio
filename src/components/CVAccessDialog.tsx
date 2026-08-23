@@ -8,30 +8,25 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { SystemLabel } from "@/components/ui/system-label";
 import { contactDetails, socialLinks } from "@/data/portfolio";
-import { cn, getObfuscatedEmail } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface CVAccessDialogProps {
   buttonClassName?: string;
   buttonText?: string;
 }
 
+const cvSubject = encodeURIComponent("CV request from sukhrajkalon.info");
+const cvBody = encodeURIComponent(
+  "Hi Sukhraj,\n\nI found your portfolio and would like to request a copy of your CV.\n\nThanks,",
+);
+const cvMailto = `mailto:${contactDetails.email}?subject=${cvSubject}&body=${cvBody}`;
+
 function PrivateCVRequestContent() {
-  const [email, setEmail] = React.useState("");
   const linkedIn = socialLinks.find((social) => social.id === "linkedin");
-
-  React.useEffect(() => {
-    setEmail(getObfuscatedEmail());
-  }, []);
-
-  const subject = encodeURIComponent("CV request from sukhrajkalon.info");
-  const body = encodeURIComponent(
-    "Hi Sukhraj,\n\nI found your portfolio and would like to request a copy of your CV.\n\nThanks,",
-  );
 
   return (
     <div className="border-t border-border px-5 pb-5 pt-4 sm:px-6 sm:pb-6">
@@ -41,13 +36,7 @@ function PrivateCVRequestContent() {
 
       <div className="mt-5 grid gap-2.5">
         <Button className="w-full" asChild>
-          <a
-            href={email ? `mailto:${email}?subject=${subject}&body=${body}` : undefined}
-            aria-disabled={!email}
-            onClick={(event) => {
-              if (!email) event.preventDefault();
-            }}
-          >
+          <a href={cvMailto}>
             <Mail aria-hidden="true" />
             Request CV by email
           </a>
@@ -75,35 +64,51 @@ function CVRequestDialog({
   buttonText = "Request CV",
   mobile = false,
 }: CVAccessDialogProps & { mobile?: boolean }) {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size={mobile ? "default" : "sm"}
-          className={cn(
-            "group text-sm",
-            mobile ? "w-full justify-center" : "h-11",
-            buttonClassName,
-          )}
-        >
-          <FileText
-            aria-hidden="true"
-            className="transition-colors group-hover:text-primary"
-          />
-          {buttonText}
-        </Button>
-      </DialogTrigger>
+  const [open, setOpen] = React.useState(false);
+  const triggerRef = React.useRef<HTMLAnchorElement>(null);
+  const contentId = React.useId();
 
-      <DialogContent className="max-w-md gap-0 overflow-hidden rounded-none border border-border-strong bg-surface p-0 shadow-[6px_6px_0_var(--shadow-strong)]">
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Button
+        variant="outline"
+        size={mobile ? "default" : "sm"}
+        className={cn("group text-sm", mobile ? "w-full justify-center" : "h-11", buttonClassName)}
+        asChild
+      >
+        <a
+          ref={triggerRef}
+          href={cvMailto}
+          aria-controls={open ? contentId : undefined}
+          aria-expanded={open}
+          aria-haspopup="dialog"
+          onClick={(event) => {
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            setOpen(true);
+          }}
+        >
+          <FileText aria-hidden="true" className="transition-colors group-hover:text-primary" />
+          {buttonText}
+        </a>
+      </Button>
+
+      <DialogContent
+        id={contentId}
+        className="max-w-md gap-0 overflow-hidden rounded-none border border-border-strong bg-surface p-0 shadow-[6px_6px_0_var(--shadow-strong)]"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          triggerRef.current?.focus();
+        }}
+      >
         <DialogHeader className="px-5 pb-4 pr-12 pt-5 text-left sm:px-6 sm:pr-12 sm:pt-6">
           <SystemLabel>CV access</SystemLabel>
           <DialogTitle className="pt-2 text-2xl leading-tight text-foreground">
             Request Sukhraj&apos;s CV
           </DialogTitle>
           <DialogDescription className="text-sm leading-6 text-ink-muted">
-            The full CV is shared privately with recruiters, hiring managers, and
-            relevant collaborators.
+            The full CV is shared privately with recruiters, hiring managers, and relevant
+            collaborators.
           </DialogDescription>
         </DialogHeader>
         <PrivateCVRequestContent />

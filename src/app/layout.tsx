@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { PortfolioProgressProvider } from "@/components/pixel-quest/PortfolioProgress";
+import { siteOrigin } from "@/lib/site";
 
 const geistSans = localFont({
   src: "./fonts/geist-latin.woff2",
@@ -18,23 +17,61 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+const siteTitle = "Sukhraj Kalon | Software Engineer & Product Builder";
+const siteDescription =
+  "Sukhraj Kalon builds secure software, AI-assisted products, cloud systems, and full-stack experiences.";
+
 export const metadata: Metadata = {
-  title: "Sukhraj Kalon | Software Engineer & Product Builder",
-  description: "Sukhraj Kalon builds secure software, AI-assisted products, cloud systems, and full-stack experiences.",
-  keywords: ["Sukhraj Kalon", "software engineer", "full-stack", "React", "TypeScript", "Python", "AWS", "AI automation", "portfolio"],
+  metadataBase: new URL(siteOrigin),
+  title: siteTitle,
+  description: siteDescription,
+  alternates: { canonical: "/" },
+  keywords: [
+    "Sukhraj Kalon",
+    "software engineer",
+    "full-stack",
+    "React",
+    "TypeScript",
+    "Python",
+    "AWS",
+    "AI automation",
+    "portfolio",
+  ],
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Sukhraj Kalon Portfolio",
+    title: siteTitle,
+    description: siteDescription,
+    images: [
+      {
+        url: "/sk-icon.png",
+        width: 192,
+        height: 192,
+        alt: "SK monogram for Sukhraj Kalon's portfolio",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: siteDescription,
+    images: ["/sk-icon.png"],
+  },
+  robots: { index: true, follow: true },
   icons: [
     {
-      rel: 'icon',
-      url: '/sk-icon.png',
+      rel: "icon",
+      url: "/sk-icon.png",
     },
     {
-      rel: 'apple-touch-icon',
-      url: '/sk-icon.png',
+      rel: "apple-touch-icon",
+      url: "/sk-icon.png",
     },
     {
-      rel: 'shortcut icon',
-      url: '/sk-icon.png',
-    }
+      rel: "shortcut icon",
+      url: "/sk-icon.png",
+    },
   ],
 };
 
@@ -45,13 +82,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" data-scroll-behavior="smooth">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
-      >
-        <PortfolioProgressProvider>
-          <Navbar />
-          <main>{children}</main>
-        </PortfolioProgressProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}>
+        {children}
       </body>
     </html>
   );

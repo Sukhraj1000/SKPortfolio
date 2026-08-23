@@ -2,6 +2,8 @@
   "version": 1,
   "coordinateOrigin": "top-left",
   "rendering": "pixelated",
+  "paletteScope": "Baked source-art colours only; not the active runtime theme contract",
+  "runtimePalette": "Dark Orbital Engineering Journey semantic CSS tokens sampled from the Phaser host",
   "palette": {
     "charcoal": "#1B2428",
     "steel": "#66747A",

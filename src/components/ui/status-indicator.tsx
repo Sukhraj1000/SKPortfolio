@@ -32,10 +32,7 @@ export function StatusIndicator({
       )}
       {...props}
     >
-      <span
-        aria-hidden="true"
-        className={cn("h-2 w-2 bg-current", pulse && "status-pulse")}
-      />
+      <span aria-hidden="true" className={cn("h-2 w-2 bg-current", pulse && "status-pulse")} />
       {children}
     </span>
   );

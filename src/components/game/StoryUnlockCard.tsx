@@ -1,10 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import {
-  getChronicleRecord,
-  type ChronicleRecordId,
-} from "@/components/game/chronicle-story";
+import { getChronicleRecord, type ChronicleRecordId } from "@/components/game/chronicle-story";
 import styles from "./GameExperience.module.css";
 
 const kindLabels = {

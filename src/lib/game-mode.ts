@@ -1,29 +1,19 @@
-export const gameReturnKey = "iron-signal:portfolio-return";
+import { portfolioStoryAnchors, type PortfolioStoryAnchor } from "@/data/portfolio";
+
+const gameReturnKey = "iron-signal:portfolio-return";
 export const gameSoundKey = "iron-signal:game-sound";
 export const gameProgressKey = "iron-signal:game-progress";
 
-export const portfolioStoryAnchors = [
-  "home",
-  "projects",
-  "about",
-  "loadout",
-  "contact",
-] as const;
-
-export type PortfolioStoryAnchor = (typeof portfolioStoryAnchors)[number];
+export { portfolioStoryAnchors, type PortfolioStoryAnchor };
 
 export const defaultPortfolioHref = "/#home";
 
-export function isPortfolioStoryAnchor(
-  value: string | null,
-): value is PortfolioStoryAnchor {
+function isPortfolioStoryAnchor(value: string | null): value is PortfolioStoryAnchor {
   return portfolioStoryAnchors.includes(value as PortfolioStoryAnchor);
 }
 
-export function portfolioHref(anchor: string | null) {
-  return isPortfolioStoryAnchor(anchor)
-    ? `/#${anchor}`
-    : defaultPortfolioHref;
+function portfolioHref(anchor: string | null) {
+  return isPortfolioStoryAnchor(anchor) ? `/#${anchor}` : defaultPortfolioHref;
 }
 
 export function readPortfolioReturnHref() {

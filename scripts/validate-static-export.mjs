@@ -1,4 +1,4 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 
@@ -8,17 +8,6 @@ const gameHtmlPath = path.join(outputRoot, "game", "index.html");
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
-}
-
-async function walk(directory) {
-  const entries = await readdir(directory, { withFileTypes: true });
-  const files = await Promise.all(
-    entries.map((entry) => {
-      const entryPath = path.join(directory, entry.name);
-      return entry.isDirectory() ? walk(entryPath) : [entryPath];
-    }),
-  );
-  return files.flat();
 }
 
 function localReferences(html) {
@@ -51,7 +40,9 @@ function outputPathFor(reference) {
 }
 
 async function pathExists(target) {
-  return stat(target).then(() => true).catch(() => false);
+  return stat(target)
+    .then(() => true)
+    .catch(() => false);
 }
 
 async function assertLocalReferencesExist(html, pageLabel) {
@@ -69,43 +60,129 @@ const [rootHtml, gameHtml] = await Promise.all([
   readFile(gameHtmlPath, "utf8"),
 ]);
 
-assert(rootHtml.includes('data-portfolio-theme="orbital-engineering-journey"'), "Portfolio export is missing the Orbital Engineering Journey root.");
+assert(
+  rootHtml.includes('data-portfolio-theme="orbital-engineering-journey"'),
+  "Portfolio export is missing the Orbital Engineering Journey root.",
+);
+assert(
+  rootHtml.includes('<link rel="canonical" href="https://sukhrajkalon.info/"'),
+  "Portfolio export is missing its production canonical URL.",
+);
+assert(
+  rootHtml.includes('id="portfolio-structured-data"') &&
+    rootHtml.includes('"@context":"https://schema.org"'),
+  "Portfolio export is missing recruiter-facing structured data.",
+);
+assert(
+  rootHtml.includes('content="https://sukhrajkalon.info/sk-icon.png"'),
+  "Portfolio social metadata references a missing or non-canonical image.",
+);
 for (const sectionId of ["home", "projects", "about", "loadout", "contact"]) {
-  assert(rootHtml.includes(`id="${sectionId}"`), `Portfolio export is missing the ${sectionId} chapter.`);
+  assert(
+    rootHtml.includes(`id="${sectionId}"`),
+    `Portfolio export is missing the ${sectionId} chapter.`,
+  );
 }
-assert(rootHtml.includes("Projects with"), "Portfolio export is missing the Projects story heading.");
-assert(rootHtml.includes("real gravity."), "Portfolio export is missing the Projects heading accent.");
-assert(rootHtml.includes("Engineering under"), "Portfolio export is missing the Experience story heading.");
-assert(rootHtml.includes("real constraints."), "Portfolio export is missing the Experience heading accent.");
-assert(rootHtml.includes("A working systems"), "Portfolio export is missing the Skills story heading.");
-assert(rootHtml.includes("constellation."), "Portfolio export is missing the Skills heading accent.");
+assert(
+  rootHtml.includes("Projects with"),
+  "Portfolio export is missing the Projects story heading.",
+);
+assert(
+  rootHtml.includes("real gravity."),
+  "Portfolio export is missing the Projects heading accent.",
+);
+assert(
+  rootHtml.includes("Engineering under"),
+  "Portfolio export is missing the Experience story heading.",
+);
+assert(
+  rootHtml.includes("real constraints."),
+  "Portfolio export is missing the Experience heading accent.",
+);
+assert(
+  rootHtml.includes("A working systems"),
+  "Portfolio export is missing the Skills story heading.",
+);
+assert(
+  rootHtml.includes("constellation."),
+  "Portfolio export is missing the Skills heading accent.",
+);
 assert(rootHtml.includes("Continue the"), "Portfolio export is missing the Contact story heading.");
-assert(rootHtml.includes("conversation."), "Portfolio export is missing the Contact heading accent.");
-assert(rootHtml.includes("Portfolio route / Dispatch"), "Portfolio export is missing the grounded dispatch scene.");
-assert(rootHtml.includes("data-operator-berth"), "Portfolio export is missing the clean Profile operator berth.");
-assert(rootHtml.includes("05 / Arrival bay"), "Portfolio export is missing the Contact arrival scene.");
-assert(rootHtml.includes('data-disclosure-kind="mission"'), "Portfolio export is missing project disclosures.");
-assert(rootHtml.includes('data-disclosure-kind="timeline"'), "Portfolio export is missing Experience disclosures.");
-assert(rootHtml.includes('data-disclosure-kind="toolkit"'), "Portfolio export is missing Skills disclosures.");
-assert(gameHtml.includes('data-game-header="true"'), "Game export is missing the orbital Game navigation.");
-assert(gameHtml.includes('data-game-theme="orbital-engineering-journey"'), "Game export is missing the orbital token scope.");
-assert(gameHtml.includes('id="game-training-title"'), "Game export is missing its training-shell heading.");
-assert(gameHtml.includes("Five actions, then run."), "Game export is missing its five-step walkthrough premise.");
+assert(
+  rootHtml.includes("conversation."),
+  "Portfolio export is missing the Contact heading accent.",
+);
+assert(
+  rootHtml.includes("Portfolio route / Dispatch"),
+  "Portfolio export is missing the grounded dispatch scene.",
+);
+assert(
+  rootHtml.includes("data-operator-berth"),
+  "Portfolio export is missing the clean Profile operator berth.",
+);
+assert(
+  rootHtml.includes("05 / Arrival bay"),
+  "Portfolio export is missing the Contact arrival scene.",
+);
+assert(
+  rootHtml.includes('data-disclosure-kind="mission"'),
+  "Portfolio export is missing project disclosures.",
+);
+assert(
+  rootHtml.includes('data-disclosure-kind="timeline"'),
+  "Portfolio export is missing Experience disclosures.",
+);
+assert(
+  rootHtml.includes('data-disclosure-kind="toolkit"'),
+  "Portfolio export is missing Skills disclosures.",
+);
+assert(
+  gameHtml.includes('data-game-header="true"'),
+  "Game export is missing the orbital Game navigation.",
+);
+assert(
+  gameHtml.includes('data-game-theme="orbital-engineering-journey"'),
+  "Game export is missing the orbital token scope.",
+);
+assert(
+  gameHtml.includes('id="game-training-title"'),
+  "Game export is missing its training-shell heading.",
+);
+assert(
+  gameHtml.includes("Five actions, then run."),
+  "Game export is missing its five-step walkthrough premise.",
+);
 for (const action of ["Jump", "Dash", "Fast Drop", "Pause", "Story Log"]) {
   assert(gameHtml.includes(action), `Game training fallback is missing ${action}.`);
 }
-assert(gameHtml.includes("Exit to Portfolio"), "Game export is missing its direct Portfolio return.");
-assert(!gameHtml.includes("<canvas"), "Server-rendered training fallback must not contain a canvas.");
-assert(!/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(rootHtml), "Portfolio still depends on remote fonts.");
+assert(
+  gameHtml.includes("Exit to Portfolio"),
+  "Game export is missing its direct Portfolio return.",
+);
+assert(
+  !gameHtml.includes("<canvas"),
+  "Server-rendered training fallback must not contain a canvas.",
+);
+assert(
+  !/fonts\.googleapis\.com|fonts\.gstatic\.com/.test(rootHtml),
+  "Portfolio still depends on remote fonts.",
+);
 
-for (const [label, html] of [["Portfolio", rootHtml], ["Game training fallback", gameHtml]]) {
-  assert(!/game\/assets|sk-character-sheet|industrial-world-atlas/i.test(html), `${label} eagerly requests game artwork.`);
+for (const [label, html] of [
+  ["Portfolio", rootHtml],
+  ["Game training fallback", gameHtml],
+]) {
+  assert(
+    !/game\/assets|sk-character-sheet|industrial-world-atlas/i.test(html),
+    `${label} eagerly requests game artwork.`,
+  );
   await assertLocalReferencesExist(html, label);
 }
 
 for (const requiredOutput of [
   ".htaccess",
   "robots.txt",
+  "sitemap.xml",
   "404.html",
   "game/assets/sk-character-sheet.png",
   "game/assets/industrial-world-atlas.png",
@@ -131,29 +208,12 @@ for (const [label, html, maximumBytes] of initialScriptBudgets) {
   initialScriptTransfers.push([label, transferBytes]);
 }
 
-const chunkDirectory = path.join(outputRoot, "_next", "static", "chunks");
-const chunkFiles = (await walk(chunkDirectory)).filter((file) => file.endsWith(".js"));
-const phaserChunks = [];
-
-for (const file of chunkFiles) {
-  const source = await readFile(file, "utf8");
-  if (/\bphaser\b/i.test(source)) phaserChunks.push(path.basename(file));
-}
-
-assert(phaserChunks.length > 0, "Expected a lazy Phaser runtime chunk in the game build.");
-for (const chunk of phaserChunks) {
-  assert(!rootHtml.includes(chunk), `Portfolio eagerly loads Phaser chunk ${chunk}.`);
-  assert(!gameHtml.includes(chunk), `Server-rendered Game fallback eagerly loads Phaser chunk ${chunk}.`);
-}
-
-const portfolioScripts = localReferences(rootHtml).filter((reference) =>
-  reference.endsWith(".js"),
-);
+const portfolioScripts = localReferences(rootHtml).filter((reference) => reference.endsWith(".js"));
 for (const reference of portfolioScripts) {
   const source = await readFile(outputPathFor(reference), "utf8");
   assert(
-    !/industrial-world-atlas|sk-character-sheet|Five actions complete/i.test(source),
-    `Portfolio script ${reference} contains Chronicle runtime code.`,
+    !/industrial-world-atlas|sk-character-sheet/i.test(source),
+    `Portfolio script ${reference} contains a direct Chronicle artwork reference.`,
   );
 }
 
@@ -175,4 +235,4 @@ console.log("Static release validation passed.");
 for (const [label, transferBytes] of initialScriptTransfers) {
   console.log(`${label} initial scripts (gzip): ${(transferBytes / 1000).toFixed(1)} kB`);
 }
-console.log(`Lazy Phaser chunks: ${phaserChunks.join(", ")}`);
+console.log("Browser network tests enforce lazy Phaser and Chronicle asset isolation.");

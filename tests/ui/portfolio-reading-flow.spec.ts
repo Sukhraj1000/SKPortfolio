@@ -22,9 +22,7 @@ async function expectNoPageOverflow(page: Page) {
     viewportWidth: document.documentElement.clientWidth,
   }));
 
-  expect(dimensions.documentWidth).toBeLessThanOrEqual(
-    dimensions.viewportWidth + 1,
-  );
+  expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewportWidth + 1);
 }
 
 async function expectHeaderControlsWithinViewport(page: Page) {
@@ -36,9 +34,7 @@ async function expectHeaderControlsWithinViewport(page: Page) {
 
     const box = await control.boundingBox();
     expect(box?.x).toBeGreaterThanOrEqual(-1);
-    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
-      (viewport?.width ?? 0) + 1,
-    );
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual((viewport?.width ?? 0) + 1);
   }
 }
 
@@ -61,33 +57,25 @@ async function expectReadableText(
   });
 
   expect(metrics.fontSize).toBeGreaterThanOrEqual(minimumSize);
-  expect(metrics.lineHeightRatio).toBeGreaterThanOrEqual(
-    minimumLineHeightRatio,
-  );
+  expect(metrics.lineHeightRatio).toBeGreaterThanOrEqual(minimumLineHeightRatio);
 }
 
 function parseHexColour(value: string) {
   const normalised = value.trim().replace("#", "");
   const expanded =
-    normalised.length === 3
-      ? [...normalised].map((part) => `${part}${part}`).join("")
-      : normalised;
+    normalised.length === 3 ? [...normalised].map((part) => `${part}${part}`).join("") : normalised;
 
   if (!/^[0-9a-f]{6}$/i.test(expanded)) {
     throw new Error(`Expected a six-digit hex colour, received: ${value}`);
   }
 
-  return [0, 2, 4].map((offset) =>
-    Number.parseInt(expanded.slice(offset, offset + 2), 16),
-  );
+  return [0, 2, 4].map((offset) => Number.parseInt(expanded.slice(offset, offset + 2), 16));
 }
 
 function relativeLuminance(colour: number[]) {
   const channels = colour.map((channel) => {
     const ratio = channel / 255;
-    return ratio <= 0.04045
-      ? ratio / 12.92
-      : ((ratio + 0.055) / 1.055) ** 2.4;
+    return ratio <= 0.04045 ? ratio / 12.92 : ((ratio + 0.055) / 1.055) ** 2.4;
   });
 
   return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
@@ -122,15 +110,11 @@ async function readThemeTokens(page: Page) {
 
 test.describe("portfolio reading flow", () => {
   for (const viewport of contentViewports) {
-    test(`keeps professional context readable at ${viewport.width}px`, async ({
-      page,
-    }) => {
+    test(`keeps professional context readable at ${viewport.width}px`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.goto("/");
 
-      await expect(
-        page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
       await expectReadableText(page.locator("[data-hero-summary]"));
       await expect(
         page.locator("#home").getByText("First-Class Computer Science graduate", {
@@ -146,9 +130,7 @@ test.describe("portfolio reading flow", () => {
     });
   }
 
-  test("shows every portfolio section without hidden horizontal navigation", async ({
-    page,
-  }) => {
+  test("shows every portfolio section without hidden horizontal navigation", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 320, height: 568 });
     await page.goto("/");
@@ -184,9 +166,7 @@ test.describe("portfolio reading flow", () => {
       if (targetId !== "home") {
         await expect
           .poll(async () =>
-            target.evaluate((element) =>
-              Math.round(element.getBoundingClientRect().top),
-            ),
+            target.evaluate((element) => Math.round(element.getBoundingClientRect().top)),
           )
           .toBeGreaterThanOrEqual(64);
       }
@@ -205,6 +185,20 @@ test.describe("portfolio reading flow", () => {
     await expect(projectRecords).toHaveCount(4);
     await expect(featuredProjects).toHaveCount(2);
     await expect(supportingProjects).toHaveCount(2);
+    const projectDisclosureNames = await projectRecords
+      .locator("summary")
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
+    expect(new Set(projectDisclosureNames).size).toBe(4);
+    expect(projectDisclosureNames).toEqual([
+      "Toggle Tymaura engineering details",
+      "Toggle Skaltek engineering details",
+      "Toggle Solana Smart Contract AI Generator engineering details",
+      "Toggle Crypto Portfolio Mobile App engineering details",
+    ]);
+    await expect(featuredProjects.locator(".pq-project-node")).toHaveCount(8);
+    for (const node of await featuredProjects.locator(".pq-project-node").all()) {
+      await expect(node).toHaveAttribute("aria-hidden", "true");
+    }
 
     for (const record of await projectRecords.all()) {
       await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
@@ -237,14 +231,16 @@ test.describe("portfolio reading flow", () => {
     expect(mediaBox?.y).toBeLessThan(overviewBox?.y ?? Number.POSITIVE_INFINITY);
   });
 
-  test("keeps experience and skills readable with native disclosure controls", async ({
-    page,
-  }) => {
+  test("keeps experience and skills readable with native disclosure controls", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#about");
 
     const experienceRecords = page.locator("[data-experience-record]");
     await expect(experienceRecords).toHaveCount(4);
+    const experienceDisclosureNames = await experienceRecords
+      .locator("summary")
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
+    expect(new Set(experienceDisclosureNames).size).toBe(4);
 
     for (const record of await experienceRecords.all()) {
       await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
@@ -267,6 +263,10 @@ test.describe("portfolio reading flow", () => {
 
     const capabilityRecords = page.locator("[data-capability-record]");
     await expect(capabilityRecords).toHaveCount(5);
+    const capabilityDisclosureNames = await capabilityRecords
+      .locator("summary")
+      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
+    expect(new Set(capabilityDisclosureNames).size).toBe(5);
 
     for (const record of await capabilityRecords.all()) {
       await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
@@ -306,7 +306,7 @@ test.describe("portfolio reading flow", () => {
     expect(focusStyle?.outlineStyle).toBe("solid");
     expect(focusStyle?.outlineWidth).toBeGreaterThanOrEqual(2);
 
-    const cvTrigger = page.locator("#home").getByRole("button", {
+    const cvTrigger = page.locator("#home").getByRole("link", {
       name: "Request private CV",
     });
     await cvTrigger.focus();
@@ -322,9 +322,35 @@ test.describe("portfolio reading flow", () => {
     await expect(cvTrigger).toBeFocused();
   });
 
-  test("meets representative contrast requirements in the dark presentation", async ({
-    page,
-  }) => {
+  test("keeps orbital tokens on portalled dialogs, sheets, and overlays", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    const tokenNames = ["--background", "--surface", "--primary", "--border", "--ring"];
+    const readTokens = (selector: string) =>
+      page.locator(selector).evaluate((element, names) => {
+        const styles = window.getComputedStyle(element);
+        return Object.fromEntries(
+          names.map((name) => [name, styles.getPropertyValue(name).trim()]),
+        );
+      }, tokenNames);
+
+    const routeTokens = await readTokens(".pq-root");
+    expect(await readTokens("body")).toEqual(routeTokens);
+
+    await page.locator("#home").getByRole("link", { name: "Request private CV" }).click();
+    await expect(page.getByRole("dialog", { name: "Request Sukhraj's CV" })).toBeVisible();
+    expect(await readTokens('[data-slot="dialog-content"]')).toEqual(routeTokens);
+    expect(await readTokens('[data-slot="dialog-overlay"]')).toEqual(routeTokens);
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("button", { name: "Open portfolio navigation" }).click();
+    await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
+    expect(await readTokens('[data-slot="sheet-content"]')).toEqual(routeTokens);
+    expect(await readTokens('[data-slot="sheet-overlay"]')).toEqual(routeTokens);
+  });
+
+  test("meets representative contrast requirements in the dark presentation", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
     await page.goto("/");
@@ -379,9 +405,7 @@ test.describe("portfolio reading flow", () => {
 
       await expect(page.locator("html")).toHaveClass(/dark/);
       await expect(page.locator("html")).not.toHaveClass(/light/);
-      await expect(
-        page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-      ).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
       await expect(page.locator("[data-project-record]")).toHaveCount(4);
       await expect(page.locator("[data-experience-record]")).toHaveCount(4);
       await expect(page.locator("[data-capability-record]")).toHaveCount(5);

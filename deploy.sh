@@ -14,17 +14,17 @@ rm -rf .next out
 echo "Running the release gate..."
 npm run qa
 
-for required_file in public/robots.txt public/.htaccess; do
+if [[ ! -d out ]]; then
+  echo "Static export directory was not created." >&2
+  exit 1
+fi
+
+for required_file in out/.htaccess out/robots.txt out/sitemap.xml out/index.html out/game/index.html; do
   if [[ ! -f "$required_file" ]]; then
     echo "Required deployment file is missing: $required_file" >&2
     exit 1
   fi
 done
-
-if [[ ! -d out ]]; then
-  echo "Static export directory was not created." >&2
-  exit 1
-fi
 
 file_count="$(find out -type f | wc -l | tr -d ' ')"
 echo "Static export ready: $file_count files in out/."

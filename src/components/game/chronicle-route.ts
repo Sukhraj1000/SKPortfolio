@@ -21,14 +21,11 @@ export const chronicleUpperRoutes = [
 ] as const;
 
 export const chronicleJumpApex =
-  (chronicleRoutePhysics.jumpSpeed ** 2) /
-  (2 * chronicleRoutePhysics.gravity);
+  chronicleRoutePhysics.jumpSpeed ** 2 / (2 * chronicleRoutePhysics.gravity);
 
-export const chronicleRouteReachability = chronicleUpperRoutes.map(
-  (route) => ({
-    start: route.start,
-    entryRise: chronicleFloorY - route.y,
-    jumpApex: chronicleJumpApex,
-    reachRatio: (chronicleFloorY - route.y) / chronicleJumpApex,
-  }),
-);
+export const chronicleRouteReachability = chronicleUpperRoutes.map((route) => ({
+  start: route.start,
+  entryRise: chronicleFloorY - route.y,
+  jumpApex: chronicleJumpApex,
+  reachRatio: (chronicleFloorY - route.y) / chronicleJumpApex,
+}));

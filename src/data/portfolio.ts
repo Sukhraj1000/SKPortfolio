@@ -1,29 +1,28 @@
-export type SocialNetwork = "github" | "linkedin" | "x";
-export type ProjectLinkKind = "live" | "source";
-export type CapabilityLevel = "primary" | "supporting";
-export type StoryChapterId =
-  | "briefing"
-  | "build"
-  | "progress"
-  | "method"
-  | "next";
+type SocialNetwork = "github" | "linkedin" | "x";
+type ProjectLinkKind = "live" | "source";
+type CapabilityLevel = "primary" | "supporting";
+type StoryChapterId = "briefing" | "build" | "progress" | "method" | "next";
 
-export interface SocialLink {
+export type PortfolioStoryAnchor = "home" | "projects" | "about" | "loadout" | "contact";
+type PortfolioProjectId = "tymaura" | "skaltek" | "solana-contract-generator" | "crypto-portfolio";
+
+interface SocialLink {
   id: SocialNetwork;
   label: string;
   href: string;
 }
 
-export interface ProjectLink {
+interface ProjectLink {
   kind: ProjectLinkKind;
   label: string;
   href: string;
 }
 
 export interface PortfolioProject {
-  id: string;
+  id: PortfolioProjectId;
   title: string;
   kind: string;
+  tier: "featured" | "supporting";
   status: "Live" | "Independent project" | "Final-year project";
   summary: string;
   problem: string;
@@ -51,7 +50,7 @@ export interface ExperienceEntry {
   technologies: readonly string[];
 }
 
-export interface CapabilityItem {
+interface CapabilityItem {
   name: string;
   level: CapabilityLevel;
 }
@@ -63,20 +62,20 @@ export interface CapabilityGroup {
   items: readonly CapabilityItem[];
 }
 
-export interface StoryChapter {
+interface StoryChapter {
   id: StoryChapterId;
   index: string;
   portfolioLabel: string;
-  title: string;
-  summary: string;
+  anchor: PortfolioStoryAnchor;
   href: string;
+  railState: string;
+  railNote: string;
 }
 
 export const portfolioProfile = {
   name: "Sukhraj Kalon",
   initials: "SK",
   role: "Software Engineer",
-  employer: "Northrop Grumman",
   location: "West Midlands, UK",
   education: "First-Class Computer Science graduate",
   positioning:
@@ -84,57 +83,59 @@ export const portfolioProfile = {
   storyObjective:
     "Deliver dependable software, make complex systems easier to operate, and keep the engineering evidence clear.",
   toolkit: "Secure software · Cloud · Data · AI systems",
-  summary:
-    "Software Engineer and First-Class Computer Science graduate with hands-on experience across secure full-stack development, cloud services, data automation, AI-assisted systems, and blockchain applications.",
 } as const;
 
-export const storyChapters: readonly StoryChapter[] = [
+export const storyChapters = [
   {
     id: "briefing",
     index: "01",
     portfolioLabel: "Profile",
-    title: "Software engineer building secure, useful systems.",
-    summary:
-      "Current role, background, and the engineering work Sukhraj focuses on.",
+    anchor: "home",
     href: "/#home",
+    railState: "Standing by",
+    railNote: "Identity",
   },
   {
     id: "build",
     index: "02",
     portfolioLabel: "Projects",
-    title: "Selected projects and product work.",
-    summary:
-      "Production products and technical projects, with outcomes and individual contribution made clear.",
+    anchor: "projects",
     href: "/#projects",
+    railState: "Inspecting build",
+    railNote: "Selected work",
   },
   {
     id: "progress",
     index: "03",
     portfolioLabel: "Experience",
-    title: "Professional experience.",
-    summary:
-      "Current and previous roles across software engineering, data, and operations.",
+    anchor: "about",
     href: "/#about",
+    railState: "Reviewing record",
+    railNote: "Delivery record",
   },
   {
     id: "method",
     index: "04",
     portfolioLabel: "Skills",
-    title: "Technical skills.",
-    summary:
-      "Technologies grouped by how they are used across applications, data, cloud, automation, and delivery.",
+    anchor: "loadout",
     href: "/#loadout",
+    railState: "Tooling linked",
+    railNote: "Working toolkit",
   },
   {
     id: "next",
     index: "05",
     portfolioLabel: "Contact",
-    title: "Get in touch.",
-    summary:
-      "Contact details for recruiters, engineering teams, and relevant collaborators.",
+    anchor: "contact",
     href: "/#contact",
+    railState: "Channel open",
+    railNote: "Next step",
   },
-];
+] as const satisfies readonly StoryChapter[];
+
+export const portfolioStoryAnchors: readonly PortfolioStoryAnchor[] = storyChapters.map(
+  (chapter) => chapter.anchor,
+);
 
 export const socialLinks: readonly SocialLink[] = [
   {
@@ -154,42 +155,35 @@ export const socialLinks: readonly SocialLink[] = [
   },
 ];
 
-export const portfolioProjects: readonly PortfolioProject[] = [
+export const portfolioProjects = [
   {
     id: "tymaura",
     title: "Tymaura",
     kind: "Event-planning platform",
+    tier: "featured",
     status: "Live",
+    grade: undefined,
     summary:
       "A production-focused event-planning platform with vendor workflows, authentication, guest RSVP journeys, messaging, and admin readiness controls.",
     problem:
       "Event operations need vendor, guest, messaging, and administrative workflows to remain coordinated across one reliable product.",
     contribution:
       "Built across frontend, backend, deployment, database workflows, and production QA.",
-    outcome:
-      "A live platform supporting vendor, guest, messaging, and administrative workflows.",
+    outcome: "A live platform supporting vendor, guest, messaging, and administrative workflows.",
     image: "/tymaura-logo-card.svg",
     imageAlt: "Tymaura event-planning platform logo",
     imageWidth: 1200,
     imageHeight: 675,
-    technologies: [
-      "React",
-      "TypeScript",
-      "Next.js",
-      "Convex",
-      "Clerk",
-      "Vercel",
-      "Stripe",
-    ],
-    links: [
-      { kind: "live", label: "Visit Tymaura", href: "https://tymaura.app" },
-    ],
+    technologies: ["React", "TypeScript", "Next.js", "Convex", "Clerk", "Vercel", "Stripe"],
+    links: [{ kind: "live", label: "Visit Tymaura", href: "https://tymaura.app" }],
   },
   {
     id: "skaltek",
     title: "Skaltek",
     kind: "AI systems and product automation",
+    tier: "featured",
     status: "Live",
+    grade: undefined,
     summary:
       "Independent AI-assisted systems for research, outreach, product, and content workflows, alongside production web delivery for local UK businesses.",
     problem:
@@ -211,14 +205,13 @@ export const portfolioProjects: readonly PortfolioProject[] = [
       "Browser Automation",
       "GitHub Workflows",
     ],
-    links: [
-      { kind: "live", label: "Visit Skaltek", href: "https://skaltek.co.uk" },
-    ],
+    links: [{ kind: "live", label: "Visit Skaltek", href: "https://skaltek.co.uk" }],
   },
   {
     id: "solana-contract-generator",
     title: "Solana Smart Contract AI Generator",
     kind: "AI developer platform",
+    tier: "supporting",
     status: "Final-year project",
     grade: "82%",
     summary:
@@ -232,14 +225,7 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     imageAlt: "Solana logo used for the smart contract generator project",
     imageWidth: 450,
     imageHeight: 450,
-    technologies: [
-      "React",
-      "FastAPI",
-      "Claude API",
-      "Solana",
-      "Anchor",
-      "Rust",
-    ],
+    technologies: ["React", "FastAPI", "Claude API", "Solana", "Anchor", "Rust"],
     links: [
       {
         kind: "source",
@@ -252,6 +238,7 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     id: "crypto-portfolio",
     title: "Crypto Portfolio Mobile App",
     kind: "Cross-platform mobile application",
+    tier: "supporting",
     status: "Independent project",
     grade: "80%",
     summary:
@@ -266,13 +253,7 @@ export const portfolioProjects: readonly PortfolioProject[] = [
     imageWidth: 480,
     imageHeight: 782,
     imageSrcSet: "/cryptoapp-240.webp 240w, /cryptoapp.webp 480w",
-    technologies: [
-      ".NET MAUI",
-      "C#",
-      "CoinGecko API",
-      "Mobile",
-      "Data Visualisation",
-    ],
+    technologies: [".NET MAUI", "C#", "CoinGecko API", "Mobile", "Data Visualisation"],
     links: [
       {
         kind: "source",
@@ -281,7 +262,14 @@ export const portfolioProjects: readonly PortfolioProject[] = [
       },
     ],
   },
-];
+] as const satisfies readonly PortfolioProject[];
+
+type FeaturedProjectRecord = Extract<(typeof portfolioProjects)[number], { tier: "featured" }>;
+export type FeaturedProjectId = FeaturedProjectRecord["id"];
+export type FeaturedProject = PortfolioProject & {
+  id: FeaturedProjectId;
+  tier: "featured";
+};
 
 export const experience: readonly ExperienceEntry[] = [
   {
@@ -325,13 +313,7 @@ export const experience: readonly ExperienceEntry[] = [
       "Configure and troubleshoot Cloudflare domains, DNS records, and SSL enforcement.",
       "Maintain spreadsheet workflows and data accuracy for day-to-day operations.",
     ],
-    technologies: [
-      "Excel Automation",
-      "Reporting Dashboards",
-      "Cloudflare",
-      "DNS",
-      "SSL",
-    ],
+    technologies: ["Excel Automation", "Reporting Dashboards", "Cloudflare", "DNS", "SSL"],
   },
   {
     id: "northrop-intern",
@@ -464,7 +446,7 @@ export const capabilityGroups: readonly CapabilityGroup[] = [
 
 export const contactDetails = {
   location: portfolioProfile.location,
+  email: "SukhrajKalon@gmail.com",
   emailLabel: "Request by email",
-  cvRequest:
-    "The full CV is shared privately with recruiters, hiring managers, and collaborators.",
+  cvRequest: "The full CV is shared privately with recruiters, hiring managers, and collaborators.",
 } as const;

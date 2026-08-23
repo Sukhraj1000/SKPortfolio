@@ -33,13 +33,15 @@ const DROP_SPEED = chronicleRoutePhysics.dropSpeed;
 const COYOTE_WINDOW = chronicleRoutePhysics.coyoteWindowMs;
 const JUMP_BUFFER_WINDOW = chronicleRoutePhysics.jumpBufferWindowMs;
 
+type ChapterTone = "cyan" | "yellow" | "mint" | "violet" | "primary";
+
 interface ChapterDefinition {
   id: ChronicleChapterId;
   index: string;
   label: string;
   start: number;
   end: number;
-  tint: number;
+  tone: ChapterTone;
 }
 
 const chapters: readonly ChapterDefinition[] = [
@@ -49,7 +51,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Origin",
     start: 0,
     end: CHAPTER_WIDTH,
-    tint: 0x67e4f6,
+    tone: "cyan",
   },
   {
     id: "live-systems",
@@ -57,7 +59,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Live Systems",
     start: CHAPTER_WIDTH,
     end: CHAPTER_WIDTH * 2,
-    tint: 0xf0c969,
+    tone: "yellow",
   },
   {
     id: "secure-engineering",
@@ -65,7 +67,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Secure Engineering",
     start: CHAPTER_WIDTH * 2,
     end: CHAPTER_WIDTH * 3,
-    tint: 0x8bd59b,
+    tone: "mint",
   },
   {
     id: "build-lab",
@@ -73,7 +75,7 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Build Lab",
     start: CHAPTER_WIDTH * 3,
     end: CHAPTER_WIDTH * 4,
-    tint: 0x9d90ff,
+    tone: "violet",
   },
   {
     id: "present-day",
@@ -81,35 +83,16 @@ const chapters: readonly ChapterDefinition[] = [
     label: "Present Day",
     start: CHAPTER_WIDTH * 4,
     end: WORLD_WIDTH,
-    tint: 0xddf778,
+    tone: "primary",
   },
 ] as const;
 
 const hazardPositions = [
-  6_850,
-  8_950,
-  11_150,
-  12_900,
-  15_180,
-  17_250,
-  18_820,
-  20_780,
-  23_020,
-  24_950,
-  27_080,
-  29_020,
+  6_850, 8_950, 11_150, 12_900, 15_180, 17_250, 18_820, 20_780, 23_020, 24_950, 27_080, 29_020,
 ] as const;
 
 const storyPickupPositions = [
-  3_800,
-  7_600,
-  13_800,
-  19_250,
-  20_950,
-  22_450,
-  23_750,
-  25_550,
-  29_400,
+  3_800, 7_600, 13_800, 19_250, 20_950, 22_450, 23_750, 25_550, 29_400,
 ] as const;
 
 const checkpointDefinitions = [
@@ -119,9 +102,7 @@ const checkpointDefinitions = [
     chapterStart: true,
   })),
   ...hazardPositions.map((x) => ({
-    zone:
-      chapters.find((chapter) => x >= chapter.start && x < chapter.end)?.id ??
-      chapters[0].id,
+    zone: chapters.find((chapter) => x >= chapter.start && x < chapter.end)?.id ?? chapters[0].id,
     x: x - 520,
     chapterStart: false,
   })),
@@ -130,19 +111,21 @@ const checkpointDefinitions = [
 function readThemePalette(themeHost: HTMLElement) {
   const styles = window.getComputedStyle(themeHost);
   const color = (property: string, fallback: string) =>
-    Phaser.Display.Color.HexStringToColor(
-      styles.getPropertyValue(property).trim() || fallback,
-    ).color;
+    Phaser.Display.Color.HexStringToColor(styles.getPropertyValue(property).trim() || fallback)
+      .color;
 
   return {
     background: color("--background", "#04070d"),
     foreground: color("--foreground", "#f0f4eb"),
     surface: color("--surface", "#080e17"),
+    surfaceRaised: color("--surface-raised", "#0d1621"),
     surfaceHigh: color("--surface-high", "#13222e"),
     primary: color("--primary", "#ddf778"),
     cyan: color("--signal-cyan", "#67e4f6"),
+    mint: color("--signal-green", "#8bd59b"),
     yellow: color("--signal-yellow", "#f0c969"),
     red: color("--signal-red", "#ef806d"),
+    violet: color("--signal-violet", "#9d90ff"),
   };
 }
 
@@ -157,12 +140,12 @@ export function createChronicleGame({
   callbacks: ChronicleGameCallbacks;
   recoveredRecords: readonly ChronicleRecordId[];
 }): ChronicleGameHandle {
+  const palette = readThemePalette(parent);
+  const chapterColor = (chapter: ChapterDefinition) => palette[chapter.tone];
   let pausedRequested = true;
   let tutorialAlreadyCompleted = false;
   let storyResetRequested = false;
-  let reducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)",
-  ).matches;
+  let reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   class ChronicleScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite;
@@ -190,22 +173,12 @@ export function createChronicleGame({
     private lastSnapshotAt = 0;
     private lastScoredX = 150;
     private playerState: ChroniclePlayerState = "grounded";
-    private recoveredRecordIds = new Set<ChronicleRecordId>(
-      initialRecoveredRecords,
-    );
+    private recoveredRecordIds = new Set<ChronicleRecordId>(initialRecoveredRecords);
     private latestUnlockId: ChronicleRecordId | null = null;
-    private tutorialStepIndex = tutorialAlreadyCompleted
-      ? chronicleTutorialSteps.length - 1
-      : 0;
+    private tutorialStepIndex = tutorialAlreadyCompleted ? chronicleTutorialSteps.length - 1 : 0;
     private runStarted = tutorialAlreadyCompleted;
     private dropPracticePrepared = false;
-    private chapterPanels: Phaser.GameObjects.Rectangle[] = [];
-    private chapterLabels: Phaser.GameObjects.Text[] = [];
     private parallaxLayers: Phaser.GameObjects.TileSprite[] = [];
-    private deckBases: Phaser.GameObjects.Rectangle[] = [];
-    private deckInsets: Phaser.GameObjects.Rectangle[] = [];
-    private deckEdges: Phaser.GameObjects.Rectangle[] = [];
-    private deckDetails: Phaser.GameObjects.TileSprite[] = [];
     private rewardMotions: Array<{
       target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc;
       tween: Phaser.Tweens.Tween;
@@ -222,16 +195,14 @@ export function createChronicleGame({
     }
 
     preload() {
-      this.load.spritesheet(
-        "sk-character",
-        "/game/assets/sk-character-sheet.png",
-        { frameWidth: 48, frameHeight: 64 },
-      );
-      this.load.spritesheet(
-        "industrial-world",
-        "/game/assets/industrial-world-atlas.png",
-        { frameWidth: 128, frameHeight: 128 },
-      );
+      this.load.spritesheet("sk-character", "/game/assets/sk-character-sheet.png", {
+        frameWidth: 48,
+        frameHeight: 64,
+      });
+      this.load.spritesheet("industrial-world", "/game/assets/industrial-world-atlas.png", {
+        frameWidth: 128,
+        frameHeight: 128,
+      });
     }
 
     create() {
@@ -256,7 +227,7 @@ export function createChronicleGame({
         this.input.keyboard?.removeAllKeys(true);
       });
 
-      this.refreshTheme();
+      this.cameras.main.setBackgroundColor(palette.background);
       callbacks.onNotice(
         storyResetRequested
           ? "New story run started. Records reset; best time and high score preserved."
@@ -310,21 +281,13 @@ export function createChronicleGame({
           this.advanceTutorial("jump");
         }
 
-        if (
-          tutorialStep === "dash" &&
-          (keyboardDash || touchDash) &&
-          time >= this.dashReadyAt
-        ) {
+        if (tutorialStep === "dash" && (keyboardDash || touchDash) && time >= this.dashReadyAt) {
           this.dashEndsAt = time + DASH_DURATION;
           this.dashReadyAt = time + DASH_COOLDOWN;
           this.advanceTutorial("dash");
         }
 
-        if (
-          tutorialStep === "drop" &&
-          grounded &&
-          !this.dropPracticePrepared
-        ) {
+        if (tutorialStep === "drop" && grounded && !this.dropPracticePrepared) {
           this.dropPracticePrepared = true;
           this.player.setVelocityY(-420);
         }
@@ -335,20 +298,11 @@ export function createChronicleGame({
         }
 
         const dashing = time < this.dashEndsAt;
-        this.updatePlayerPresentation(
-          time,
-          grounded,
-          dashing,
-          dropHeld,
-          previousState,
-        );
+        this.updatePlayerPresentation(time, grounded, dashing, dropHeld, previousState);
 
         this.lastTouchJump = controls.current.jump;
         this.lastTouchDash = controls.current.dash;
-        if (
-          previousState !== this.playerState ||
-          time - this.lastSnapshotAt >= 250
-        ) {
+        if (previousState !== this.playerState || time - this.lastSnapshotAt >= 250) {
           this.lastSnapshotAt = time;
           this.emitSnapshot();
         }
@@ -377,13 +331,7 @@ export function createChronicleGame({
         this.player.setVelocityY(Math.max(380, body.velocity.y + 100));
       }
 
-      this.updatePlayerPresentation(
-        time,
-        grounded,
-        dashing,
-        dropHeld,
-        previousState,
-      );
+      this.updatePlayerPresentation(time, grounded, dashing, dropHeld, previousState);
 
       this.addDistanceScore();
       if (this.player.y > WORLD_HEIGHT + 48) {
@@ -393,10 +341,7 @@ export function createChronicleGame({
       this.lastTouchJump = controls.current.jump;
       this.lastTouchDash = controls.current.dash;
 
-      if (
-        previousState !== this.playerState ||
-        time - this.lastSnapshotAt >= 250
-      ) {
+      if (previousState !== this.playerState || time - this.lastSnapshotAt >= 250) {
         this.lastSnapshotAt = time;
         this.emitSnapshot();
       }
@@ -424,18 +369,10 @@ export function createChronicleGame({
       this.lastScoredX = 150;
       this.playerState = "grounded";
       this.latestUnlockId = null;
-      this.tutorialStepIndex = tutorialAlreadyCompleted
-        ? chronicleTutorialSteps.length - 1
-        : 0;
+      this.tutorialStepIndex = tutorialAlreadyCompleted ? chronicleTutorialSteps.length - 1 : 0;
       this.runStarted = tutorialAlreadyCompleted;
       this.dropPracticePrepared = false;
-      this.chapterPanels = [];
-      this.chapterLabels = [];
       this.parallaxLayers = [];
-      this.deckBases = [];
-      this.deckInsets = [];
-      this.deckEdges = [];
-      this.deckDetails = [];
       this.rewardMotions = [];
       this.landingEndsAt = 0;
       this.lastDashTrailAt = 0;
@@ -444,7 +381,7 @@ export function createChronicleGame({
     private createAtmosphereTextures() {
       if (!this.textures.exists("chronicle-far-city")) {
         const far = this.make.graphics({ x: 0, y: 0 }, false);
-        far.fillStyle(0x0d1621, 1);
+        far.fillStyle(palette.surfaceRaised, 1);
         [
           [0, 90, 70, 190],
           [92, 45, 96, 235],
@@ -452,7 +389,7 @@ export function createChronicleGame({
           [318, 20, 112, 260],
           [454, 78, 58, 202],
         ].forEach(([x, y, width, height]) => far.fillRect(x, y, width, height));
-        far.fillStyle(0x67e4f6, 0.24);
+        far.fillStyle(palette.cyan, 0.24);
         for (let x = 18; x < 512; x += 42) {
           for (let y = 82; y < 260; y += 46) far.fillRect(x, y, 3, 8);
         }
@@ -462,14 +399,14 @@ export function createChronicleGame({
 
       if (!this.textures.exists("chronicle-near-city")) {
         const near = this.make.graphics({ x: 0, y: 0 }, false);
-        near.fillStyle(0x080e17, 1);
+        near.fillStyle(palette.surface, 1);
         [
           [0, 100, 110, 180],
           [142, 38, 122, 242],
           [296, 82, 96, 198],
           [426, 18, 86, 262],
         ].forEach(([x, y, width, height]) => near.fillRect(x, y, width, height));
-        near.lineStyle(2, 0xef806d, 0.22);
+        near.lineStyle(2, palette.red, 0.22);
         for (let x = 24; x < 512; x += 64) near.lineBetween(x, 60, x, 280);
         near.generateTexture("chronicle-near-city", 512, 280);
         near.destroy();
@@ -502,30 +439,18 @@ export function createChronicleGame({
 
     private createAtmosphere() {
       this.createAtmosphereTextures();
-      const palette = readThemePalette(parent);
       const skyBands = [
         { y: 90, height: 180, color: palette.background },
         { y: 280, height: 210, color: palette.surface },
         { y: 505, height: 170, color: palette.surfaceHigh },
       ];
       skyBands.forEach((band) => {
-        const layer = this.add
-          .rectangle(
-            WORLD_WIDTH / 2,
-            band.y,
-            WORLD_WIDTH,
-            band.height,
-            band.color,
-            1,
-          )
+        this.add
+          .rectangle(WORLD_WIDTH / 2, band.y, WORLD_WIDTH, band.height, band.color, 1)
           .setDepth(-40);
-        this.chapterPanels.push(layer);
       });
 
-      this.add
-        .circle(920, 215, 108, palette.yellow, 0.78)
-        .setScrollFactor(0.04)
-        .setDepth(-35);
+      this.add.circle(920, 215, 108, palette.yellow, 0.78).setScrollFactor(0.04).setDepth(-35);
 
       const farCity = this.add
         .tileSprite(WORLD_WIDTH / 2, 420, WORLD_WIDTH, 280, "chronicle-far-city")
@@ -539,32 +464,25 @@ export function createChronicleGame({
 
       chapters.forEach((chapter) => {
         const width = chapter.end - chapter.start;
-        const panel = this.add
+        this.add
           .rectangle(
             chapter.start + width / 2,
             WORLD_HEIGHT / 2,
             width,
             WORLD_HEIGHT,
-            chapter.tint,
+            chapterColor(chapter),
             0.08,
           )
           .setDepth(-15);
-        this.chapterPanels.push(panel);
 
-        const label = this.add
-          .text(
-            chapter.start + 54,
-            112,
-            `${chapter.index} // ${chapter.label.toUpperCase()}`,
-            {
-              fontFamily: "monospace",
-              fontSize: "20px",
-              color: "#67e4f6",
-              letterSpacing: 2,
-            },
-          )
+        this.add
+          .text(chapter.start + 54, 112, `${chapter.index} // ${chapter.label.toUpperCase()}`, {
+            fontFamily: "monospace",
+            fontSize: "20px",
+            color: `#${palette.primary.toString(16).padStart(6, "0")}`,
+            letterSpacing: 2,
+          })
           .setDepth(1);
-        this.chapterLabels.push(label);
 
         if (chapter.start > 0) {
           this.add
@@ -573,7 +491,7 @@ export function createChronicleGame({
               WORLD_HEIGHT / 2,
               5,
               WORLD_HEIGHT,
-              chapter.tint,
+              chapterColor(chapter),
               0.82,
             )
             .setDepth(2);
@@ -619,8 +537,7 @@ export function createChronicleGame({
       chronicleUpperRoutes.forEach((route) => {
         let segmentStart: number | null = null;
         for (let index = 0; index <= route.tiles; index += 1) {
-          const tileExists =
-            index < route.tiles && index !== 6 && index !== 7;
+          const tileExists = index < route.tiles && index !== 6 && index !== 7;
           if (tileExists && segmentStart === null) segmentStart = index;
           if (!tileExists && segmentStart !== null) {
             const lastIndex = index - 1;
@@ -660,13 +577,12 @@ export function createChronicleGame({
       depth: number,
     ) {
       const width = right - left;
-      const palette = readThemePalette(parent);
       const centerX = left + width / 2;
-      const base = this.add
+      this.add
         .rectangle(centerX, top + height / 2, width, height, palette.surface, 1)
         .setDepth(depth - 0.2);
       const insetHeight = Math.max(8, height - 13);
-      const inset = this.add
+      this.add
         .rectangle(
           centerX,
           top + 13 + insetHeight / 2,
@@ -676,25 +592,12 @@ export function createChronicleGame({
           0.94,
         )
         .setDepth(depth - 0.1);
-      const edge = this.add
-        .rectangle(centerX, top + 2, width, 4, palette.primary, 0.76)
-        .setDepth(depth + 0.1);
-      const detail = this.add
-        .tileSprite(
-          centerX,
-          top + height / 2,
-          width,
-          height,
-          "chronicle-deck-detail",
-        )
+      this.add.rectangle(centerX, top + 2, width, 4, palette.primary, 0.76).setDepth(depth + 0.1);
+      this.add
+        .tileSprite(centerX, top + height / 2, width, height, "chronicle-deck-detail")
         .setTint(palette.foreground)
         .setAlpha(0.34)
         .setDepth(depth);
-
-      this.deckBases.push(base);
-      this.deckInsets.push(inset);
-      this.deckEdges.push(edge);
-      this.deckDetails.push(detail);
     }
 
     private addWorldSprite(
@@ -704,12 +607,7 @@ export function createChronicleGame({
       frame: number,
       scale: number,
     ) {
-      const sprite = group.create(
-        x,
-        y,
-        "industrial-world",
-        frame,
-      ) as Phaser.Physics.Arcade.Sprite;
+      const sprite = group.create(x, y, "industrial-world", frame) as Phaser.Physics.Arcade.Sprite;
       sprite.setScale(scale).refreshBody();
       return sprite;
     }
@@ -793,19 +691,14 @@ export function createChronicleGame({
       this.rewardMotions.push(motion);
     }
 
-    private stopRewardMotion(
-      target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc,
-    ) {
+    private stopRewardMotion(target: Phaser.GameObjects.Sprite | Phaser.GameObjects.Arc) {
       this.rewardMotions
         .filter((motion) => motion.target === target)
         .forEach((motion) => motion.tween.stop());
     }
 
     private createCatchEffect(x: number, y: number, color: number) {
-      const ring = this.add
-        .circle(x, y, 26)
-        .setStrokeStyle(4, color, 0.9)
-        .setDepth(15);
+      const ring = this.add.circle(x, y, 26).setStrokeStyle(4, color, 0.9).setDepth(15);
       if (reducedMotion) {
         this.time.delayedCall(140, () => ring.destroy());
         return;
@@ -827,20 +720,11 @@ export function createChronicleGame({
         route.nodeOffsets.forEach((offset) => {
           const x = route.start + offset * 64;
           const y = route.y - 96;
-          const halo = this.add
-            .circle(x, y, 31)
-            .setStrokeStyle(3, 0x67e4f6, 0.72)
-            .setDepth(11);
-          const node = this.addWorldSprite(
-            nodes,
-            x,
-            y,
-            11 + (offset % 3),
-            0.42,
-          );
+          const halo = this.add.circle(x, y, 31).setStrokeStyle(3, palette.cyan, 0.72).setDepth(11);
+          const node = this.addWorldSprite(nodes, x, y, 11 + (offset % 3), 0.42);
           node.setDataEnabled();
           node.setData("halo", halo);
-          node.setTint(0x8bd59b);
+          node.setTint(palette.mint);
           node.setDepth(12);
           this.registerRewardMotion(node, 7, 1.05, 720 + offset * 18);
           this.registerRewardMotion(halo, 7, 1.16, 720 + offset * 18);
@@ -856,7 +740,7 @@ export function createChronicleGame({
           this.stopRewardMotion(halo);
           halo.destroy();
         }
-        this.createCatchEffect(node.x, node.y, 0x67e4f6);
+        this.createCatchEffect(node.x, node.y, palette.cyan);
         node.disableBody(true, true);
         if (this.runStarted) {
           this.score += Math.round(125 * this.multiplier);
@@ -874,21 +758,12 @@ export function createChronicleGame({
         const y = FLOOR_Y - 94;
         const color =
           record.kind === "education"
-            ? 0xf0c969
+            ? palette.yellow
             : record.kind === "experience"
-              ? 0x67e4f6
-              : 0x9d90ff;
-        const halo = this.add
-          .circle(x, y, 43)
-          .setStrokeStyle(4, color, 0.82)
-          .setDepth(11);
-        const pickup = this.addWorldSprite(
-          pickups,
-          x,
-          y,
-          10 + (index % 4),
-          0.52,
-        );
+              ? palette.cyan
+              : palette.violet;
+        const halo = this.add.circle(x, y, 43).setStrokeStyle(4, color, 0.82).setDepth(11);
+        const pickup = this.addWorldSprite(pickups, x, y, 10 + (index % 4), 0.52);
         pickup.setDataEnabled();
         pickup.setData("recordId", record.id);
         pickup.setData("halo", halo);
@@ -969,13 +844,7 @@ export function createChronicleGame({
 
     private createFinish() {
       const finishGroup = this.physics.add.staticGroup();
-      const finish = this.addWorldSprite(
-        finishGroup,
-        WORLD_WIDTH - 240,
-        FLOOR_Y - 86,
-        14,
-        0.48,
-      );
+      const finish = this.addWorldSprite(finishGroup, WORLD_WIDTH - 240, FLOOR_Y - 86, 14, 0.48);
       finish.setDepth(12);
 
       this.physics.add.overlap(this.player, finish, () => {
@@ -997,10 +866,7 @@ export function createChronicleGame({
         dashAlt: Phaser.Input.Keyboard.KeyCodes.D,
         drop: Phaser.Input.Keyboard.KeyCodes.S,
         dropAlt: Phaser.Input.Keyboard.KeyCodes.DOWN,
-      }) as Record<
-        "jump" | "dash" | "dashAlt" | "drop" | "dropAlt",
-        Phaser.Input.Keyboard.Key
-      >;
+      }) as Record<"jump" | "dash" | "dashAlt" | "drop" | "dropAlt", Phaser.Input.Keyboard.Key>;
     }
 
     private configureCamera() {
@@ -1025,9 +891,7 @@ export function createChronicleGame({
       previousState: ChroniclePlayerState,
     ) {
       const body = this.player.body as Phaser.Physics.Arcade.Body;
-      const landed =
-        grounded &&
-        (previousState === "jumping" || previousState === "falling");
+      const landed = grounded && (previousState === "jumping" || previousState === "falling");
       if (landed) {
         this.landingEndsAt = time + 150;
         this.createLandingDust();
@@ -1046,25 +910,15 @@ export function createChronicleGame({
         this.playerState = body.velocity.y < 0 ? "jumping" : "falling";
         const fastDropping = dropHeld || body.velocity.y > 500;
         this.player.play(
-          fastDropping
-            ? "sk-drop"
-            : body.velocity.y < 0
-              ? "sk-jump"
-              : "sk-fall",
+          fastDropping ? "sk-drop" : body.velocity.y < 0 ? "sk-jump" : "sk-fall",
           true,
         );
-        this.player.setAngle(
-          reducedMotion ? 0 : fastDropping ? 0 : body.velocity.y < 0 ? -5 : 4,
-        );
+        this.player.setAngle(reducedMotion ? 0 : fastDropping ? 0 : body.velocity.y < 0 ? -5 : 4);
       } else {
         this.playerState = "grounded";
         this.player.setAngle(0);
         this.player.play(
-          time < this.landingEndsAt
-            ? "sk-land"
-            : this.runStarted
-              ? "sk-run-right"
-              : "sk-idle",
+          time < this.landingEndsAt ? "sk-land" : this.runStarted ? "sk-run-right" : "sk-idle",
           true,
         );
       }
@@ -1072,16 +926,11 @@ export function createChronicleGame({
 
     private createDashTrail() {
       const trail = this.add
-        .sprite(
-          this.player.x - 14,
-          this.player.y,
-          "sk-character",
-          this.player.frame.name,
-        )
+        .sprite(this.player.x - 14, this.player.y, "sk-character", this.player.frame.name)
         .setScale(1.15)
         .setDepth(13)
         .setAlpha(0.34)
-        .setTint(0x67e4f6);
+        .setTint(palette.cyan);
       this.tweens.add({
         targets: trail,
         x: trail.x - 24,
@@ -1095,13 +944,7 @@ export function createChronicleGame({
       if (reducedMotion) return;
       [-1, 1].forEach((direction) => {
         const dust = this.add
-          .circle(
-            this.player.x + direction * 10,
-            this.player.y + 28,
-            4,
-            0xf0c969,
-            0.46,
-          )
+          .circle(this.player.x + direction * 10, this.player.y + 28, 4, palette.yellow, 0.46)
           .setDepth(13);
         this.tweens.add({
           targets: dust,
@@ -1116,9 +959,7 @@ export function createChronicleGame({
     }
 
     private currentTutorialStep(): ChronicleTutorialStepId {
-      return (
-        chronicleTutorialSteps[this.tutorialStepIndex]?.id ?? "complete"
-      );
+      return chronicleTutorialSteps[this.tutorialStepIndex]?.id ?? "complete";
     }
 
     private tutorialCompleted() {
@@ -1212,7 +1053,7 @@ export function createChronicleGame({
       this.multiplier = 1;
       this.score = Math.max(0, this.score - 125);
       this.player.play("sk-glitch", true);
-      this.player.setTint(0xef806d);
+      this.player.setTint(palette.red);
       this.player.setVelocity(0, 0);
       this.player.setPosition(this.respawnX, this.respawnY);
       this.lastScoredX = this.respawnX;
@@ -1243,9 +1084,8 @@ export function createChronicleGame({
 
     private chapterAt(x: number) {
       return (
-        chapters.find(
-          (chapter) => x >= chapter.start && x < chapter.end,
-        ) ?? chapters[chapters.length - 1]
+        chapters.find((chapter) => x >= chapter.start && x < chapter.end) ??
+        chapters[chapters.length - 1]
       );
     }
 
@@ -1263,11 +1103,7 @@ export function createChronicleGame({
         zone: chapter.id,
         zoneLabel: chapter.label,
         chapterIndex,
-        journeyProgress: Phaser.Math.Clamp(
-          Math.round((this.player.x / WORLD_WIDTH) * 100),
-          0,
-          100,
-        ),
+        journeyProgress: Phaser.Math.Clamp(Math.round((this.player.x / WORLD_WIDTH) * 100), 0, 100),
         playerState: this.playerState,
         dashReady: this.time.now >= this.dashReadyAt,
         tutorialStep: this.currentTutorialStep(),
@@ -1312,28 +1148,6 @@ export function createChronicleGame({
         if (this.player) this.player.anims.timeScale = 1;
       }
     }
-
-    refreshTheme() {
-      const palette = readThemePalette(parent);
-      this.cameras.main.setBackgroundColor(palette.background);
-      this.chapterLabels.forEach((label) => {
-        label.setColor(`#${palette.primary.toString(16).padStart(6, "0")}`);
-      });
-      this.chapterPanels.slice(0, 3).forEach((panel, index) => {
-        const colors = [palette.background, palette.surface, palette.surfaceHigh];
-        panel.setFillStyle(colors[index], 1);
-      });
-      this.deckBases.forEach((surface) => surface.setFillStyle(palette.surface, 1));
-      this.deckInsets.forEach((surface) =>
-        surface.setFillStyle(palette.surfaceHigh, 0.94),
-      );
-      this.deckEdges.forEach((edge) =>
-        edge.setFillStyle(palette.primary, 0.76),
-      );
-      this.deckDetails.forEach((detail) =>
-        detail.setTint(palette.foreground).setAlpha(0.34),
-      );
-    }
   }
 
   const game = new Phaser.Game({
@@ -1341,7 +1155,7 @@ export function createChronicleGame({
     parent,
     width: parent.clientWidth || 960,
     height: parent.clientHeight || 600,
-    backgroundColor: "#04070d",
+    backgroundColor: palette.background,
     pixelArt: true,
     antialias: false,
     roundPixels: true,
@@ -1364,8 +1178,7 @@ export function createChronicleGame({
     scene: ChronicleScene,
   });
 
-  const getScene = () =>
-    game.scene.getScene("chronicle-run") as ChronicleScene | undefined;
+  const getScene = () => game.scene.getScene("chronicle-run") as ChronicleScene | undefined;
 
   return {
     destroy() {
@@ -1400,9 +1213,6 @@ export function createChronicleGame({
       storyResetRequested = true;
       if (scene.scene.isPaused()) scene.scene.resume();
       scene.scene.restart();
-    },
-    refreshTheme() {
-      getScene()?.refreshTheme();
     },
   };
 }

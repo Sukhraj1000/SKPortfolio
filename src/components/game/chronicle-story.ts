@@ -1,8 +1,4 @@
-import {
-  experience,
-  portfolioProfile,
-  portfolioProjects,
-} from "@/data/portfolio";
+import { experience, portfolioProfile, portfolioProjects } from "@/data/portfolio";
 
 export const chronicleChapterIds = [
   "origin",
@@ -27,25 +23,17 @@ export const chronicleRecordIds = [
 ] as const;
 
 export type ChronicleRecordId = (typeof chronicleRecordIds)[number];
-export type ChronicleRecordKind = "education" | "experience" | "project";
+type ChronicleRecordKind = "education" | "experience" | "project";
 
-export type ChronicleTutorialStepId =
-  | "jump"
-  | "dash"
-  | "drop"
-  | "pause"
-  | "story-log"
-  | "complete";
+export type ChronicleTutorialStepId = "jump" | "dash" | "drop" | "pause" | "story-log" | "complete";
 
-export interface ChronicleChapter {
+interface ChronicleChapter {
   id: ChronicleChapterId;
   index: string;
   title: string;
-  summary: string;
-  tone: "cyan" | "amber" | "coral" | "green";
 }
 
-export interface ChronicleRecord {
+interface ChronicleRecord {
   id: ChronicleRecordId;
   chapterId: ChronicleChapterId;
   kind: ChronicleRecordKind;
@@ -57,7 +45,7 @@ export interface ChronicleRecord {
   sourceId: string;
 }
 
-export interface ChronicleTutorialStep {
+interface ChronicleTutorialStep {
   id: ChronicleTutorialStepId;
   keyLabel: string;
   title: string;
@@ -121,36 +109,26 @@ export const chronicleChapters: readonly ChronicleChapter[] = [
     id: "origin",
     index: "00",
     title: "Origin",
-    summary: "Computer Science foundations and the decision to build useful systems.",
-    tone: "cyan",
   },
   {
     id: "live-systems",
     index: "01",
     title: "Live Systems",
-    summary: "Hands-on delivery where hardware, timing, and reliability were visible immediately.",
-    tone: "amber",
   },
   {
     id: "secure-engineering",
     index: "02",
     title: "Secure Engineering",
-    summary: "Professional software delivery inside a regulated engineering environment.",
-    tone: "cyan",
   },
   {
     id: "build-lab",
     index: "03",
     title: "Build Lab",
-    summary: "Independent products across mobile, blockchain, events, and AI automation.",
-    tone: "coral",
   },
   {
     id: "present-day",
     index: "04",
     title: "Present Day",
-    summary: "Current engineering and operational work, with the next chapter still open.",
-    tone: "green",
   },
 ] as const;
 
@@ -185,10 +163,7 @@ function experienceRecord(
   };
 }
 
-function projectRecord(
-  sourceId: string,
-  id: ChronicleRecordId,
-): ChronicleRecord {
+function projectRecord(sourceId: string, id: ChronicleRecordId): ChronicleRecord {
   const project = requireProject(sourceId);
   return {
     id,
@@ -196,9 +171,7 @@ function projectRecord(
     kind: "project",
     title: project.title,
     context: project.kind,
-    period: project.grade
-      ? `${project.status} · ${project.grade}`
-      : project.status,
+    period: project.grade ? `${project.status} · ${project.grade}` : project.status,
     summary: project.summary,
     technologies: project.technologies.slice(0, 3),
     sourceId,
@@ -224,23 +197,12 @@ export const chronicleRecords: readonly ChronicleRecord[] = [
     "experience:techfront-led-technician",
     "live-systems",
   ),
-  experienceRecord(
-    "northrop-intern",
-    "experience:northrop-intern",
-    "secure-engineering",
-  ),
+  experienceRecord("northrop-intern", "experience:northrop-intern", "secure-engineering"),
   projectRecord("crypto-portfolio", "project:crypto-portfolio"),
-  projectRecord(
-    "solana-contract-generator",
-    "project:solana-contract-generator",
-  ),
+  projectRecord("solana-contract-generator", "project:solana-contract-generator"),
   projectRecord("tymaura", "project:tymaura"),
   projectRecord("skaltek", "project:skaltek"),
-  experienceRecord(
-    "endeavour-data",
-    "experience:endeavour-data",
-    "present-day",
-  ),
+  experienceRecord("endeavour-data", "experience:endeavour-data", "present-day"),
   experienceRecord(
     "northrop-software-engineer",
     "experience:northrop-software-engineer",
@@ -248,9 +210,7 @@ export const chronicleRecords: readonly ChronicleRecord[] = [
   ),
 ] as const;
 
-const recordById = new Map(
-  chronicleRecords.map((record) => [record.id, record] as const),
-);
+const recordById = new Map(chronicleRecords.map((record) => [record.id, record] as const));
 const recordIdSet = new Set<string>(chronicleRecordIds);
 const chapterIdSet = new Set<string>(chronicleChapterIds);
 
@@ -260,13 +220,11 @@ export function getChronicleRecord(id: ChronicleRecordId) {
   return record;
 }
 
-export function isChronicleRecordId(value: unknown): value is ChronicleRecordId {
+function isChronicleRecordId(value: unknown): value is ChronicleRecordId {
   return typeof value === "string" && recordIdSet.has(value);
 }
 
-export function isChronicleChapterId(
-  value: unknown,
-): value is ChronicleChapterId {
+function isChronicleChapterId(value: unknown): value is ChronicleChapterId {
   return typeof value === "string" && chapterIdSet.has(value);
 }
 
@@ -291,9 +249,7 @@ function orderedUnique<T extends string>(
 }
 
 function finiteNonNegativeNumber(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0
-    ? Math.floor(value)
-    : 0;
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 }
 
 function finitePositiveNumber(value: unknown) {
@@ -337,33 +293,20 @@ export function parseChronicleProgress(value: unknown): ChronicleProgress {
   return {
     version: CHRONICLE_PROGRESS_VERSION,
     recoveredRecords: isCurrentVersion
-      ? orderedUnique(
-          stored.recoveredRecords,
-          chronicleRecordIds,
-          isChronicleRecordId,
-        )
+      ? orderedUnique(stored.recoveredRecords, chronicleRecordIds, isChronicleRecordId)
       : [],
     completedChapters: isCurrentVersion
-      ? orderedUnique(
-          stored.completedChapters,
-          chronicleChapterIds,
-          isChronicleChapterId,
-        )
+      ? orderedUnique(stored.completedChapters, chronicleChapterIds, isChronicleChapterId)
       : [],
-    tutorialCompleted:
-      isCurrentVersion && stored.tutorialCompleted === true,
+    tutorialCompleted: isCurrentVersion && stored.tutorialCompleted === true,
     completed: stored.completed === true,
     highScore: finiteNonNegativeNumber(stored.highScore),
-    bestTimeMs: isCurrentVersion
-      ? finitePositiveNumber(stored.bestTimeMs)
-      : null,
+    bestTimeMs: isCurrentVersion ? finitePositiveNumber(stored.bestTimeMs) : null,
     ...(completedAt ? { completedAt } : {}),
   };
 }
 
-export function resetChronicleStoryProgress(
-  current: ChronicleProgress,
-): ChronicleProgress {
+export function resetChronicleStoryProgress(current: ChronicleProgress): ChronicleProgress {
   return {
     ...current,
     recoveredRecords: [],
@@ -381,7 +324,7 @@ export function mergeChronicleProgress(
   const bestTimeMs =
     current.bestTimeMs && updateBestTime
       ? Math.min(current.bestTimeMs, updateBestTime)
-      : current.bestTimeMs ?? updateBestTime;
+      : (current.bestTimeMs ?? updateBestTime);
 
   return {
     version: CHRONICLE_PROGRESS_VERSION,
@@ -395,13 +338,9 @@ export function mergeChronicleProgress(
       chronicleChapterIds,
       isChronicleChapterId,
     ),
-    tutorialCompleted:
-      current.tutorialCompleted || update.tutorialCompleted === true,
+    tutorialCompleted: current.tutorialCompleted || update.tutorialCompleted === true,
     completed,
-    highScore: Math.max(
-      current.highScore,
-      finiteNonNegativeNumber(update.highScore),
-    ),
+    highScore: Math.max(current.highScore, finiteNonNegativeNumber(update.highScore)),
     bestTimeMs,
     ...(completedAt ? { completedAt } : {}),
   };

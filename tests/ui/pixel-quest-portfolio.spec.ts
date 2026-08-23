@@ -45,7 +45,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await page.goto("/");
 
     await expect(page.locator("html")).toHaveClass(/dark/);
-    await expect(page.locator('[data-portfolio-theme="orbital-engineering-journey"]')).toHaveCount(1);
+    await expect(page.locator('[data-portfolio-theme="orbital-engineering-journey"]')).toHaveCount(
+      1,
+    );
     await expect(page.locator(".pq-root")).toHaveCSS("color-scheme", "dark");
 
     expect(await readPixelQuestTokens(page)).toEqual({
@@ -57,9 +59,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     });
   });
 
-  test("stays dark when system and legacy preferences request light", async ({
-    page,
-  }) => {
+  test("stays dark when system and legacy preferences request light", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
     await page.goto("/");
@@ -100,28 +100,28 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await page.goto("/");
 
     const hero = page.locator("#home");
-    await expect(
-      hero.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-    ).toBeVisible();
+    await expect(hero.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
     await expect(hero.getByText("Software Engineer", { exact: true }).last()).toBeVisible();
     await expect(hero).not.toContainText("at Northrop Grumman");
     await expect(hero.getByText("Northrop Grumman", { exact: true })).toHaveCount(0);
     await expect(hero.getByText("West Midlands, UK", { exact: true }).last()).toBeVisible();
-    await expect(hero.getByText("First-Class Computer Science graduate", { exact: true })).toBeVisible();
-    await expect(hero.getByText("Secure software · Cloud · Data · AI systems", { exact: true })).toBeVisible();
+    await expect(
+      hero.getByText("First-Class Computer Science graduate", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      hero.getByText("Secure software · Cloud · Data · AI systems", { exact: true }),
+    ).toBeVisible();
     await expect(hero.getByLabel("Current portfolio objective")).toContainText(
       "keep the engineering evidence clear",
     );
     await expect(hero.getByRole("link", { name: "View selected work" })).toBeVisible();
-    await expect(hero.getByRole("button", { name: "Request private CV" })).toBeVisible();
+    await expect(hero.getByRole("link", { name: "Request private CV" })).toBeVisible();
     const openingScene = hero.locator(".pq-hero-scene");
     await expect(openingScene).toHaveAttribute("aria-hidden", "true");
     await expect(openingScene.locator(".pq-scene-window-bar")).toContainText(
       "Portfolio route / Dispatch",
     );
-    await expect(openingScene.locator(".pq-scene-terminal")).toContainText(
-      "Engineering route",
-    );
+    await expect(openingScene.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(openingScene.locator(".pq-dispatch-stacks > span")).toHaveCount(3);
     await expect(openingScene.locator(".pq-scene-entry")).toContainText("Start / 01");
     await expect(openingScene.locator(".pq-scene-route")).toHaveCount(1);
@@ -157,10 +157,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       const terminal = page.locator('[data-profile-equipment="terminal"]');
       const destination = page.locator('[data-profile-equipment="destination"]');
 
-      await expect(operatorSprite).toHaveCSS(
-        "width",
-        `${profileViewport.operatorWidth}px`,
-      );
+      await expect(operatorSprite).toHaveCSS("width", `${profileViewport.operatorWidth}px`);
       await expect(operatorSprite).toHaveCSS(
         "height",
         `${(profileViewport.operatorWidth * 4) / 3}px`,
@@ -183,24 +180,13 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       expect(routeBox).not.toBeNull();
       expect(terminalBox).not.toBeNull();
       expect(destinationBox).not.toBeNull();
-      if (
-        !operatorBox ||
-        !berthBox ||
-        !startBox ||
-        !routeBox ||
-        !terminalBox ||
-        !destinationBox
-      ) {
+      if (!operatorBox || !berthBox || !startBox || !routeBox || !terminalBox || !destinationBox) {
         return;
       }
 
       expect(operatorBox.x).toBeGreaterThan(berthBox.x);
-      expect(operatorBox.x + operatorBox.width).toBeLessThan(
-        berthBox.x + berthBox.width,
-      );
-      expect(operatorBox.y + operatorBox.height).toBeLessThanOrEqual(
-        berthBox.y + berthBox.height,
-      );
+      expect(operatorBox.x + operatorBox.width).toBeLessThan(berthBox.x + berthBox.width);
+      expect(operatorBox.y + operatorBox.height).toBeLessThanOrEqual(berthBox.y + berthBox.height);
       expect(operatorBox.x - (startBox.x + startBox.width)).toBeGreaterThanOrEqual(8);
       expect(routeBox.x - (operatorBox.x + operatorBox.width)).toBeGreaterThanOrEqual(8);
       expect(boxesOverlap(operatorBox, startBox)).toBe(false);
@@ -245,12 +231,10 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       "https://skaltek.co.uk",
     );
 
-    await expect(
-      page.locator('[data-project-record="solana-contract-generator"]'),
-    ).toContainText("82%");
-    await expect(page.locator('[data-project-record="crypto-portfolio"]')).toContainText(
-      "80%",
+    await expect(page.locator('[data-project-record="solana-contract-generator"]')).toContainText(
+      "82%",
     );
+    await expect(page.locator('[data-project-record="crypto-portfolio"]')).toContainText("80%");
 
     for (const record of await page.locator("[data-project-record]").all()) {
       const details = record.locator("details");
@@ -267,10 +251,14 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       const stage = record.locator("[data-project-media-stage]");
       const hud = record.locator(".pq-visual-hud");
       await image.scrollIntoViewIfNeeded();
-      await expect.poll(() => image.evaluate((element) => {
-        const media = element as HTMLImageElement;
-        return media.complete && media.naturalWidth > 0;
-      })).toBeTruthy();
+      await expect
+        .poll(() =>
+          image.evaluate((element) => {
+            const media = element as HTMLImageElement;
+            return media.complete && media.naturalWidth > 0;
+          }),
+        )
+        .toBeTruthy();
       await expect(image).toHaveCSS("object-fit", "contain");
 
       const [imageBox, stageBox, hudBox] = await Promise.all([
@@ -324,7 +312,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
         await details.locator("summary").click();
       }
-      await expect(details.locator(".pq-level-details-panel > ul").first().locator("li").first()).toBeVisible();
+      await expect(
+        details.locator(".pq-level-details-panel > ul").first().locator("li").first(),
+      ).toBeVisible();
       await expect(details.locator(".pq-tech-list li").first()).toBeVisible();
     }
 
@@ -375,7 +365,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("finishes with an accessible contact scene and complete outreach paths", async ({ page }) => {
+  test("finishes with an accessible contact scene and complete outreach paths", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#contact");
 
@@ -391,7 +383,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     const emailLink = contact.getByRole("link", { name: "Request by email" });
     await expect(emailLink).toHaveAttribute("href", /^mailto:/);
 
-    const cvTrigger = contact.getByRole("button", { name: "Request private CV" });
+    const cvTrigger = contact.getByRole("link", { name: "Request private CV" });
     await cvTrigger.click();
     await expect(page.getByRole("dialog", { name: "Request Sukhraj's CV" })).toBeVisible();
     await page.keyboard.press("Escape");
@@ -414,7 +406,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 
-  test("settles entry motion without moving focus while purposeful operator idles remain", async ({ page }) => {
+  test("settles entry motion without moving focus while purposeful operator idles remain", async ({
+    page,
+  }) => {
     await page.goto("/");
 
     const heroCopy = page.locator('[data-motion="hero-copy"]');
@@ -425,9 +419,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
         element.getAnimations().every((animation) => {
           const effect = animation.effect as KeyframeEffect | null;
           return effect
-            ? effect
-                .getKeyframes()
-                .every((frame) => !frame.transform || frame.transform === "none")
+            ? effect.getKeyframes().every((frame) => !frame.transform || frame.transform === "none")
             : true;
         }),
       ),
@@ -445,14 +437,15 @@ test.describe("Orbital Engineering Journey portfolio", () => {
 
     await page.waitForTimeout(1_600);
     expect(
-      await page.evaluate(() =>
-        document
-          .getAnimations()
-          .filter((animation) => animation.playState === "running")
-          .filter((animation) => {
-            const timing = animation.effect?.getComputedTiming();
-            return timing?.iterations !== Number.POSITIVE_INFINITY;
-          }).length,
+      await page.evaluate(
+        () =>
+          document
+            .getAnimations()
+            .filter((animation) => animation.playState === "running")
+            .filter((animation) => {
+              const timing = animation.effect?.getComputedTiming();
+              return timing?.iterations !== Number.POSITIVE_INFINITY;
+            }).length,
       ),
     ).toBe(0);
   });
@@ -466,26 +459,32 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     const page = await context.newPage();
     await page.goto("/");
 
-    await expect(
-      page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
     await expect(page.locator(".pq-scene-window-bar")).toContainText("Portfolio route / Dispatch");
     await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-route")).toHaveCount(1);
     await expect(page.locator("[data-operator-berth]")).toHaveCount(1);
-    await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS(
-      "width",
-      "48px",
-    );
+    await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS("width", "48px");
     await expect(page.locator("#home, #contact").locator('[class*="orbit"]')).toHaveCount(0);
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Software Engineer", exact: true }).last()).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Software Engineer", exact: true }).last(),
+    ).toBeVisible();
+    await expect(
+      page.locator("#contact").getByRole("link", { name: "Request by email" }),
+    ).toHaveAttribute("href", /^mailto:SukhrajKalon@gmail\.com/);
+    await expect(
+      page.locator("#home").getByRole("link", { name: "Request private CV" }),
+    ).toHaveAttribute("href", /^mailto:SukhrajKalon@gmail\.com/);
     await expect(page.locator("[data-motion-state]")).toHaveCount(0);
-    const finalState = await page.locator('[data-motion="record"]').first().evaluate((element) => {
-      const styles = window.getComputedStyle(element);
-      return { opacity: styles.opacity, transform: styles.transform };
-    });
+    const finalState = await page
+      .locator('[data-motion="record"]')
+      .first()
+      .evaluate((element) => {
+        const styles = window.getComputedStyle(element);
+        return { opacity: styles.opacity, transform: styles.transform };
+      });
     expect(finalState.opacity).toBe("1");
     expect(finalState.transform).toBe("none");
 
@@ -505,7 +504,6 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(page.locator(".pq-hero-operator")).toHaveCSS("animation-name", "none");
 
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.reload();
     await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "enhanced");
     await page.locator("#projects").scrollIntoViewIfNeeded();
     await page.emulateMedia({ reducedMotion: "reduce" });
@@ -516,28 +514,28 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       .getByRole("link", { name: "Projects" })
       .click();
     await expect(page.locator("[data-rail-index]")).toHaveAttribute("data-rail-index", "1");
-    await expect(page.locator("[data-rail-index]")).toHaveCSS(
-      "transition-duration",
-      "0s",
-    );
-    await expect(page.locator("[data-rail-index]")).toHaveAttribute(
-      "data-rail-phase",
-      "settled",
-    );
-    await expect(page.locator(".pq-rail-operator-cue")).toHaveCSS(
-      "animation-name",
-      "none",
-    );
-    await expect(page.locator("[data-rail-operator]")).toHaveCSS(
-      "animation-name",
-      "none",
-    );
+    await expect(page.locator("[data-rail-index]")).toHaveCSS("transition-duration", "0s");
+    await expect(page.locator("[data-rail-index]")).toHaveAttribute("data-rail-phase", "settled");
+    await expect(page.locator(".pq-rail-operator-cue")).toHaveCSS("animation-name", "none");
+    await expect(page.locator("[data-rail-operator]")).toHaveCSS("animation-name", "none");
+
+    const reducedPoses = [
+      ["Profile", "01", "0px 0px"],
+      ["Projects", "02", "0px -128px"],
+      ["Experience", "03", "-48px 0px"],
+      ["Skills", "04", "-48px -128px"],
+      ["Contact", "05", "-144px -192px"],
+    ] as const;
+    const rail = page.getByRole("navigation", { name: "Portfolio sections" });
+    for (const [label, chapter, position] of reducedPoses) {
+      await rail.getByRole("link", { name: label }).click();
+      await expect(page.locator("[data-rail-index]")).toHaveAttribute("data-rail-chapter", chapter);
+      await expect(page.locator("[data-rail-operator]")).toHaveCSS("background-position", position);
+    }
   });
 
   for (const viewport of releaseViewports) {
-    test(`contains the dark journey at ${viewport.width}x${viewport.height}`, async ({
-      page,
-    }) => {
+    test(`contains the dark journey at ${viewport.width}x${viewport.height}`, async ({ page }) => {
       await page.addInitScript(() => window.localStorage.setItem("theme", "light"));
       await page.emulateMedia({ colorScheme: "light" });
       await page.setViewportSize(viewport);
@@ -548,9 +546,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       await expect(page.locator("[data-project-record]")).toHaveCount(4);
       await expect(page.locator("[data-experience-record]")).toHaveCount(4);
       await expect(page.locator("[data-capability-record]")).toHaveCount(5);
-      await expect(page.locator("#contact")).toContainText(
-        "Continue the conversation.",
-      );
+      await expect(page.locator("#contact")).toContainText("Continue the conversation.");
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -562,9 +558,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
         if (!(await control.isVisible())) continue;
         const box = await control.boundingBox();
         expect(box?.x).toBeGreaterThanOrEqual(-1);
-        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(
-          viewportWidth + 1,
-        );
+        expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(viewportWidth + 1);
         expect(box?.height).toBeGreaterThanOrEqual(44);
       }
 
@@ -605,10 +599,10 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(
       page.getByRole("heading", { name: "Engineering under real constraints." }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "A working systems constellation." })).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Continue the conversation." }),
+      page.getByRole("heading", { name: "A working systems constellation." }),
     ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Continue the conversation." })).toBeVisible();
     await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-entry")).toContainText("Start / 01");
 
@@ -642,15 +636,20 @@ test.describe("Orbital Engineering Journey portfolio", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
     await expect(page.getByRole("heading", { level: 2 })).toHaveCount(4);
-    await expect(page.locator('section[aria-labelledby]')).toHaveCount(5);
-    await expect(page.locator('[aria-hidden="true"] :is(a,button,input,select,textarea,[tabindex])')).toHaveCount(0);
+    await expect(page.locator("section[aria-labelledby]")).toHaveCount(5);
+    await expect(
+      page.locator('[aria-hidden="true"] :is(a,button,input,select,textarea,[tabindex])'),
+    ).toHaveCount(0);
     await expect(page.locator(".pq-operator:not([aria-hidden='true'])")).toHaveCount(0);
     for (const image of await page.locator("main img").all()) {
       expect((await image.getAttribute("alt"))?.trim().length).toBeGreaterThan(0);
     }
   });
 
-  test("does not apply fine-pointer hover motion in a touch context", async ({ browser, baseURL }) => {
+  test("does not apply fine-pointer hover motion in a touch context", async ({
+    browser,
+    baseURL,
+  }) => {
     const context = await browser.newContext({
       baseURL: requireBaseURL(baseURL),
       hasTouch: true,
@@ -660,9 +659,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     const page = await context.newPage();
     await page.goto("/#projects");
     expect(
-      await page.evaluate(
-        () => window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-      ),
+      await page.evaluate(() => window.matchMedia("(hover: hover) and (pointer: fine)").matches),
     ).toBeFalsy();
     await expect(page.locator(".pq-project-visual img").first()).toHaveCSS(
       "transition-duration",
@@ -671,9 +668,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await context.close();
   });
 
-  test("keeps the header and travelling rail operator on one active chapter", async ({
-    page,
-  }) => {
+  test("keeps the header and travelling rail operator on one active chapter", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
 
@@ -708,7 +703,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     ]);
     expect(spriteBox?.width).toBeGreaterThanOrEqual(47);
     expect(spriteBox?.height).toBeGreaterThanOrEqual(63);
-    expect(spriteBox && profileLabelBox ? boxesOverlap(spriteBox, profileLabelBox) : true).toBeFalsy();
+    expect(
+      spriteBox && profileLabelBox ? boxesOverlap(spriteBox, profileLabelBox) : true,
+    ).toBeFalsy();
 
     await rail.getByRole("link", { name: "Projects" }).click();
     await expect(page.locator("[data-chapter-status]")).toContainText("Projects");
@@ -723,10 +720,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(operator).toHaveAttribute("data-rail-phase", "settled", {
       timeout: 1_000,
     });
-    await expect(page.getByRole("progressbar", { name: "Portfolio journey progress" })).toHaveAttribute(
-      "aria-valuenow",
-      "40",
-    );
+    await expect(
+      page.getByRole("progressbar", { name: "Portfolio journey progress" }),
+    ).toHaveAttribute("aria-valuenow", "40");
 
     await rail.getByRole("link", { name: "Profile" }).click();
     await expect(page.locator("[data-chapter-status]")).toContainText("Profile");
@@ -773,7 +769,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(page.getByRole("link", { name: "Enter Game mode" })).toBeVisible();
   });
 
-  test("acknowledges cold Game activation immediately without preloading its runtime", async ({ page }) => {
+  test("acknowledges cold Game activation immediately without preloading its runtime", async ({
+    page,
+  }) => {
     const requests: string[] = [];
     page.on("request", (request) => requests.push(request.url()));
     await page.emulateMedia({ reducedMotion: "reduce" });
