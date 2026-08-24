@@ -139,7 +139,8 @@ test.describe("Orbital Engineering Journey portfolio", () => {
   });
 
   for (const profileViewport of [
-    { width: 390, height: 844, operatorWidth: 48 },
+    { width: 320, height: 568, operatorWidth: 96 },
+    { width: 390, height: 844, operatorWidth: 96 },
     { width: 1440, height: 900, operatorWidth: 96 },
   ]) {
     test(`keeps the Profile operator station clean at ${profileViewport.width}px`, async ({
@@ -464,7 +465,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-route")).toHaveCount(1);
     await expect(page.locator("[data-operator-berth]")).toHaveCount(1);
-    await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS("width", "48px");
+    await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS("width", "96px");
     await expect(page.locator("#home, #contact").locator('[class*="orbit"]')).toHaveCount(0);
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();
