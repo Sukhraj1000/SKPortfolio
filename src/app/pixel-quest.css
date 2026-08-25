@@ -2469,16 +2469,6 @@
   box-shadow: 0 0 18px rgba(103, 228, 246, 0.18);
   content: "";
 }
-.pq-operator-berth::after {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 42%;
-  height: 2px;
-  background: var(--pq-lime);
-  content: "";
-  transform: translateX(-50%);
-}
 .pq-operator-berth > i {
   position: absolute;
   top: 1.2rem;
