@@ -83,6 +83,16 @@ npm run qa
 
 This checks formatting, linting, strict TypeScript, unused code, asset boundaries, workflow configuration, the production export, dependency vulnerabilities, the static server, the complete Chromium suite, and focused Firefox/WebKit compatibility.
 
+Protected `main` updates require these GitHub checks:
+
+- `Quality / export`
+- `Chromium UI`
+- `Compatibility UI / firefox`
+- `Compatibility UI / webkit`
+- `Dependency review`
+- `CodeQL / JavaScript-TypeScript`
+- `CodeQL`
+
 Useful focused commands:
 
 ```bash
