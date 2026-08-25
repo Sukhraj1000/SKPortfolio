@@ -3942,7 +3942,9 @@
     white-space: normal;
   }
   .pq-hero-scene {
-    min-height: 25rem;
+    --pq-mobile-operator-center: 46%;
+
+    min-height: 27rem;
     box-shadow: 5px 5px 0 var(--pq-shadow);
   }
   .pq-scene-window-bar,
@@ -3964,48 +3966,56 @@
     display: none;
   }
   .pq-signal-tower {
-    top: 9rem;
+    top: 8.75rem;
     left: 4%;
-    width: 27%;
-    height: 7rem;
+    width: 22%;
+    height: 4.25rem;
   }
   .pq-signal-tower strong {
     display: none;
   }
   .pq-scene-terminal {
-    top: 8.8rem;
+    top: 8.4rem;
     right: 4%;
     width: 57%;
-    min-height: 6.8rem;
+    min-height: 5rem;
+    padding: 0.75rem;
   }
   .pq-scene-entry {
-    left: 3%;
+    left: 2%;
+    grid-template-columns: auto 1rem;
+    gap: 0.25rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+  .pq-scene-entry i {
+    width: 1rem;
   }
   .pq-operator-berth {
     bottom: 4.75rem;
-    left: 27%;
-    width: 6rem;
-    height: 6.5rem;
+    left: calc(var(--pq-mobile-operator-center) - 4.5rem);
+    width: 9rem;
+    height: 10rem;
   }
   .pq-hero-operator {
-    left: 33%;
+    left: calc(var(--pq-mobile-operator-center) - 3rem);
     bottom: 5.15rem;
     transform: none;
   }
   .pq-hero-operator .pq-operator {
-    width: 48px;
-    height: 64px;
-    background-size: 192px 256px;
+    width: 96px;
+    height: 128px;
+    background-size: 384px 512px;
   }
   .pq-destination-console {
     right: 4%;
     bottom: 5.4rem;
-    transform: scale(0.82);
+    transform: scale(0.76);
     transform-origin: bottom right;
   }
   .pq-scene-route {
-    right: 23%;
-    left: 58%;
+    right: 22%;
+    left: calc(var(--pq-mobile-operator-center) + 3.75rem);
   }
   .pq-chapter-heading h2,
   .pq-ending-copy h2 {
