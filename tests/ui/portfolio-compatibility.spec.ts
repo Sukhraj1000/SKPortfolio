@@ -158,8 +158,29 @@ test.describe("production export compatibility", () => {
     );
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
       "content",
-      "https://sukhrajkalon.info/sk-icon.png",
+      "https://sukhrajkalon.info/sukhraj-kalon-social-card.png",
     );
+    await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute(
+      "content",
+      "1200",
+    );
+    await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute(
+      "content",
+      "630",
+    );
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+      "content",
+      "summary_large_image",
+    );
+    await expect(page.locator('meta[name="twitter:image:alt"]')).toHaveAttribute(
+      "content",
+      "Sukhraj Kalon software engineer and product builder portfolio card",
+    );
+
+    const socialCard = await request.get("/sukhraj-kalon-social-card.png");
+    expect(socialCard.ok()).toBeTruthy();
+    expect(socialCard.headers()["content-type"]).toBe("image/png");
+    expect((await socialCard.body()).byteLength).toBeGreaterThan(500_000);
 
     const graph = await page
       .locator("#portfolio-structured-data")

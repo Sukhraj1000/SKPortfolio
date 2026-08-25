@@ -47,6 +47,19 @@ async function pathExists(target) {
     .catch(() => false);
 }
 
+async function pngDimensions(target) {
+  const source = await readFile(target);
+  const pngSignature = "89504e470d0a1a0a";
+  assert(
+    source.subarray(0, 8).toString("hex") === pngSignature,
+    `${path.basename(target)} is not a valid PNG file.`,
+  );
+  return {
+    width: source.readUInt32BE(16),
+    height: source.readUInt32BE(20),
+  };
+}
+
 async function assertLocalReferencesExist(html, pageLabel) {
   const references = [...new Set(localReferences(html))];
   for (const reference of references) {
@@ -88,7 +101,11 @@ assert(
   "Portfolio export is missing recruiter-facing structured data.",
 );
 assert(
-  rootHtml.includes('content="https://sukhrajkalon.info/sk-icon.png"'),
+  rootHtml.includes('content="https://sukhrajkalon.info/sukhraj-kalon-social-card.png"') &&
+    rootHtml.includes('property="og:image:width" content="1200"') &&
+    rootHtml.includes('property="og:image:height" content="630"') &&
+    rootHtml.includes('name="twitter:card" content="summary_large_image"') &&
+    rootHtml.includes('name="twitter:image:alt"'),
   "Portfolio social metadata references a missing or non-canonical image.",
 );
 for (const sectionId of ["home", "projects", "about", "loadout", "contact"]) {
@@ -199,6 +216,7 @@ for (const requiredOutput of [
   "robots.txt",
   "sitemap.xml",
   "404.html",
+  "sukhraj-kalon-social-card.png",
   "game/assets/sk-character-sheet.png",
   "game/assets/industrial-world-atlas.png",
   "game/assets/inventory.json",
@@ -208,6 +226,14 @@ for (const requiredOutput of [
     `Static export is missing ${requiredOutput}.`,
   );
 }
+
+const socialCardDimensions = await pngDimensions(
+  path.join(outputRoot, "sukhraj-kalon-social-card.png"),
+);
+assert(
+  socialCardDimensions.width === 1200 && socialCardDimensions.height === 630,
+  "Portfolio social card must be exactly 1200x630 pixels.",
+);
 
 const initialScriptBudgets = [
   ["Portfolio", rootHtml, 200_000],
@@ -234,6 +260,7 @@ for (const reference of portfolioScripts) {
 
 const assetBudgets = [
   ["sk-icon.png", 64_000],
+  ["sukhraj-kalon-social-card.png", 1_000_000],
   ["skaltek-logo-card.webp", 100_000],
   ["cryptoapp.webp", 100_000],
   ["sk-operator-sheet.png", 60_000],

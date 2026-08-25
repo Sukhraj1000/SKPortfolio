@@ -119,7 +119,7 @@ npm run qa
 
 The export is written to `out/`. Hostinger-specific deployment notes are available in [`DEPLOY.md`](DEPLOY.md); `deploy.sh` performs the production audit and complete release preparation.
 
-The export publishes canonical/social metadata, Person/project JSON-LD, `robots.txt`, and `sitemap.xml` for `https://sukhrajkalon.info`. Existing repository imagery is reused; there is no generated social-art pipeline.
+The export publishes canonical/social metadata, a dedicated 1200×630 portfolio share card, Person/project JSON-LD, `robots.txt`, and `sitemap.xml` for `https://sukhrajkalon.info`.
 
 Private CV files, environment files, credentials, certificates, and profile-reference material are excluded from version control. The public contact email is intentionally present in static HTML so the primary contact and CV-request paths work without JavaScript.
 
