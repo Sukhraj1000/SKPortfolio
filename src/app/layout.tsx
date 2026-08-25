@@ -20,6 +20,8 @@ const geistMono = localFont({
 const siteTitle = "Sukhraj Kalon | Software Engineer & Product Builder";
 const siteDescription =
   "Sukhraj Kalon builds secure software, AI-assisted products, cloud systems, and full-stack experiences.";
+const socialCard = "/sukhraj-kalon-social-card.png";
+const socialCardAlt = "Sukhraj Kalon software engineer and product builder portfolio card";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteOrigin),
@@ -45,18 +47,18 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: "/sk-icon.png",
-        width: 192,
-        height: 192,
-        alt: "SK monogram for Sukhraj Kalon's portfolio",
+        url: socialCard,
+        width: 1200,
+        height: 630,
+        alt: socialCardAlt,
       },
     ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
-    images: ["/sk-icon.png"],
+    images: { url: socialCard, alt: socialCardAlt },
   },
   robots: { index: true, follow: true },
   icons: [
