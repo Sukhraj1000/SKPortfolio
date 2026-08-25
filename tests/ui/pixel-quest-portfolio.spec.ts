@@ -164,6 +164,9 @@ test.describe("Orbital Engineering Journey portfolio", () => {
         `${(profileViewport.operatorWidth * 4) / 3}px`,
       );
       await expect(operator).toHaveCSS("animation-name", "none");
+      expect(await berth.evaluate((element) => getComputedStyle(element, "::after").content)).toBe(
+        "none",
+      );
 
       const [operatorBox, berthBox, startBox, routeBox, terminalBox, destinationBox] =
         await Promise.all([
