@@ -1,0 +1,213 @@
+.index {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(20rem, 41%)), 1fr));
+  column-gap: clamp(1.65rem, 3.2vw, 3.5rem);
+}
+
+.entry {
+  --ink: var(--pq-cyan);
+  position: relative;
+  min-width: 0;
+  border-top: 1px solid var(--pq-line);
+  padding: clamp(1.2rem, 2.6vw, 1.85rem) 0 clamp(1.5rem, 2.8vw, 2.25rem);
+}
+.entry::before {
+  position: absolute;
+  inset: -1px auto auto 0;
+  width: 2rem;
+  height: 2px;
+  background: var(--ink);
+  content: "";
+}
+.entry[data-capability-record="application-engineering"],
+.entry[data-capability-record="testing-quality"] {
+  --ink: var(--pq-mint);
+}
+.entry[data-capability-record="ai-automation"],
+.entry[data-capability-record="emerging-technology"] {
+  --ink: #bbaaff;
+}
+.entry[data-capability-record="backend-data"],
+.entry[data-capability-record="vision-hardware"] {
+  --ink: var(--pq-gold);
+}
+
+.entryHead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(70px, 9vw, 140px);
+  gap: clamp(0.55rem, 1.3vw, 1rem);
+  align-items: center;
+}
+.number {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--ink);
+  font:
+    650 0.75rem/1 var(--font-geist-mono),
+    ui-monospace,
+    monospace;
+  letter-spacing: 0.07em;
+}
+.entryHead h3 {
+  margin: 0;
+  color: var(--pq-paper);
+  font-size: clamp(1.2rem, 1.75vw, 1.66rem);
+  font-weight: 660;
+  line-height: 1.13;
+  letter-spacing: -0.04em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.terms {
+  display: block;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: #bdcaca;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.terms li {
+  display: inline;
+  overflow-wrap: anywhere;
+}
+.terms li:not(:last-child)::after {
+  display: inline-block;
+  width: 0.18em;
+  height: 0.18em;
+  margin: 0 0.18em 0.22em 0.42em;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0.66;
+  content: "";
+}
+.figure {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ink);
+}
+.figure [data-guide] {
+  opacity: 0.34;
+}
+.figure [data-ink] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+/* Only the illustration moves. Text is visible before JS, during playback and afterwards. */
+@media (prefers-reduced-motion: no-preference) {
+  .entry[data-motion-state="running"] [data-ink] {
+    animation: draw 1.2s cubic-bezier(0.22, 0.68, 0.3, 1) both;
+  }
+  .entry[data-motion-state="running"] [data-later],
+  .entry[data-motion-state="running"] [data-step="1"] {
+    animation-delay: 0.28s;
+  }
+  .entry[data-motion-state="running"] [data-step="2"] {
+    animation-delay: 0.55s;
+  }
+  .entry[data-motion-state="running"] [data-layer] {
+    animation: stack 1.4s cubic-bezier(0.16, 0.7, 0.3, 1) both;
+  }
+  .entry[data-motion-state="running"] [data-pin] {
+    animation: arrive 1.5s ease-out both;
+  }
+  .entry[data-motion-state="running"] [data-bar] {
+    transform-box: fill-box;
+    transform-origin: center bottom;
+    animation: bars 1.1s ease-out both;
+  }
+  .entry[data-motion-state="running"] [data-bar]:nth-child(2n) {
+    animation-delay: 0.15s;
+  }
+  .entry[data-motion-state="running"] [data-packet] {
+    animation: deliver 1.6s ease-in-out both;
+  }
+  .entry[data-motion-state="running"] [data-join] {
+    animation: join 1.3s cubic-bezier(0.17, 0.73, 0.3, 1) both;
+  }
+  .entry[data-motion-state="running"] [data-scan] {
+    animation: scan 1.65s ease-in-out both;
+  }
+  .entry[data-motion-state="running"] [data-reticle] {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: focus 1.4s ease-out both;
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes stack {
+  from {
+    transform: translateY(13px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes arrive {
+  0%,
+  40% {
+    opacity: 0.28;
+  }
+  80%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes bars {
+  from {
+    transform: scaleY(0.18);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes deliver {
+  0% {
+    transform: translate(-67px, 8px);
+  }
+  35% {
+    transform: translate(-43px, 8px);
+  }
+  64% {
+    transform: translate(-31px, 0);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes join {
+  0% {
+    transform: translate(11px, -11px);
+  }
+  72% {
+    transform: translate(-1px, 0);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes scan {
+  from {
+    transform: translateX(-70px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes focus {
+  from {
+    transform: scale(1.5);
+  }
+  to {
+    transform: scale(1);
+  }
+}

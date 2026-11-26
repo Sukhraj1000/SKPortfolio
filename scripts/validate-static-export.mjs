@@ -1,6 +1,8 @@
+import { deepStrictEqual } from "node:assert";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
+import htmlParser from "next/dist/compiled/node-html-parser/index.js";
 
 const outputRoot = path.resolve("out");
 const rootHtmlPath = path.join(outputRoot, "index.html");
@@ -108,41 +110,199 @@ assert(
     rootHtml.includes('name="twitter:image:alt"'),
   "Portfolio social metadata references a missing or non-canonical image.",
 );
-for (const sectionId of ["home", "projects", "about", "loadout", "contact"]) {
+for (const [sectionId, chapter] of [
+  ["home", "01"],
+  ["projects", "02"],
+  ["about", "03"],
+  ["loadout", "04"],
+  ["contact", "05"],
+]) {
   assert(
-    rootHtml.includes(`id="${sectionId}"`),
+    rootHtml.includes(`id="${sectionId}"`) && rootHtml.includes(`data-chapter="${chapter}"`),
     `Portfolio export is missing the ${sectionId} chapter.`,
   );
 }
+// Inspect the exported elements, not matching strings in Next's embedded hydration payload.
+const document = htmlParser.parse(rootHtml);
+const exportedIds = document.querySelectorAll("[id]").map((element) => element.getAttribute("id"));
 assert(
-  rootHtml.includes("Projects with"),
-  "Portfolio export is missing the Projects story heading.",
+  new Set(exportedIds).size === exportedIds.length,
+  "Portfolio anchors must not have duplicate IDs.",
+);
+const projects = document.querySelector("#projects");
+const about = document.querySelector("#about");
+assert(projects && about, "Portfolio export is missing its Projects or Experience section.");
+const mainProjects = projects.querySelectorAll("article[data-project-record]");
+const retainedProjectImages = {
+  "padel-match-analysis": "/images/work/padel.webp",
+  "sketch-clash": "/images/work/sketch-clash.webp",
+};
+deepStrictEqual(
+  mainProjects.map((article) => article.getAttribute("data-project-record")),
+  [
+    "padel-match-analysis",
+    "sketch-clash",
+    "tymaura",
+    "signaldesk",
+    "spend-limited-ai-agent-wallet",
+    "fork-fighter",
+  ],
+  "#projects must export the six main project articles in reading order.",
 );
 assert(
-  rootHtml.includes("real gravity."),
-  "Portfolio export is missing the Projects heading accent.",
+  document.querySelectorAll("[data-project-record]").length === mainProjects.length,
+  "Only the six main project articles may carry data-project-record.",
 );
+for (const [section, title] of [
+  [projects, "Projects"],
+  [about, "Experience"],
+]) {
+  assert(section.querySelector("h2")?.textContent.trim() === title, `Missing ${title} h2.`);
+  assert(!section.querySelector("details"), `${title} must not hide content behind disclosures.`);
+}
+function directDestination(anchor, label) {
+  const href = anchor?.getAttribute("href")?.trim();
+  assert(
+    href && /^(?:https:\/\/|\/(?![/?#]|$))/.test(href),
+    `${label} needs a direct public destination, not a toggle or fragment.`,
+  );
+  assert(
+    ["", "_self"].includes(anchor.getAttribute("target")?.toLowerCase() ?? ""),
+    `${label} must not force a new tab.`,
+  );
+  return new URL(href, "https://sukhrajkalon.info/").href;
+}
+
+const visibleWorks = mainProjects.map((project) => {
+  const label = project.getAttribute("data-project-record");
+  const captions = project.querySelectorAll("p");
+  const links = project.querySelectorAll("a");
+  const name = project.querySelector("h3")?.textContent.trim();
+  assert(name, `${label} needs an exported title.`);
+  assert(captions.length === 1 && captions[0].textContent.trim(), `${label} needs one caption.`);
+  assert(links.length === 1, `${label} needs one direct link.`);
+  const images = project.querySelectorAll("img");
+  assert(images.length === 1, `${label} needs one accessible local project image.`);
+  const image = images[0];
+  assert(
+    /^\/(?!\/)[^?#]+\.(?:webp|svg)$/i.test(image.getAttribute("src") ?? ""),
+    `${label} needs a local WebP or SVG image.`,
+  );
+  assert(
+    (image.getAttribute("alt") ?? "").trim().split(/\s+/).length >= 3 &&
+      image.getAttribute("aria-hidden") !== "true" &&
+      !["none", "presentation"].includes(image.getAttribute("role")),
+    `${label} needs descriptive, accessible image alt text.`,
+  );
+  for (const dimension of ["width", "height"]) {
+    assert(
+      /^[1-9]\d*$/.test(image.getAttribute(dimension) ?? ""),
+      `${label} needs an explicit positive image ${dimension}.`,
+    );
+  }
+  if (retainedProjectImages[label]) {
+    assert(
+      image.getAttribute("src") === retainedProjectImages[label],
+      `${label} must retain its current imagery.`,
+    );
+  }
+  return { name, url: directDestination(links[0], label) };
+});
+const universityLinks = projects
+  .querySelectorAll("a")
+  .filter((link) => !link.closest("article[data-project-record]"));
+assert(universityLinks.length === 2, "University work must export two source links.");
+const projectElements = projects.querySelectorAll("*");
+const universityHeading = projectElements.find(
+  (element) => /^H[1-6]$/.test(element.tagName) && element.textContent.trim() === "University work",
+);
+const headingPosition = projectElements.indexOf(universityHeading);
 assert(
-  rootHtml.includes("Engineering under"),
-  "Portfolio export is missing the Experience story heading.",
+  headingPosition > projectElements.indexOf(mainProjects.at(-1)) &&
+    universityLinks.every((link) => projectElements.indexOf(link) > headingPosition),
+  "The two academic sources must follow the University work heading after the selected projects.",
 );
-assert(
-  rootHtml.includes("real constraints."),
-  "Portfolio export is missing the Experience heading accent.",
+for (const [index, [id, name]] of [
+  ["project-solana-contract-generator", "Solana Smart Contract AI Generator"],
+  ["project-crypto-portfolio", "Crypto Portfolio Mobile App"],
+].entries()) {
+  assert(projects.querySelector(`#${id}`), `University work is missing the #${id} fragment.`);
+  const link = universityLinks[index];
+  assert(link.textContent.includes(name), `University work must link the title ${name}.`);
+  visibleWorks.push({ name, url: directDestination(link, name) });
+}
+const metadata = JSON.parse(document.querySelector("#portfolio-structured-data").rawText);
+const byName = (a, b) => a.name.localeCompare(b.name);
+deepStrictEqual(
+  metadata["@graph"]
+    .filter((entry) => entry["@type"] === "CreativeWork")
+    .map(({ name, url }) => ({ name, url: new URL(url).href }))
+    .sort(byName),
+  visibleWorks.sort(byName),
+  "Project metadata must describe exactly the six selected works and two university sources, not the game roster.",
 );
-assert(
-  rootHtml.includes("A working systems"),
-  "Portfolio export is missing the Skills story heading.",
+const experienceRows = about.querySelectorAll("[data-experience-record]");
+const experienceFacts = [
+  {
+    months: ["2025-09"],
+    end: /present/i,
+    overview: /software|applications?|engineering|systems?/i,
+  },
+  { months: ["2026-01"], end: /present/i, overview: /businesses|software|automation|AI/i },
+  { months: ["2025-07", "2026-01"], overview: /administration|data|report|operations/i },
+  { months: ["2023-09", "2024-09"], overview: /software|applications?|engineering|development/i },
+  { months: ["2023-04", "2025-06"], overview: /LED|display|live|technical/i },
+];
+deepStrictEqual(
+  experienceRows.map((row) => row.getAttribute("data-experience-record")),
+  [
+    "northrop-software-engineer",
+    "skaltek-founder",
+    "endeavour-data",
+    "northrop-intern",
+    "techfront-led-technician",
+  ],
+  "#about must export the five experience rows in reading order.",
 );
-assert(
-  rootHtml.includes("constellation."),
-  "Portfolio export is missing the Skills heading accent.",
-);
-assert(rootHtml.includes("Continue the"), "Portfolio export is missing the Contact story heading.");
-assert(
-  rootHtml.includes("conversation."),
-  "Portfolio export is missing the Contact heading accent.",
-);
+for (const [index, row] of experienceRows.entries()) {
+  const id = row.getAttribute("data-experience-record");
+  assert(
+    row.querySelector("h3")?.textContent.trim() && row.querySelector("p")?.textContent.trim(),
+    `${id} must export its title and role overview.`,
+  );
+  assert(
+    row.querySelector("time[datetime]")?.textContent.trim(),
+    `${id} must export a readable date.`,
+  );
+  const facts = experienceFacts[index];
+  deepStrictEqual(
+    row.querySelectorAll("time").map((time) => time.getAttribute("datetime")),
+    facts.months,
+    `${id} must retain its period.`,
+  );
+  if (facts.end) assert(facts.end.test(row.textContent), `${id} must remain current.`);
+  const summaries = row.querySelectorAll("p");
+  assert(
+    summaries.length === 1 && facts.overview.test(summaries[0].textContent),
+    `${id} needs one role overview.`,
+  );
+  assert(
+    !/evaluations? fail|enter the same figures twice|Java backend|React interface|pitchside|traced display faults|I visit/i.test(
+      summaries[0].textContent,
+    ),
+    `${id} must summarise the role rather than an implementation anecdote.`,
+  );
+  if (id === "endeavour-data")
+    assert(/part[ -]time/i.test(row.textContent), "Endeavour must retain its part-time status.");
+  if (id === "northrop-software-engineer")
+    assert(
+      !/\bRAG\b|Model Context Protocol|\bMCP\b|Loop (?:&|and) Graph Engineering|Agent Evaluations?/i.test(
+        row.textContent,
+      ),
+      "Do not attribute personal-only AI skills to Northrop Grumman.",
+    );
+}
+directDestination(about.querySelector('[data-experience-record="skaltek-founder"] a'), "Skaltek");
 assert(
   rootHtml.includes("Portfolio route / Dispatch"),
   "Portfolio export is missing the grounded dispatch scene.",
@@ -155,17 +315,87 @@ assert(
   rootHtml.includes("05 / Arrival bay"),
   "Portfolio export is missing the Contact arrival scene.",
 );
+const skills = document.querySelector("#loadout");
+assert(skills?.querySelector("h2")?.textContent.trim() === "Skills", "Missing Skills h2.");
 assert(
-  rootHtml.includes('data-disclosure-kind="mission"'),
-  "Portfolio export is missing project disclosures.",
+  skills.querySelectorAll(
+    "details, summary, button, [role=button], dialog, [role=dialog], [data-level]",
+  ).length === 0,
+  "Skills must export complete lists without disclosures, dialogs or proficiency levels.",
 );
 assert(
-  rootHtml.includes('data-disclosure-kind="timeline"'),
-  "Portfolio export is missing Experience disclosures.",
+  !/\b(?:primary|supporting)\b|\d+\s*%/i.test(skills.textContent),
+  "Skills must not invent proficiency ratings.",
 );
-assert(
-  rootHtml.includes('data-disclosure-kind="toolkit"'),
-  "Portfolio export is missing Skills disclosures.",
+const capabilityRecords = skills.querySelectorAll("[data-capability-record]");
+const capabilityAnchors = [
+  [/\bPython\b/i, /C\+\+/i, /\bR\b/i, /\bRust\b/i],
+  [/FastAPI/i, /Koa\.?js/i, /Phaser\s*3/i],
+  [
+    /Gemini\s*API/i,
+    /multi[ -]agent orchestration/i,
+    /agent memory/i,
+    /evaluat/i,
+    /Daytona.*sandbox/i,
+  ],
+  [/PostgreSQL/i, /NumPy/i, /SciPy/i, /MongoDB Atlas\W*Vector Search/i, /Change Streams/i],
+  [/\bAWS\b/i, /GitHub Actions/i, /CI\s*\/\s*CD/i],
+  [/Playwright/i, /accessibility checks/i],
+  [/Daml/i, /Canton/i],
+  [/OpenCV/i, /YOLOv8.*object detection/i, /Pi Camera/i],
+];
+deepStrictEqual(
+  capabilityRecords.map((group) => group.getAttribute("data-capability-record")),
+  [
+    "languages",
+    "application-engineering",
+    "ai-automation",
+    "backend-data",
+    "cloud-delivery",
+    "testing-quality",
+    "emerging-technology",
+    "vision-hardware",
+  ],
+  "Skills must export the eight CV groups in reading order.",
+);
+for (const [index, group] of capabilityRecords.entries()) {
+  const id = group.getAttribute("data-capability-record");
+  assert(group.querySelector("h3")?.textContent.trim(), `${id} needs a group h3.`);
+  const items = group.querySelectorAll("[data-skill]");
+  assert(items.length > 0, `${id} needs skill items in the exported HTML.`);
+  for (const anchor of capabilityAnchors[index]) {
+    assert(
+      anchor.test(items.map((item) => item.textContent).join(" ")),
+      `${id} is missing the public CV skill ${anchor}.`,
+    );
+  }
+  for (const item of items) {
+    assert(
+      item.tagName === "LI" && item.closest("ul, ol") && item.textContent.trim(),
+      `${id} needs a semantic list of readable skill items.`,
+    );
+    assert(!item.closest("[hidden], [aria-hidden=true]"), `${id} must not hide its skills.`);
+  }
+  const art = group.querySelectorAll("svg[data-skill-art]");
+  assert(
+    art.length === 1 && art[0].getAttribute("aria-hidden") === "true",
+    `${id} needs one decorative skill SVG.`,
+  );
+  assert(
+    art[0].getAttribute("tabindex") == null && art[0].getAttribute("focusable") === "false",
+    `${id} artwork must be nonfocusable.`,
+  );
+  assert(!art[0].querySelector("a, [tabindex]"), `${id} artwork must not contain focus stops.`);
+}
+const renderedSkills = capabilityRecords.flatMap((group) =>
+  group.querySelectorAll("[data-skill]").map((item) => item.textContent.trim()),
+);
+const person = metadata["@graph"].find((entry) => entry["@type"] === "Person");
+assert(Array.isArray(person?.knowsAbout), "Person metadata must publish knowsAbout skill texts.");
+deepStrictEqual(
+  [...new Set(person.knowsAbout)].sort(),
+  [...new Set(renderedSkills)].sort(),
+  "Person.knowsAbout must agree with the public skill item texts.",
 );
 assert(
   gameHtml.includes('data-game-header="true"'),

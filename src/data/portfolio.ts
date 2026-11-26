@@ -1,6 +1,6 @@
 type SocialNetwork = "github" | "linkedin" | "x";
 type ProjectLinkKind = "live" | "source";
-type CapabilityLevel = "primary" | "supporting";
+
 type StoryChapterId = "briefing" | "build" | "progress" | "method" | "next";
 
 export type PortfolioStoryAnchor = "home" | "projects" | "about" | "loadout" | "contact";
@@ -25,6 +25,9 @@ export interface PortfolioProject {
   tier: "featured" | "supporting";
   status: "Live" | "Independent project" | "Final-year project";
   summary: string;
+  audience: string;
+  scale: string;
+  decision: string;
   problem: string;
   contribution: string;
   outcome: string;
@@ -45,21 +48,12 @@ export interface ExperienceEntry {
   start: string;
   end: string;
   current: boolean;
+  startMonth: string;
+  endMonth?: string;
+  link?: { label: string; href: string };
   summary: string;
   highlights: readonly string[];
   technologies: readonly string[];
-}
-
-interface CapabilityItem {
-  name: string;
-  level: CapabilityLevel;
-}
-
-export interface CapabilityGroup {
-  id: string;
-  title: string;
-  summary: string;
-  items: readonly CapabilityItem[];
 }
 
 interface StoryChapter {
@@ -155,6 +149,10 @@ export const socialLinks: readonly SocialLink[] = [
   },
 ];
 
+const tymauraSite = "https://tymaura.app";
+const skaltekServices = "https://skaltek.co.uk/services";
+
+// These four IDs are also used by existing game saves.
 export const portfolioProjects = [
   {
     id: "tymaura",
@@ -164,48 +162,48 @@ export const portfolioProjects = [
     status: "Live",
     grade: undefined,
     summary:
-      "A production-focused event-planning platform with vendor workflows, authentication, guest RSVP journeys, messaging, and admin readiness controls.",
+      "A live event-operations platform for organisers, collaborators, guests, and vendors, covering planning, RSVP and check-in, marketplace bookings, messaging, and admin review.",
+    audience: "Organisers, collaborators, guests, and vendors",
+    scale: "Event setup through RSVP, live check-in, vendor booking, and follow-up",
+    decision:
+      "Used Clerk for multi-role identity, Convex for shared real-time state, and Stripe for subscription and payment boundaries.",
     problem:
-      "Event operations need vendor, guest, messaging, and administrative workflows to remain coordinated across one reliable product.",
+      "One event crosses private organiser tools, public guest links, live check-in, and vendor transactions, so permissions and event ownership must remain consistent across every route.",
     contribution:
-      "Built across frontend, backend, deployment, database workflows, and production QA.",
-    outcome: "A live platform supporting vendor, guest, messaging, and administrative workflows.",
+      "Designed and built the Next.js interface, Convex schema and functions, Clerk access boundaries, Stripe tiers, deployment path, and automated domain and browser coverage.",
+    outcome:
+      "Shipped one live product that carries an event from setup and invitations through guest operations, vendor coordination, and administrative review.",
     image: "/tymaura-logo-card.svg",
     imageAlt: "Tymaura event-planning platform logo",
     imageWidth: 1200,
     imageHeight: 675,
     technologies: ["React", "TypeScript", "Next.js", "Convex", "Clerk", "Vercel", "Stripe"],
-    links: [{ kind: "live", label: "Visit Tymaura", href: "https://tymaura.app" }],
+    links: [{ kind: "live", label: "Visit Tymaura", href: tymauraSite }],
   },
   {
     id: "skaltek",
     title: "Skaltek",
-    kind: "AI systems and product automation",
+    kind: "Independent software studio",
     tier: "featured",
     status: "Live",
     grade: undefined,
     summary:
-      "Independent AI-assisted systems for research, outreach, product, and content workflows, alongside production web delivery for local UK businesses.",
-    problem:
-      "Small teams need repeatable automation that improves digital operations without removing human review from important decisions.",
+      "An independent studio building websites, staff tools and practical AI for UK businesses.",
+    audience: "UK businesses looking for software that fits how their teams work",
+    scale: "From a customer-facing website to the tools staff use behind it",
+    decision:
+      "Start by visiting the team and understanding how they do the work before choosing the software.",
+    problem: "Staff can end up entering the same information in several separate tools.",
     contribution:
-      "Built workflows with Python, TypeScript, LLM APIs, prompt and system instructions, browser automation, scheduled agents, logging, QA gates, and human checks.",
-    outcome:
-      "Reusable AI-assisted workflows with practical monitoring, quality checks, and human oversight.",
+      "Set up the studio to design websites, connect software and build tools for routine work.",
+    outcome: "The studio offers ongoing fixes and updates for the software it builds.",
     image: "/skaltek-logo-card.webp",
     imageAlt: "Skaltek software engineering business logo",
     imageWidth: 960,
     imageHeight: 540,
     imageSrcSet: "/skaltek-logo-card-480.webp 480w, /skaltek-logo-card.webp 960w",
-    technologies: [
-      "Python",
-      "TypeScript",
-      "LLM APIs",
-      "Workflow Automation",
-      "Browser Automation",
-      "GitHub Workflows",
-    ],
-    links: [{ kind: "live", label: "Visit Skaltek", href: "https://skaltek.co.uk" }],
+    technologies: ["Web development", "Workflow automation", "AI tools"],
+    links: [{ kind: "live", label: "Visit Skaltek", href: skaltekServices }],
   },
   {
     id: "solana-contract-generator",
@@ -215,12 +213,18 @@ export const portfolioProjects = [
     status: "Final-year project",
     grade: "82%",
     summary:
-      "A platform that generates, compiles, tests, and analyses Solana smart contracts using AI.",
+      "A developer tool that turns an escrow or crowdfunding requirement into Rust code, then carries it through Anchor compilation, tests, repair, and deployment preparation.",
+    audience: "Developers learning or prototyping Solana and Anchor contract workflows",
+    scale:
+      "Requirement entry through generation, compilation, testing, analysis, and Devnet preparation",
+    decision:
+      "Separated the React interface from FastAPI orchestration and fed compiler and test failures back into the repair loop instead of returning unchecked generated code.",
     problem:
-      "Writing and validating blockchain programs requires specialist tooling across generation, compilation, testing, and analysis.",
+      "Generated contract code is not useful if it cannot compile or satisfy its tests, while manually moving between an LLM, Rust tooling, Anchor, and Devnet breaks the feedback loop.",
     contribution:
-      "Built the React frontend, FastAPI backend, Claude API integration, Rust and Anchor workflow, and Solana Devnet testing path.",
-    outcome: "Completed as a final-year Computer Science project graded 82%.",
+      "Built the React frontend, FastAPI and Claude orchestration, Rust and Anchor generation path, build-error repair loop, registry interoperability checks, and Solana Devnet tests.",
+    outcome:
+      "Delivered an 82%-graded final-year system that generated escrow and crowdfunding contracts and exposed their code, build status, tests, and deployment details.",
     image: "/solana.webp",
     imageAlt: "Solana logo used for the smart contract generator project",
     imageWidth: 450,
@@ -242,12 +246,18 @@ export const portfolioProjects = [
     status: "Independent project",
     grade: "80%",
     summary:
-      "A .NET MAUI application for tracking holdings, live price changes, transactions, and real-time crypto portfolio value.",
+      "A cross-platform practice app that combines live BTC, ETH, and SOL prices with a virtual balance, simulated trades, watchlists, charts, and portfolio history.",
+    audience: "People practising crypto portfolio decisions without risking real funds",
+    scale:
+      "Account setup, three-asset watchlist, seven-day charts, simulated buy/sell, valuation, and transaction history",
+    decision:
+      "Used .NET MAUI for one mobile codebase and CoinGecko for current and historical prices; every trade remains virtual and verifies the latest price before execution.",
     problem:
-      "Crypto investors need one mobile view for holdings, market prices, buy and sell activity, and transaction history.",
+      "New users need to experience live price movement and portfolio accounting without exposing money or assets to a volatile market.",
     contribution:
-      "Built the cross-platform application, CoinGecko integration, portfolio calculations, transaction management, and data visualisation.",
-    outcome: "Completed as an independently delivered project graded 80%.",
+      "Built registration and login, the virtual-funds ledger, BTC/ETH/SOL quotes, seven-day charts, simulated trade confirmation, watchlists, portfolio calculations, and transaction history.",
+    outcome:
+      "Delivered an 80%-graded cross-platform practice environment driven by real market data with no real-asset execution.",
     image: "/cryptoapp.webp",
     imageAlt: "Crypto portfolio mobile application showing price history charts",
     imageWidth: 480,
@@ -264,12 +274,106 @@ export const portfolioProjects = [
   },
 ] as const satisfies readonly PortfolioProject[];
 
-type FeaturedProjectRecord = Extract<(typeof portfolioProjects)[number], { tier: "featured" }>;
-export type FeaturedProjectId = FeaturedProjectRecord["id"];
-export type FeaturedProject = PortfolioProject & {
-  id: FeaturedProjectId;
-  tier: "featured";
-};
+interface WorkEntry {
+  id: string;
+  title: string;
+  caption: string;
+  href: string;
+  action: string;
+  preview: { src: string; alt: string; width: number; height: number };
+}
+
+export const selectedWork: readonly WorkEntry[] = [
+  {
+    id: "padel-match-analysis",
+    title: "Padel Match Analysis",
+    caption:
+      "Doubles partners can replay a rally and use court heatmaps to spot the space they left open.",
+    action: "Read the build notes",
+    href: "https://www.linkedin.com/posts/sukhraj-kalon-037031252_computervision-sportstech-padel-activity-7525482728872517633-HshA",
+    preview: {
+      src: "/images/work/padel.webp",
+      alt: "Court heatmap with the densest clusters of player detections near both ends.",
+      width: 768,
+      height: 480,
+    },
+  },
+  {
+    id: "sketch-clash",
+    title: "Sketch Clash",
+    caption:
+      "I built an island simulation to see how AI agents ask each other for help when a task needs an ability they lack.",
+    action: "View source",
+    href: "https://github.com/Sukhraj1000/sketch-clash",
+    preview: {
+      src: "/images/work/sketch-clash.webp",
+      alt: "The Sunrise practice island, with paths connecting garden beds and a solar charging dock.",
+      width: 768,
+      height: 480,
+    },
+  },
+  {
+    id: "tymaura",
+    title: "Tymaura",
+    caption:
+      "Event organisers can assign guests to tables and use the same RSVP list for QR check-in at the door.",
+    action: "Visit Tymaura",
+    href: tymauraSite,
+    preview: {
+      src: "/images/work/tymaura-invitations.webp",
+      alt: "A botanical invitation on a teal envelope beside an RSVP card marked Table 06.",
+      width: 960,
+      height: 540,
+    },
+  },
+  {
+    id: "signaldesk",
+    title: "SignalDesk",
+    caption: "Run the same market indicators and risk checks from the command line or a REST API.",
+    action: "View source",
+    href: "https://github.com/Sukhraj1000/signaldesk",
+    preview: {
+      src: "/images/work/signaldesk-study.webp",
+      alt: "A candlestick chart from sample data feeds the same moving-average study to the CLI and API.",
+      width: 960,
+      height: 540,
+    },
+  },
+  {
+    id: "spend-limited-ai-agent-wallet",
+    title: "Spend-Limited AI Agent Wallet",
+    caption:
+      "An AI agent can pay approved merchants with test funds, but the ledger rejects purchases above the owner’s spending limit.",
+    action: "View source",
+    href: "https://github.com/Sukhraj1000/hackathon-toolkit",
+    preview: {
+      src: "/images/work/wallet-mandate.webp",
+      alt: "A blue mandate card sends two payment paths to a brass gate: one passes and the other stops at the cap.",
+      width: 960,
+      height: 540,
+    },
+  },
+  {
+    id: "fork-fighter",
+    title: "Fork Fighter",
+    caption:
+      "Three AI agents propose rule changes while you play, and a referee picks which one takes effect.",
+    action: "View source",
+    href: "https://github.com/Sukhraj1000/fork-fighter-live-patch-war",
+    preview: {
+      src: "/images/work/fork-fighter-directors.webp",
+      alt: "Three pixel-art game masters send proposals to a referee; a single platform appears under the runner.",
+      width: 960,
+      height: 540,
+    },
+  },
+];
+
+export const universityWork = portfolioProjects
+  .filter(
+    (project) => project.id === "solana-contract-generator" || project.id === "crypto-portfolio",
+  )
+  .map((project) => ({ id: project.id, title: project.title, href: project.links[0].href }));
 
 export const experience: readonly ExperienceEntry[] = [
   {
@@ -277,10 +381,11 @@ export const experience: readonly ExperienceEntry[] = [
     role: "Software Engineer",
     organisation: "Northrop Grumman",
     start: "Sep 2025",
+    startMonth: "2025-09",
     end: "Present",
     current: true,
     summary:
-      "Building secure full-stack applications, cloud services, and AI-enabled engineering workflows in a regulated delivery environment.",
+      "I build and test cloud software in a regulated environment. I also work with the team on how we use and evaluate AI tools in everyday development.",
     highlights: [
       "Build and test scalable applications using TypeScript, Python, Jinja, AWS, Infrastructure as Code, and PostgreSQL.",
       "Apply agentic and AI-assisted development through coordinated multi-agent systems and human-reviewed engineering workflows.",
@@ -300,18 +405,34 @@ export const experience: readonly ExperienceEntry[] = [
     ],
   },
   {
-    id: "endeavour-data",
-    role: "Administration & Data Analysis",
-    organisation: "Endeavour Restaurants Ltd",
-    start: "Jul 2025",
+    id: "skaltek-founder",
+    role: "Founder",
+    organisation: "Skaltek",
+    start: "Jan 2026",
+    startMonth: "2026-01",
     end: "Present",
     current: true,
     summary:
-      "Developing operational reporting and automation while supporting business IT infrastructure and data quality.",
+      "I run an independent software studio for UK businesses. I work with teams to design, build and support their websites, internal tools and automations.",
+    link: { label: "Visit Skaltek", href: skaltekServices },
+    highlights: [],
+    technologies: ["Web development", "Workflow automation", "AI tools"],
+  },
+  {
+    id: "endeavour-data",
+    role: "Administration with Data Analysis, part-time",
+    organisation: "Endeavour Restaurants Ltd",
+    start: "Jul 2025",
+    startMonth: "2025-07",
+    end: "Jan 2026",
+    endMonth: "2026-01",
+    current: false,
+    summary:
+      "I looked after operational reporting and sales forecasting, and helped keep the restaurant’s web services running.",
     highlights: [
-      "Develop Excel automation for reporting, sales projections, and performance analysis.",
-      "Configure and troubleshoot Cloudflare domains, DNS records, and SSL enforcement.",
-      "Maintain spreadsheet workflows and data accuracy for day-to-day operations.",
+      "Developed Excel automation for reporting, sales projections, and performance analysis.",
+      "Configured and troubleshot Cloudflare domains, DNS records, and SSL enforcement.",
+      "Maintained spreadsheet workflows and data accuracy for day-to-day operations.",
     ],
     technologies: ["Excel Automation", "Reporting Dashboards", "Cloudflare", "DNS", "SSL"],
   },
@@ -320,10 +441,12 @@ export const experience: readonly ExperienceEntry[] = [
     role: "Software Engineer Intern",
     organisation: "Northrop Grumman",
     start: "Sep 2023",
+    startMonth: "2023-09",
     end: "Sep 2024",
+    endMonth: "2024-09",
     current: false,
     summary:
-      "Worked in an Agile software engineering team delivering web applications and contributing to secure software practices in a regulated environment.",
+      "During my placement I worked across backend services and user interfaces, applying computer vision as part of a software engineering team.",
     highlights: [
       "Contributed to delivery tasks, ceremonies, code reviews, and technical training.",
       "Built user-facing applications and worked across multiple languages and delivery tools.",
@@ -347,10 +470,12 @@ export const experience: readonly ExperienceEntry[] = [
     role: "LED Technician",
     organisation: "Techfront UK Ltd",
     start: "Apr 2023",
+    startMonth: "2023-04",
     end: "Jun 2025",
+    endMonth: "2025-06",
     current: false,
     summary:
-      "Installed and supported electrical systems, LED display boards, hardware, and data transmission for live sports and major events.",
+      "I set up and maintained LED display systems for live sport, working with the event crew to keep the screens running throughout fixtures.",
     highlights: [
       "Delivered hardware setup and LED display support in time-critical live environments.",
       "Built practical fault awareness and maintained reliable operations under pressure.",
@@ -365,84 +490,120 @@ export const experience: readonly ExperienceEntry[] = [
   },
 ];
 
-export const capabilityGroups: readonly CapabilityGroup[] = [
+// Public skills, grouped as in the CV. No ratings or employer attribution.
+export const capabilityGroups = [
+  {
+    id: "languages",
+    title: "Languages",
+    items: ["Python", "TypeScript", "JavaScript", "Java", "SQL", "C#", "C++", "Rust", "Bash", "R"],
+  },
   {
     id: "application-engineering",
-    title: "Application Engineering",
-    summary: "User-facing web and mobile products built for maintainable delivery.",
+    title: "Web & application development",
     items: [
-      { name: "TypeScript / JavaScript", level: "primary" },
-      { name: "Python", level: "primary" },
-      { name: "React / Next.js", level: "primary" },
-      { name: "Jinja", level: "supporting" },
-      { name: "C# / .NET MAUI", level: "supporting" },
-      { name: "Java / Spring Boot", level: "supporting" },
-      { name: "HTML / CSS", level: "supporting" },
-    ],
-  },
-  {
-    id: "backend-data",
-    title: "Backend & Data",
-    summary: "APIs, databases, reporting systems, and dependable data workflows.",
-    items: [
-      { name: "FastAPI / REST APIs", level: "primary" },
-      { name: "PostgreSQL / SQL", level: "primary" },
-      { name: "Convex", level: "supporting" },
-      { name: "Excel Automation", level: "supporting" },
-      { name: "Reporting Dashboards", level: "supporting" },
-      { name: "Postman", level: "supporting" },
-    ],
-  },
-  {
-    id: "cloud-delivery",
-    title: "Cloud & Delivery",
-    summary: "Secure, repeatable delivery across cloud and production environments.",
-    items: [
-      { name: "AWS / Cloud Services", level: "primary" },
-      { name: "Infrastructure as Code", level: "primary" },
-      { name: "GitHub Workflows / CI/CD", level: "primary" },
-      { name: "Docker", level: "supporting" },
-      { name: "Jenkins", level: "supporting" },
-      { name: "Vercel", level: "supporting" },
-      { name: "Cloudflare / DNS / SSL", level: "supporting" },
-      { name: "Linux / Ubuntu", level: "supporting" },
+      "React",
+      "Next.js",
+      "HTML/CSS",
+      "FastAPI",
+      "Spring Boot",
+      "Flask",
+      "Node.js",
+      "Fastify",
+      "Koa.js",
+      ".NET MAUI",
+      "Phaser 3",
+      "REST APIs",
     ],
   },
   {
     id: "ai-automation",
-    title: "AI & Automation",
-    summary:
-      "Agentic systems, retrieval workflows, and evaluated automation grounded in observable outcomes.",
+    title: "AI & automation",
     items: [
-      { name: "Agentic Development", level: "primary" },
-      { name: "AI-Assisted Development", level: "primary" },
-      { name: "Multi-Agent Systems", level: "primary" },
-      { name: "RAG Workflows", level: "primary" },
-      { name: "LLM API Integration", level: "supporting" },
-      { name: "Model Context Protocol (MCP)", level: "supporting" },
-      { name: "Loop & Graph Engineering", level: "supporting" },
-      { name: "Agent Evaluations", level: "supporting" },
-      { name: "Prompt / System Instructions", level: "supporting" },
-      { name: "Workflow Automation", level: "supporting" },
-      { name: "Browser Automation", level: "supporting" },
-      { name: "Automated Testing & QA", level: "supporting" },
-      { name: "Claude / Codex / Cursor / Copilot", level: "supporting" },
+      "OpenAI API",
+      "Anthropic’s Claude API",
+      "Gemini API",
+      "Codex",
+      "Prompt design",
+      "Multi-agent orchestration",
+      "Agent memory and evaluation",
+      "Daytona sandboxes",
+      "Structured output validation",
+      "Browser and workflow automation",
+    ],
+  },
+  {
+    id: "backend-data",
+    title: "Data & reporting",
+    items: [
+      "PostgreSQL",
+      "MongoDB Atlas Vector Search and Change Streams",
+      "NumPy",
+      "SciPy",
+      "Data analysis",
+      "Excel automation",
+      "Reporting dashboards",
+      "Sales forecasting",
+    ],
+  },
+  {
+    id: "cloud-delivery",
+    title: "Cloud & delivery",
+    items: [
+      "AWS",
+      "Docker",
+      "Infrastructure as code",
+      "Linux/Ubuntu",
+      "Git",
+      "Jenkins",
+      "GitHub Actions",
+      "CI/CD",
+      "Cloudflare",
+      "Netlify",
+      "Vercel",
+      "DNS and SSL configuration",
+    ],
+  },
+  {
+    id: "testing-quality",
+    title: "Testing & quality",
+    items: [
+      "Unit and integration testing",
+      "Playwright",
+      "Postman",
+      "Cross-browser testing",
+      "Accessibility checks",
+      "Peer code review",
     ],
   },
   {
     id: "emerging-technology",
-    title: "Blockchain & Systems",
-    summary: "Applied work across blockchain, embedded hardware, and live technical systems.",
+    title: "Blockchain",
     items: [
-      { name: "Solana / Anchor", level: "primary" },
-      { name: "Rust", level: "supporting" },
-      { name: "Solidity / Web3.js", level: "supporting" },
-      { name: "Raspberry Pi", level: "supporting" },
-      { name: "Electrical / LED Systems", level: "supporting" },
-      { name: "Hardware / Data Transmission", level: "supporting" },
+      "Solana",
+      "Anchor",
+      "Solidity",
+      "Web3.js",
+      "Daml",
+      "Canton",
+      "Smart contract development and testing",
     ],
   },
-];
+  {
+    id: "vision-hardware",
+    title: "Computer vision & hardware",
+    items: [
+      "OpenCV",
+      "YOLOv8 object detection",
+      "Machine learning",
+      "Neural networks",
+      "Raspberry Pi and Pi Camera",
+      "LED display systems",
+      "Data transmission",
+    ],
+  },
+] as const;
+
+export type SkillGroupId = (typeof capabilityGroups)[number]["id"];
 
 export const contactDetails = {
   location: portfolioProfile.location,

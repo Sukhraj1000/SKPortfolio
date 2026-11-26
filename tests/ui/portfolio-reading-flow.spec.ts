@@ -173,116 +173,85 @@ test.describe("portfolio reading flow", () => {
     }
   });
 
-  test("keeps featured project evidence visible and supporting notes keyboard operable", async ({
+  test("keeps project captions and direct links in mobile reading and keyboard order", async ({
     page,
   }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#projects");
 
-    const projectRecords = page.locator("[data-project-record]");
-    const featuredProjects = page.locator('[data-project-tier="featured"]');
-    const supportingProjects = page.locator('[data-project-tier="supporting"]');
-    await expect(projectRecords).toHaveCount(4);
-    await expect(featuredProjects).toHaveCount(2);
-    await expect(supportingProjects).toHaveCount(2);
-    const projectDisclosureNames = await projectRecords
-      .locator("summary")
-      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
-    expect(new Set(projectDisclosureNames).size).toBe(4);
-    expect(projectDisclosureNames).toEqual([
-      "Toggle Tymaura engineering details",
-      "Toggle Skaltek engineering details",
-      "Toggle Solana Smart Contract AI Generator engineering details",
-      "Toggle Crypto Portfolio Mobile App engineering details",
-    ]);
-    await expect(featuredProjects.locator(".pq-project-node")).toHaveCount(8);
-    for (const node of await featuredProjects.locator(".pq-project-node").all()) {
-      await expect(node).toHaveAttribute("aria-hidden", "true");
+    const projects = page.locator("#projects");
+    const articles = projects.locator("article[data-project-record]");
+    await expect(articles).toHaveCount(6);
+    await expect(projects.locator("details")).toHaveCount(0);
+    const boxes = await articles.evaluateAll((elements) =>
+      elements.map((element) => {
+        const { top, bottom } = element.getBoundingClientRect();
+        return { top, bottom };
+      }),
+    );
+    for (const [index, article] of (await articles.all()).entries()) {
+      await expectReadableText(article.locator("p"));
+      if (index > 0) expect(boxes[index].top).toBeGreaterThanOrEqual(boxes[index - 1].bottom - 1);
     }
 
-    for (const record of await projectRecords.all()) {
-      await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
-      await expect(record.locator("[data-project-kind]")).toBeVisible();
-      await expect(record.locator("[data-project-status]")).toBeVisible();
-      await expect(record.locator("[data-project-outcome]")).toBeVisible();
+    const links = projects.getByRole("link");
+    await expect(links).toHaveCount(8);
+    await links.first().focus();
+    await expect(links.first()).toBeFocused();
+    for (const link of (await links.all()).slice(1)) {
+      await page.keyboard.press("Tab");
+      await expect(link).toBeFocused();
+      await expect(link).toBeInViewport();
     }
-
-    for (const record of await featuredProjects.all()) {
-      await expect(record.locator("[data-project-overview]")).toBeVisible();
-      await expect(record.locator("[data-project-media]")).toBeVisible();
-      await expect(record.locator(".pq-story-beats > div")).toHaveCount(3);
-    }
-
-    const firstSupporting = supportingProjects.first();
-    const notes = firstSupporting.locator("details");
-    const notesSummary = notes.locator("summary");
-    await notesSummary.focus();
-    await page.keyboard.press("Enter");
-    await expect(notes).toHaveAttribute("open", "");
-    await expect(notesSummary).toBeFocused();
-
-    const firstFeatured = featuredProjects.first();
-    const overview = firstFeatured.locator("[data-project-overview]");
-    const media = firstFeatured.locator("[data-project-media]");
-    const [overviewBox, mediaBox] = await Promise.all([
-      overview.boundingBox(),
-      media.boundingBox(),
-    ]);
-    expect(mediaBox?.y).toBeLessThan(overviewBox?.y ?? Number.POSITIVE_INFINITY);
+    await expectNoPageOverflow(page);
   });
 
-  test("keeps experience and skills readable with native disclosure controls", async ({ page }) => {
+  test("keeps role overviews and all Skills readable in the document flow", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#about");
 
-    const experienceRecords = page.locator("[data-experience-record]");
-    await expect(experienceRecords).toHaveCount(4);
-    const experienceDisclosureNames = await experienceRecords
-      .locator("summary")
-      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
-    expect(new Set(experienceDisclosureNames).size).toBe(4);
-
+    const about = page.locator("#about");
+    await expect(about.locator("details")).toHaveCount(0);
+    const experienceRecords = about.locator("[data-experience-record]");
+    await expect(experienceRecords).toHaveCount(5);
     for (const record of await experienceRecords.all()) {
       await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
-      await expect(record.locator("time")).toBeVisible();
-      const summary = record.locator("summary");
-      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
-      expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
+      await expect(record).toContainText(/\b20\d{2}\b/, { useInnerText: true });
     }
+    const studio = about.locator('[data-experience-record="skaltek-founder"]').getByRole("link");
+    await studio.focus();
+    await expect(studio).toBeFocused();
 
-    const secondExperience = experienceRecords.nth(1);
-    const secondExperienceDetails = secondExperience.locator("details");
-    const secondExperienceSummary = secondExperience.locator("summary");
-    await secondExperienceSummary.focus();
-    await page.keyboard.press("Enter");
-    await expect(secondExperienceDetails).toHaveAttribute("open", "");
+    const skills = page.locator("#loadout");
     await expect(
-      secondExperienceSummary.getByText("Hide responsibilities and stack"),
+      skills.getByRole("heading", { level: 2, name: "Skills", exact: true }),
     ).toBeVisible();
-    await expect(secondExperienceSummary).toBeFocused();
-
-    const capabilityRecords = page.locator("[data-capability-record]");
-    await expect(capabilityRecords).toHaveCount(5);
-    const capabilityDisclosureNames = await capabilityRecords
-      .locator("summary")
-      .evaluateAll((elements) => elements.map((element) => element.getAttribute("aria-label")));
-    expect(new Set(capabilityDisclosureNames).size).toBe(5);
-
+    await expect(
+      skills.locator(
+        "details, summary, button, [role=button], dialog, [role=dialog], [data-level]",
+      ),
+    ).toHaveCount(0);
+    const capabilityRecords = skills.locator("[data-capability-record]");
+    await expect(capabilityRecords).toHaveCount(8);
     for (const record of await capabilityRecords.all()) {
       await expect(record.getByRole("heading", { level: 3 })).toBeVisible();
-      await expect(record.getByText(/primary$/)).toBeVisible();
-      await expect(record.getByText(/supporting$/)).toBeVisible();
-      const summary = record.locator("summary");
-      await expect(summary).toHaveAttribute("data-disclosure-action", "true");
-      expect(await summary.evaluate((element) => element.clientHeight)).toBeGreaterThanOrEqual(44);
+      const list = record.getByRole("list");
+      await expect(list).toHaveCount(1);
+      await expect(list).toBeVisible();
+      const items = record.locator("[data-skill]");
+      expect(await items.count()).toBeGreaterThan(0);
+      await expect(list.getByRole("listitem")).toHaveCount(await items.count());
+      for (const item of await items.all()) await expectReadableText(item);
     }
 
-    const firstCapability = capabilityRecords.first();
-    const firstCapabilityDetails = firstCapability.locator("details");
-    const firstCapabilitySummary = firstCapability.locator("summary");
-    await firstCapabilitySummary.click();
-    await expect(firstCapabilityDetails).toHaveAttribute("open", "");
-    await expect(firstCapabilitySummary.getByText("Close inventory")).toBeVisible();
+    // Static labels and decorative art must not add keyboard stops between outreach links.
+    const contactLink = page.locator("#contact").getByRole("link").first();
+    await studio.focus();
+    await page.keyboard.press("Tab");
+    await expect(contactLink).toBeFocused();
+    await expect(contactLink).toBeInViewport();
+    await expectNoPageOverflow(page);
   });
 
   test("keeps keyboard focus visible and returns it after closing the CV dialog", async ({
@@ -376,21 +345,29 @@ test.describe("portfolio reading flow", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
 
-    const motion = await page.evaluate(() => {
-      const scan = document.querySelector(".signal-scan");
-      const root = window.getComputedStyle(document.documentElement);
-      const scanStyles = scan ? window.getComputedStyle(scan) : null;
+    await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "reduced");
+    const motion = await page.locator(".pq-root").evaluate((root) => {
+      const motionTargets = [...document.querySelectorAll<HTMLElement>("[data-motion]")];
 
       return {
-        scrollBehavior: root.scrollBehavior,
-        scanDuration: scanStyles?.animationDuration ?? "0s",
-        scanIterations: scanStyles?.animationIterationCount ?? "1",
+        activeAnimations: root
+          .getAnimations({ subtree: true })
+          .filter((animation) => animation.playState === "running").length,
+        incompleteTargets: motionTargets.filter(
+          (target) => target.dataset.motionState !== "complete",
+        ).length,
+        motionMode: (root as HTMLElement).dataset.motionMode,
+        scrollBehavior: window.getComputedStyle(document.documentElement).scrollBehavior,
       };
     });
 
+    expect(motion.motionMode).toBe("reduced");
     expect(motion.scrollBehavior).toBe("auto");
-    expect(Number.parseFloat(motion.scanDuration)).toBeLessThanOrEqual(0.01);
-    expect(motion.scanIterations).toBe("1");
+    expect(motion.incompleteTargets).toBe(0);
+    expect(motion.activeAnimations).toBe(0);
+    await expect(
+      page.locator("#projects article[data-project-record]").first().getByRole("link"),
+    ).toHaveCSS("animation-name", "none");
     await expect(page.locator("[data-hero-summary]")).toBeVisible();
   });
 
@@ -406,9 +383,9 @@ test.describe("portfolio reading flow", () => {
       await expect(page.locator("html")).toHaveClass(/dark/);
       await expect(page.locator("html")).not.toHaveClass(/light/);
       await expect(page.getByRole("heading", { name: "Sukhraj Kalon", level: 1 })).toBeVisible();
-      await expect(page.locator("[data-project-record]")).toHaveCount(4);
-      await expect(page.locator("[data-experience-record]")).toHaveCount(4);
-      await expect(page.locator("[data-capability-record]")).toHaveCount(5);
+      await expect(page.locator("#projects article[data-project-record]")).toHaveCount(6);
+      await expect(page.locator("#about [data-experience-record]")).toHaveCount(5);
+      await expect(page.locator("#loadout [data-capability-record]")).toHaveCount(8);
       await expectNoPageOverflow(page);
       await expectHeaderControlsWithinViewport(page);
 

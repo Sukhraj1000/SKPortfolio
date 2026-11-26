@@ -10,6 +10,7 @@ const completionDelay: Record<string, number> = {
   "hero-console": 800,
   section: 650,
   record: 650,
+  "skill-study": 2_100,
   "ending-scene": 900,
 };
 

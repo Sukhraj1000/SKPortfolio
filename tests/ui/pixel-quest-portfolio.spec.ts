@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const releaseViewports = [
   { width: 320, height: 568 },
@@ -7,6 +7,288 @@ const releaseViewports = [
   { width: 1024, height: 768 },
   { width: 1440, height: 900 },
 ] as const;
+
+const repository = (name: string) =>
+  new RegExp(`^https://github\\.com/Sukhraj1000/${name}(?:[/?#]|$)`, "i");
+
+const selectedProjects = [
+  // Padel may use a public development post or a local, signed-out evidence asset.
+  [
+    "Padel Match Analysis",
+    /^(?:https:\/\/[^/\s]+\/|\/(?!\/))[^?#\s]+/,
+    /rall(?:y|ies)|court|positioning/i,
+  ],
+  ["Sketch Clash", repository("sketch-clash"), /agents?|island|simulation/i],
+  ["Tymaura", /^https:\/\/tymaura\.app\/?$/, /guest|seating|check[ -]?in/i],
+  ["SignalDesk", repository("signaldesk"), /market|command line|indicators/i],
+  ["Spend-Limited AI Agent Wallet", repository("hackathon-toolkit"), /limit|cap|test funds/i],
+  ["Fork Fighter", repository("fork-fighter-live-patch-war"), /rules?|referee/i],
+] as const;
+
+const universityWork = [
+  [
+    "project-solana-contract-generator",
+    "Solana Smart Contract AI Generator",
+    repository("SmartContractGen"),
+  ],
+  [
+    "project-crypto-portfolio",
+    "Crypto Portfolio Mobile App",
+    repository("CryptoMobileAppPorfolio"),
+  ],
+] as const;
+
+const experienceRows = [
+  {
+    id: "northrop-software-engineer",
+    organisation: "Northrop Grumman",
+    role: /Software Engineer\b(?!\s+Intern)/i,
+    dates: /Sep\w* 2025\s*(?:[–—-]|to)\s*present/i,
+    months: ["2025-09"],
+    contribution: /software|applications?|engineering|systems?/i,
+  },
+  {
+    id: "skaltek-founder",
+    organisation: "Skaltek",
+    role: /Founder/i,
+    dates: /Jan\w* 2026\s*(?:[–—-]|to)\s*present/i,
+    months: ["2026-01"],
+    contribution: /businesses|software|automation|AI/i,
+  },
+  {
+    id: "endeavour-data",
+    organisation: "Endeavour Restaurants Ltd",
+    role: /Administration (?:with|and|&) Data Analysis/i,
+    dates: /Jul\w* 2025\s*(?:[–—-]|to)\s*Jan\w* 2026/i,
+    months: ["2025-07", "2026-01"],
+    contribution: /administration|data|report|operations/i,
+  },
+  {
+    id: "northrop-intern",
+    organisation: "Northrop Grumman",
+    role: /Software Engineer Intern/i,
+    dates: /Sep\w* 2023\s*(?:[–—-]|to)\s*Sep\w* 2024/i,
+    months: ["2023-09", "2024-09"],
+    contribution: /software|applications?|engineering|development/i,
+  },
+  {
+    id: "techfront-led-technician",
+    organisation: "Techfront UK Ltd",
+    role: /LED Technician/i,
+    dates: /Apr\w* 2023\s*(?:[–—-]|to)\s*Jun\w* 2025/i,
+    months: ["2023-04", "2025-06"],
+    contribution: /LED|display|live|technical/i,
+  },
+] as const;
+
+const capabilityIds = [
+  "languages",
+  "application-engineering",
+  "ai-automation",
+  "backend-data",
+  "cloud-delivery",
+  "testing-quality",
+  "emerging-technology",
+  "vision-hardware",
+] as const;
+
+// Public CV anchors, deliberately independent of the private CV and implementation data.
+const capabilityAnchors = [
+  [/\bPython\b/i, /C\+\+/i, /\bR\b/i, /\bRust\b/i],
+  [/FastAPI/i, /Koa\.?js/i, /Phaser\s*3/i],
+  [
+    /Gemini\s*API/i,
+    /multi[ -]agent orchestration/i,
+    /agent memory/i,
+    /evaluat/i,
+    /Daytona.*sandbox/i,
+  ],
+  [/PostgreSQL/i, /NumPy/i, /SciPy/i, /MongoDB Atlas\W*Vector Search/i, /Change Streams/i],
+  [/\bAWS\b/i, /GitHub Actions/i, /CI\s*\/\s*CD/i],
+  [/Playwright/i, /accessibility checks/i],
+  [/Daml/i, /Canton/i],
+  [/OpenCV/i, /YOLOv8.*object detection/i, /Pi Camera/i],
+] as const;
+
+async function expectStaticSkills(page: Page) {
+  const skills = page.locator("#loadout");
+  await expect(
+    skills.getByRole("heading", { level: 2, name: "Skills", exact: true }),
+  ).toBeVisible();
+  await expect(
+    skills.locator("details, summary, button, [role=button], dialog, [role=dialog], [data-level]"),
+  ).toHaveCount(0);
+  await expect(skills).not.toContainText(/\b(?:primary|supporting)\b|\d+\s*%/i);
+  const groups = skills.locator("[data-capability-record]");
+  await expect(groups).toHaveCount(capabilityIds.length);
+  expect(
+    await groups.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("data-capability-record")),
+    ),
+  ).toEqual(capabilityIds);
+  for (const [index, id] of capabilityIds.entries()) {
+    const group = groups.nth(index);
+    await expect(group).toHaveCSS("opacity", "1");
+    await expect(group).toHaveCSS("transform", "none");
+    await expect(group.getByRole("heading", { level: 3 })).toBeVisible();
+    const list = group.getByRole("list");
+    await expect(list).toHaveCount(1);
+    await expect(list).toBeVisible();
+    await expect(list).toHaveCSS("opacity", "1");
+    const items = group.locator("[data-skill]");
+    expect(await items.count(), id).toBeGreaterThan(0);
+    await expect(list.getByRole("listitem")).toHaveCount(await items.count());
+    for (const item of await items.all()) {
+      await expect(item).toBeVisible();
+      await expect(item).toHaveText(/\S/);
+      await expect(item).toHaveCSS("opacity", "1");
+      expect(
+        await item.evaluate((element) => !!element.closest("[hidden], [aria-hidden=true]")),
+      ).toBe(false);
+      expect(
+        await item.evaluate((element) => element.matches("li") && !!element.closest("ul, ol")),
+      ).toBe(true);
+    }
+    for (const anchor of capabilityAnchors[index]) {
+      await expect(list).toContainText(anchor, { useInnerText: true });
+    }
+    const art = group.locator("svg[data-skill-art]");
+    await expect(art).toHaveCount(1);
+    await expect(art).toBeVisible();
+    await expect(art).toHaveAttribute("aria-hidden", "true");
+    await expect(art).toHaveAttribute("focusable", "false");
+    await expect(art).not.toHaveAttribute("tabindex");
+    await expect(art.locator("a, [tabindex]")).toHaveCount(0);
+  }
+}
+
+async function expectProjectImage(article: Locator, id: string) {
+  const image = article.getByRole("img");
+  await expect(article.locator("img")).toHaveCount(1);
+  await expect(image).toBeVisible();
+  const alt = (await image.getAttribute("alt"))?.trim() ?? "";
+  expect(alt.split(/\s+/).length, `${id}: describe the depicted image`).toBeGreaterThanOrEqual(3);
+  expect(alt).not.toMatch(/^(?:image|photo|screenshot|illustration|placeholder)(?:\s+of)?$/i);
+  await expect(image).toHaveAccessibleName(alt);
+  await expect(image).toHaveAttribute("src", /^\/(?!\/)[^?#]+\.(?:webp|svg)$/i);
+  for (const dimension of ["width", "height"]) {
+    await expect(image).toHaveAttribute(dimension, /^[1-9]\d*$/);
+  }
+  const retained = {
+    "padel-match-analysis": "/images/work/padel.webp",
+    "sketch-clash": "/images/work/sketch-clash.webp",
+  };
+  if (id in retained)
+    await expect(image).toHaveAttribute("src", retained[id as keyof typeof retained]);
+  await image.scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      image.evaluate(async (element: HTMLImageElement) => {
+        try {
+          await element.decode();
+          return element.complete && element.naturalWidth > 0 && element.naturalHeight > 0;
+        } catch {
+          return false;
+        }
+      }),
+    )
+    .toBe(true);
+}
+
+async function expectDirectLink(link: Locator, name: RegExp, destination: RegExp) {
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAccessibleName(name);
+  await expect(link).toHaveAttribute("href", destination);
+  expect(["", "_self"]).toContain((await link.getAttribute("target"))?.toLowerCase() ?? "");
+}
+
+async function expectStaticWork(page: Page) {
+  const projects = page.locator("#projects");
+  await expect(
+    projects.getByRole("heading", { level: 2, name: "Projects", exact: true }),
+  ).toBeVisible();
+  await expect(projects.locator("details")).toHaveCount(0);
+  const articles = projects.locator("article[data-project-record]");
+  await expect(articles).toHaveCount(selectedProjects.length);
+  await expect(articles.getByRole("heading", { level: 3 })).toHaveText(
+    selectedProjects.map(([title]) => title),
+  );
+  for (const [index, [title, destination, purpose]] of selectedProjects.entries()) {
+    const article = articles.nth(index);
+    const id = [
+      "padel-match-analysis",
+      "sketch-clash",
+      "tymaura",
+      "signaldesk",
+      "spend-limited-ai-agent-wallet",
+      "fork-fighter",
+    ][index];
+    await expect(article).toHaveAttribute("data-project-record", id);
+    await expectProjectImage(article, id);
+    await expect(
+      article.getByRole("heading", { level: 3, name: title, exact: true }),
+    ).toBeVisible();
+    const caption = article.locator("p");
+    await expect(caption).toHaveCount(1);
+    await expect(caption).toBeVisible();
+    await expect(caption).toHaveText(purpose, { useInnerText: true });
+    await expect(article.locator("a")).toHaveCount(1);
+    await expectDirectLink(article.getByRole("link"), /\S/, destination);
+  }
+
+  const university = projects.getByRole("heading", { name: "University work", exact: true });
+  await expect(university).toBeVisible();
+  const links = projects.getByRole("link");
+  await expect(links).toHaveCount(selectedProjects.length + universityWork.length);
+  for (const [index, [fragment, title, destination]] of universityWork.entries()) {
+    const link = links.nth(selectedProjects.length + index);
+    await expect(projects.locator(`#${fragment}`)).toHaveCount(1);
+    await expect(link).toContainText(new RegExp(title, "i"), { useInnerText: true });
+    await expectDirectLink(link, new RegExp(title, "i"), destination);
+  }
+}
+
+async function expectStaticExperience(page: Page) {
+  const about = page.locator("#about");
+  await expect(
+    about.getByRole("heading", { level: 2, name: "Experience", exact: true }),
+  ).toBeVisible();
+  await expect(about.locator("details")).toHaveCount(0);
+  const rows = about.locator("[data-experience-record]");
+  await expect(rows).toHaveCount(experienceRows.length);
+  for (const [
+    index,
+    { id, organisation, role, dates, months, contribution },
+  ] of experienceRows.entries()) {
+    const row = rows.nth(index);
+    await expect(row).toHaveAttribute("data-experience-record", id);
+    const heading = row.getByRole("heading", { level: 3 });
+    await expect(heading).toBeVisible();
+    const title = await heading.innerText();
+    expect(
+      role.test(title) || title.toLowerCase().includes(organisation.toLowerCase()),
+      `${id}: role or organisation must be the h3`,
+    ).toBe(true);
+    for (const fact of [new RegExp(organisation, "i"), role, dates]) {
+      await expect(row).toContainText(fact, { useInnerText: true });
+    }
+    const summary = row.locator("p");
+    await expect(summary).toHaveCount(1);
+    await expect(summary).toBeVisible();
+    await expect(summary).toHaveText(contribution, { useInnerText: true });
+    await expect(summary).not.toHaveText(
+      /evaluations? fail|enter the same figures twice|Java backend|React interface|pitchside|traced display faults|I visit/i,
+    );
+    const times = row.locator("time");
+    await expect(times).toHaveCount(months.length);
+    for (const [index, month] of months.entries()) {
+      await expect(times.nth(index)).toBeVisible();
+      await expect(times.nth(index)).toHaveAttribute("datetime", month);
+    }
+  }
+  const studio = about.locator('[data-experience-record="skaltek-founder"]').getByRole("link");
+  await expectDirectLink(studio, /Skaltek/i, /^https:\/\/(?:www\.)?skaltek\.co\.uk(?:\/|$)/i);
+}
 
 function requireBaseURL(baseURL: string | undefined) {
   if (!baseURL) throw new Error("Playwright baseURL is required for this test.");
@@ -200,174 +482,150 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     });
   }
 
-  test("presents two featured project quests and two supporting builds", async ({ page }) => {
+  test("shows six selected projects and two always-visible university sources", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/#projects");
-
-    const featured = page.locator('[data-project-tier="featured"]');
-    const supporting = page.locator('[data-project-tier="supporting"]');
-    await expect(featured).toHaveCount(2);
-    await expect(supporting).toHaveCount(2);
-
-    const tymaura = page.locator('[data-project-record="tymaura"]');
-    await expect(tymaura.getByRole("heading", { name: "Tymaura" })).toBeVisible();
-    await expect(tymaura.locator(".pq-project-snapshot")).toContainText("Full product");
-    await expect(tymaura.locator("[data-project-outcome]")).toBeVisible();
-    await expect(tymaura.getByRole("link", { name: "Visit Tymaura" })).toHaveAttribute(
-      "href",
-      "https://tymaura.app",
-    );
-    const tymauraDetails = tymaura.locator(".pq-project-details");
-    const tymauraSummary = tymauraDetails.locator("summary");
-    await expect(tymauraSummary).toContainText("Engineering details");
-    await tymauraSummary.focus();
-    await page.keyboard.press("Enter");
-    await expect(tymauraDetails).toHaveAttribute("open", "");
-    await expect(tymauraDetails.getByText("Problem", { exact: true })).toBeVisible();
-    await expect(tymauraDetails.getByText("My contribution", { exact: true })).toBeVisible();
-    await expect(tymauraDetails.getByText("Outcome", { exact: true })).toBeVisible();
-    await expect(tymauraSummary).toBeFocused();
-
-    const skaltek = page.locator('[data-project-record="skaltek"]');
-    await expect(skaltek.getByRole("heading", { name: "Skaltek" })).toBeVisible();
-    await expect(skaltek.getByRole("link", { name: "Visit Skaltek" })).toHaveAttribute(
-      "href",
-      "https://skaltek.co.uk",
-    );
-
-    await expect(page.locator('[data-project-record="solana-contract-generator"]')).toContainText(
-      "82%",
-    );
-    await expect(page.locator('[data-project-record="crypto-portfolio"]')).toContainText("80%");
-
-    for (const record of await page.locator("[data-project-record]").all()) {
-      const details = record.locator("details");
-      if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
-        await details.locator("summary").click();
-      }
-      await expect(details.locator(".pq-tech-list li").first()).toBeVisible();
-    }
-
-    for (const record of await featured.all()) {
-      await expect(record.locator(".pq-project-node")).toHaveCount(4);
-      await expect(record.locator(".pq-project-media-frame")).toHaveCount(1);
-      const image = record.locator("img");
-      const stage = record.locator("[data-project-media-stage]");
-      const hud = record.locator(".pq-visual-hud");
-      await image.scrollIntoViewIfNeeded();
-      await expect
-        .poll(() =>
-          image.evaluate((element) => {
-            const media = element as HTMLImageElement;
-            return media.complete && media.naturalWidth > 0;
-          }),
-        )
-        .toBeTruthy();
-      await expect(image).toHaveCSS("object-fit", "contain");
-
-      const [imageBox, stageBox, hudBox] = await Promise.all([
-        image.boundingBox(),
-        stage.boundingBox(),
-        hud.boundingBox(),
-      ]);
-      expect(imageBox && stageBox ? boxesOverlap(imageBox, stageBox) : false).toBeTruthy();
-      expect(imageBox?.x).toBeGreaterThanOrEqual(stageBox?.x ?? 0);
-      expect((imageBox?.x ?? 0) + (imageBox?.width ?? 0)).toBeLessThanOrEqual(
-        (stageBox?.x ?? 0) + (stageBox?.width ?? 0) + 1,
-      );
-      expect(imageBox?.y).toBeGreaterThanOrEqual(hudBox?.y ?? 0);
-      expect(boxesOverlap(imageBox!, hudBox!)).toBeFalsy();
-    }
-
-    const firstMedia = await featured.first().locator("[data-project-media]").boundingBox();
-    const firstStory = await featured.first().locator("[data-project-overview]").boundingBox();
-    const secondMedia = await featured.nth(1).locator("[data-project-media]").boundingBox();
-    const secondStory = await featured.nth(1).locator("[data-project-overview]").boundingBox();
-    expect(firstMedia?.x).toBeLessThan(firstStory?.x ?? Number.POSITIVE_INFINITY);
-    expect(secondMedia?.x).toBeGreaterThan(secondStory?.x ?? Number.NEGATIVE_INFINITY);
+    await expectStaticWork(page);
   });
 
-  test("orders the complete professional experience as a level path", async ({ page }) => {
+  test("shows five dated role overviews with Skaltek as an experience", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/#about");
-
-    const records = page.locator("[data-experience-record]");
-    await expect(records).toHaveCount(4);
-    await expect(records.locator(".pq-level-node")).toHaveText(["04", "03", "02", "01"]);
-    await expect(records.getByRole("heading", { level: 3 })).toHaveText([
-      "Software Engineer",
-      "Administration & Data Analysis",
-      "Software Engineer Intern",
-      "LED Technician",
-    ]);
-    const currentRole = records.first();
-    await expect(currentRole).toContainText("Northrop Grumman");
-    await expect(currentRole).toContainText("Sep 2025 — Present");
-    await expect(currentRole).toContainText("Jinja");
-    await expect(currentRole).toContainText("agentic and AI-assisted development");
-    await expect(currentRole).toContainText("multi-agent systems");
+    await expectStaticExperience(page);
+    const about = page.locator("#about");
+    await expect(about.locator('[data-experience-record="endeavour-data"]')).toContainText(
+      /part[ -]time/i,
+      { useInnerText: true },
+    );
+    const currentRole = about.locator('[data-experience-record="northrop-software-engineer"]');
     await expect(currentRole).not.toContainText(/\bRAG\b/i);
     await expect(currentRole).not.toContainText(/Model Context Protocol|\bMCP\b/i);
     await expect(currentRole).not.toContainText(/Loop (?:&|and) Graph Engineering/i);
-    await expect(currentRole).not.toContainText(/Agent Evaluations?/i);
 
-    for (const record of await records.all()) {
-      const details = record.locator("details");
-      if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
-        await details.locator("summary").click();
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 320, height: 568 },
+  ]) {
+    test(`renders all eight skill groups as complete lists at ${viewport.width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto("/#loadout");
+      await expectStaticSkills(page);
+      await page.locator("html").evaluate((element) => {
+        element.style.fontSize = "200%";
+      });
+      await expectStaticSkills(page);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        ),
+      ).toBeLessThanOrEqual(1);
+    });
+  }
+
+  // A single viewport can start neighbouring diagrams together. Give each its own page so we
+  // actually observe its first visit rather than expecting an already-finished diagram to replay.
+  for (const id of capabilityIds) {
+    test(`animates ${id} artwork once in view while its skill text stays still`, async ({
+      page,
+    }) => {
+      await page.emulateMedia({ reducedMotion: "no-preference" });
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.goto("/");
+      await expect(page.locator(".pq-root")).toHaveAttribute("data-motion-mode", "enhanced");
+      const group = page.locator(`#loadout [data-capability-record="${id}"]`);
+      const art = group.locator("svg[data-skill-art]");
+      await expect(art).not.toBeInViewport();
+      await expect(group).toHaveAttribute("data-motion-state", "idle");
+      expect(await art.evaluate((element) => element.getAnimations({ subtree: true }).length)).toBe(
+        0,
+      );
+      await art.scrollIntoViewIfNeeded();
+      await expect(art).toBeInViewport();
+      // Capture the effects in the poll so a short animation cannot disappear between reads.
+      let effects: { artOnly: boolean; iterations: number; duration: number }[] = [];
+      await expect
+        .poll(async () => {
+          effects = await group.evaluate((element) =>
+            element.getAnimations({ subtree: true }).map((animation) => {
+              const effect = animation.effect as KeyframeEffect;
+              const target = effect.target;
+              const timing = effect.getComputedTiming();
+              return {
+                artOnly:
+                  target instanceof Element &&
+                  (!!target.closest("svg[data-skill-art]") ||
+                    (!!target.querySelector("svg[data-skill-art]") &&
+                      !target.querySelector("h3, [data-skill]"))),
+                iterations: Number(timing.iterations),
+                duration: Number(timing.activeDuration),
+              };
+            }),
+          );
+          return effects.filter((effect) => effect.duration > 0).length;
+        })
+        .toBeGreaterThan(0);
+      expect(effects.length).toBeGreaterThan(0);
+      for (const effect of effects) {
+        expect(effect.artOnly).toBe(true);
+        expect(Number.isFinite(effect.iterations)).toBe(true);
+        expect(effect.iterations).toBeGreaterThan(0);
+        expect(effect.iterations).toBeLessThanOrEqual(1);
+        expect(Number.isFinite(effect.duration)).toBe(true);
       }
-      await expect(
-        details.locator(".pq-level-details-panel > ul").first().locator("li").first(),
-      ).toBeVisible();
-      await expect(details.locator(".pq-tech-list li").first()).toBeVisible();
-    }
-
-    await page.evaluate(() => {
-      document.documentElement.style.fontSize = "200%";
+      await expect(group).toHaveCSS("opacity", "1");
+      await expect(group).toHaveCSS("transform", "none");
+      await expect(group.getByRole("heading", { level: 3 })).toHaveCSS("opacity", "1");
+      for (const item of await group.locator("[data-skill]").all()) {
+        await expect(item).toBeVisible();
+        await expect(item).toHaveCSS("opacity", "1");
+        await expect(item).toHaveCSS("transform", "none");
+      }
+      await expect
+        .poll(() =>
+          group.evaluate(
+            (element) =>
+              element
+                .getAnimations({ subtree: true })
+                .filter(
+                  (animation) =>
+                    animation.playState !== "finished" && animation.playState !== "idle",
+                ).length,
+          ),
+        )
+        .toBe(0);
+      await expect(group).toHaveAttribute("data-motion-state", "complete");
+      await page.locator("#home").scrollIntoViewIfNeeded();
+      await art.scrollIntoViewIfNeeded();
+      // Give an intersection callback two rendering frames to run before checking for a replay.
+      await art.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      expect(
+        await group.evaluate(
+          (element) =>
+            element
+              .getAnimations({ subtree: true })
+              .filter((animation) => animation.playState === "running").length,
+        ),
+      ).toBe(0);
     });
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-  });
-
-  test("preserves every capability in the responsive inventory", async ({ page }) => {
-    await page.setViewportSize({ width: 320, height: 568 });
-    await page.goto("/#loadout");
-
-    const inventory = page.locator("#loadout");
-    const cards = inventory.locator("[data-capability-record]");
-    await expect(cards).toHaveCount(5);
-    await expect(cards.getByRole("heading", { level: 3 })).toHaveText([
-      "Application Engineering",
-      "Backend & Data",
-      "Cloud & Delivery",
-      "AI & Automation",
-      "Blockchain & Systems",
-    ]);
-    await expect(cards.locator("[data-level]")).toHaveCount(40);
-    await expect(inventory).toContainText("without implying a percentage");
-    await expect(inventory).toContainText("Agentic Development");
-    await expect(inventory).toContainText("Multi-Agent Systems");
-    await expect(inventory).toContainText("Model Context Protocol (MCP)");
-    await expect(inventory).toContainText("Loop & Graph Engineering");
-    await expect(inventory).toContainText("Agent Evaluations");
-
-    for (const card of await cards.all()) {
-      const details = card.locator("details");
-      await details.locator("summary").click();
-      await expect(details).toHaveAttribute("open", "");
-      await expect(details.locator('[data-level="primary"]').first()).toBeVisible();
-    }
-
-    await page.evaluate(() => {
-      document.documentElement.style.fontSize = "200%";
-    });
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-  });
+  }
 
   test("finishes with an accessible contact scene and complete outreach paths", async ({
     page,
@@ -458,7 +716,7 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     const context = await browser.newContext({
       javaScriptEnabled: false,
       baseURL: requireBaseURL(baseURL),
-      viewport: { width: 390, height: 844 },
+      viewport: { width: 320, height: 568 },
     });
     const page = await context.newPage();
     await page.goto("/");
@@ -471,10 +729,8 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     await expect(page.locator("[data-profile-operator] .pq-operator")).toHaveCSS("width", "96px");
     await expect(page.locator("#home, #contact").locator('[class*="orbit"]')).toHaveCount(0);
     await expect(page.getByText(/IRON\/?\/?SIGNAL/i)).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Tymaura" })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Software Engineer", exact: true }).last(),
-    ).toBeVisible();
+    await expectStaticWork(page);
+    await expectStaticExperience(page);
     await expect(
       page.locator("#contact").getByRole("link", { name: "Request by email" }),
     ).toHaveAttribute("href", /^mailto:SukhrajKalon@gmail\.com/);
@@ -482,21 +738,23 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       page.locator("#home").getByRole("link", { name: "Request private CV" }),
     ).toHaveAttribute("href", /^mailto:SukhrajKalon@gmail\.com/);
     await expect(page.locator("[data-motion-state]")).toHaveCount(0);
-    const finalState = await page
-      .locator('[data-motion="record"]')
-      .first()
-      .evaluate((element) => {
-        const styles = window.getComputedStyle(element);
-        return { opacity: styles.opacity, transform: styles.transform };
-      });
-    expect(finalState.opacity).toBe("1");
-    expect(finalState.transform).toBe("none");
+    const firstProject = page.locator("#projects article[data-project-record]").first();
+    await expect(firstProject).toHaveCSS("opacity", "1");
+    await expect(firstProject).toHaveCSS("transform", "none");
 
-    const projectDetails = page.locator(".pq-project-details").first();
-    await projectDetails.locator("summary").focus();
-    await page.keyboard.press("Enter");
-    await expect(projectDetails).toHaveAttribute("open", "");
-    await expect(projectDetails.getByText("My contribution", { exact: true })).toBeVisible();
+    await expectStaticSkills(page);
+    for (const art of await page.locator("#loadout svg[data-skill-art]").all()) {
+      await expect(art).toHaveCSS("opacity", "1");
+      await expect(art).toHaveCSS("transform", "none");
+      expect(
+        await art.evaluate(
+          (element) =>
+            element
+              .getAnimations({ subtree: true })
+              .filter((animation) => animation.playState === "running").length,
+        ),
+      ).toBe(0);
+    }
     await context.close();
   });
 
@@ -547,9 +805,13 @@ test.describe("Orbital Engineering Journey portfolio", () => {
 
       await expect(page.locator("html")).toHaveClass(/dark/);
       await expect(page.locator("html")).not.toHaveClass(/light/);
-      await expect(page.locator("[data-project-record]")).toHaveCount(4);
-      await expect(page.locator("[data-experience-record]")).toHaveCount(4);
-      await expect(page.locator("[data-capability-record]")).toHaveCount(5);
+      await expect(page.locator("#projects article[data-project-record]")).toHaveCount(
+        selectedProjects.length,
+      );
+      await expect(page.locator("#about [data-experience-record]")).toHaveCount(
+        experienceRows.length,
+      );
+      await expect(page.locator("#loadout [data-capability-record]")).toHaveCount(8);
       await expect(page.locator("#contact")).toContainText("Continue the conversation.");
 
       const overflow = await page.evaluate(
@@ -591,6 +853,39 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     }
   });
 
+  test("lands legacy project and experience fragments on the corresponding work", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    const projects = page.locator("#projects");
+    const about = page.locator("#about");
+    const targets = [
+      ["project-tymaura", projects.getByRole("heading", { name: "Tymaura", level: 3 })],
+      [
+        "project-skaltek",
+        about
+          .locator('[data-experience-record="skaltek-founder"]')
+          .getByRole("heading", { level: 3 }),
+      ],
+      ...universityWork.map(([id, name]) => [id, projects.getByRole("link", { name })] as const),
+      ...experienceRows
+        .filter(({ id }) => id !== "skaltek-founder")
+        .map(
+          ({ id }) =>
+            [
+              `field-log-${id}`,
+              about.locator(`[data-experience-record="${id}"]`).getByRole("heading", { level: 3 }),
+            ] as const,
+        ),
+    ] as const;
+    for (const [fragment, content] of targets) {
+      await page.goto(`/#${fragment}`);
+      await expect(page.locator(`[id="${fragment}"]`)).toHaveCount(1);
+      await expect(content).toBeInViewport();
+    }
+  });
+
   test("keeps the complete journey readable at 200 percent text", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 320, height: 568 });
@@ -599,34 +894,42 @@ test.describe("Orbital Engineering Journey portfolio", () => {
       document.documentElement.style.fontSize = "200%";
     });
 
-    await expect(page.getByRole("heading", { name: "Projects with real gravity." })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Engineering under real constraints." }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "A working systems constellation." }),
-    ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Continue the conversation." })).toBeVisible();
+    for (const headingId of [
+      "projects-title",
+      "field-log-title",
+      "loadout-title",
+      "contact-title",
+    ]) {
+      await expect(page.locator(`#${headingId}`)).toBeVisible();
+    }
     await expect(page.locator(".pq-scene-terminal")).toContainText("Engineering route");
     await expect(page.locator(".pq-scene-entry")).toContainText("Start / 01");
 
-    for (const record of await page.locator('[data-project-tier="featured"]').all()) {
-      const [mediaBox, stageBox, imageBox, hudBox] = await Promise.all([
-        record.locator("[data-project-media]").boundingBox(),
-        record.locator("[data-project-media-stage]").boundingBox(),
-        record.locator("img").boundingBox(),
-        record.locator(".pq-visual-hud").boundingBox(),
-      ]);
-      expect(mediaBox).not.toBeNull();
-      expect(stageBox).not.toBeNull();
-      expect(imageBox).not.toBeNull();
-      expect(hudBox).not.toBeNull();
-      expect(imageBox?.x).toBeGreaterThanOrEqual(mediaBox?.x ?? 0);
-      expect((imageBox?.x ?? 0) + (imageBox?.width ?? 0)).toBeLessThanOrEqual(
-        (mediaBox?.x ?? 0) + (mediaBox?.width ?? 0) + 1,
-      );
-      expect(boxesOverlap(imageBox!, hudBox!)).toBeFalsy();
-    }
+    const articles = page.locator("#projects article[data-project-record]");
+    const rows = page.locator("#about [data-experience-record]");
+    await expect(articles).toHaveCount(selectedProjects.length);
+    await expect(rows).toHaveCount(experienceRows.length);
+    // Check the actual text fragments: an overflow-clipped ancestor can hide text
+    // even when the document's overall scroll width still fits the viewport.
+    await expectStaticSkills(page);
+    const clipped = await articles
+      .or(rows)
+      .or(page.locator("#loadout [data-capability-record]"))
+      .evaluateAll((records) => {
+        const viewportWidth = document.documentElement.clientWidth;
+        return records.flatMap((record) =>
+          [...record.querySelectorAll("h3, p, a, time, [data-skill]")]
+            .filter((element) => {
+              const text = document.createRange();
+              text.selectNodeContents(element);
+              return [...text.getClientRects()].some(
+                (box) => box.width && (box.left < -1 || box.right > viewportWidth + 1),
+              );
+            })
+            .map((element) => element.textContent?.trim()),
+        );
+      });
+    expect(clipped).toEqual([]);
 
     expect(
       await page.evaluate(
@@ -665,10 +968,15 @@ test.describe("Orbital Engineering Journey portfolio", () => {
     expect(
       await page.evaluate(() => window.matchMedia("(hover: hover) and (pointer: fine)").matches),
     ).toBeFalsy();
-    await expect(page.locator(".pq-project-visual img").first()).toHaveCSS(
-      "transition-duration",
-      "0s",
-    );
+    const articles = page.locator("#projects article[data-project-record]");
+    await expect(articles).toHaveCount(selectedProjects.length);
+    const first = articles.first();
+    await first.hover();
+    await expect(first).toHaveCSS("transform", "none");
+    await expect(first.getByRole("link")).toHaveCSS("transform", "none");
+    for (const image of await articles.locator("img").all()) {
+      await expect(image).toHaveCSS("transition-duration", "0s");
+    }
     await context.close();
   });
 

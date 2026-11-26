@@ -29,6 +29,19 @@ The following files are portfolio depictions, screenshots, or project marks supp
 
 Copyright held by the project author in these files is licensed under the MIT License. Names and logos shown in them may also function as trademarks; no trademark rights or endorsement rights are granted.
 
+### Selected-work previews
+
+The covers in `public/images/work/` identify the work. They do not release the underlying project assets, guest records, footage or market data.
+
+- `padel.webp` plots pooled court-position detections from development footage. It contains no video frames, player identities or individual tracks; the colours show detection density, not tracking accuracy.
+- `sketch-clash.webp` shows the built-in Sunrise practice island rendered by Sketch Clash, not a recording of a live agent exchange.
+- `tymaura-invitations.webp` is original invitation and RSVP artwork. The place card is illustrative, not a guest booking or product screenshot.
+- `signaldesk-study.webp` illustrates the CLI and API sharing one analysis. The candles are the last 24 samples of the project’s deterministic `LocalFixtureProvider`, with a five-sample moving average. They are not live prices, returns or a trading recommendation. Source: `Sukhraj1000/signaldesk`, `packages/backend/src/signaldesk_backend/providers.py`, revision `46cb34ee1e1d98310089853bb80fb8e37252d660`.
+- `wallet-mandate.webp` is an original diagram of the owner-set spending rules described in `Sukhraj1000/hackathon-toolkit` at `b4464a5498e40b8b546c2d82d61df474395ad084`. The two payment paths illustrate a rule, not real transactions.
+- `fork-fighter-directors.webp` is an editorial composition of the three game masters and runner, from `apps/web/public/assets/game-master-triptych.png` and `fork-fighter-run-cycle.png` in `Sukhraj1000/fork-fighter-live-patch-war` at `a92e3c12fe2767997ed321227bb5025f541f145c`. The referee routes and platform frame explain the mechanic; this is not a gameplay screenshot.
+
+These previews are not included in the MIT artwork grant above. No rights in the underlying projects or marks are granted by this notice.
+
 ## Third-party marks
 
 `public/solana.webp` depicts the Solana logo for identification of the technology used by a portfolio project. Solana and its logo are trademarks or registered trademarks of their respective owner. This mark is not covered by the repository's MIT License, and reuse must comply with the trademark owner's applicable terms and guidelines. Its inclusion does not imply sponsorship or endorsement.

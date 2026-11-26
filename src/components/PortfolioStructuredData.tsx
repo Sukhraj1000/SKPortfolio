@@ -1,13 +1,13 @@
 import {
   capabilityGroups,
   portfolioProfile,
-  portfolioProjects,
+  selectedWork,
   socialLinks,
+  universityWork,
 } from "@/data/portfolio";
 import { siteOrigin } from "@/lib/site";
 
 const personId = `${siteOrigin}/#person`;
-
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -25,18 +25,15 @@ const structuredData = {
         addressCountry: "GB",
       },
       sameAs: socialLinks.map((social) => social.href),
-      knowsAbout: capabilityGroups.flatMap((group) => group.items.map((item) => item.name)),
+      knowsAbout: capabilityGroups.flatMap<string>((group) => group.items),
     },
-    ...portfolioProjects.map((project) => ({
+    ...[...selectedWork, ...universityWork].map((project) => ({
       "@type": "CreativeWork",
       "@id": `${siteOrigin}/#project-${project.id}`,
       name: project.title,
-      description: project.summary,
-      url: project.links[0]?.href ?? `${siteOrigin}/#project-${project.id}`,
+      url: project.href,
       creator: { "@id": personId },
-      genre: project.kind,
-      keywords: project.technologies.join(", "),
-      image: `${siteOrigin}${project.image}`,
+      ...("caption" in project ? { description: project.caption } : {}),
     })),
   ],
 };
