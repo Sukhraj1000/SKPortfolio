@@ -504,9 +504,16 @@ test.describe("Chronicle Run", () => {
 
     await expect(dialog).toBeVisible();
     await expect(runtime).toHaveAttribute("data-game-state", "story");
-    await expect(dialog).toContainText("2 of 9 factual records recovered");
+    await expect(dialog).toContainText("2 of 9 notes recovered");
     await expect(dialog).toContainText("First-Class Computer Science graduate");
     await expect(dialog).toContainText("Techfront UK");
+    await expect(dialog.locator('[data-record-state="recovered"]').nth(0)).toContainText(
+      /pretend money/i,
+    );
+    await expect(dialog.locator('[data-record-state="recovered"]').nth(1)).toContainText(
+      /LED boards/i,
+    );
+    await expect(dialog).not.toContainText(/both screens/i);
     await expect(dialog).toContainText("Undiscovered record");
     await expect(dialog.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "2");
     const pausedProgress = await runtime.getAttribute("data-journey-progress");
@@ -570,9 +577,16 @@ test.describe("Chronicle Run", () => {
       "education:first-class-computer-science",
     );
     await expect(unlockCard).toContainText("First-Class Computer Science graduate");
-    await expect(unlockCard).toContainText(
-      "generates, compiles, tests, and analyses Solana smart contracts",
-    );
+    const recordSummary = unlockCard.locator("h2 + strong + p");
+    await expect(recordSummary).toBeVisible();
+    await expect(recordSummary).toContainText(/pretend money/i);
+    await expect(
+      unlockCard
+        .getByRole("list", {
+          name: "First-Class Computer Science graduate technologies",
+        })
+        .getByRole("listitem"),
+    ).toHaveCount(3);
     await expect(
       page.locator('[role="status"]').filter({ hasText: "Education unlocked" }),
     ).toBeAttached();
@@ -694,7 +708,8 @@ test.describe("Chronicle Run", () => {
 
     await completion.getByRole("button", { name: "Open Story Log" }).click();
     const storyLog = page.locator('[data-story-overlay="story-log"]');
-    await expect(storyLog).toContainText("9 of 9 factual records recovered");
+    await expect(storyLog).toContainText("9 of 9 notes recovered");
+    await expect(storyLog).toContainText(/both screens/i);
     await expect(storyLog.locator('[data-record-state="recovered"]')).toHaveCount(9);
     await expect(storyLog.locator('[data-record-state="locked"]')).toHaveCount(0);
     await page.getByRole("button", { name: "Back to recap" }).click();
