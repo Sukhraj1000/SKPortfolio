@@ -16,38 +16,6 @@ export function QuestLink({ className, variant = "secondary", ...props }: QuestL
   return <Link className={cn("pq-button", className)} data-variant={variant} {...props} />;
 }
 
-export function QuestChip({ className, ...props }: React.ComponentProps<"li">) {
-  return <li className={cn("pq-chip", className)} {...props} />;
-}
-
-interface QuestChapterHeadingProps extends Omit<React.ComponentProps<"header">, "title"> {
-  index: string;
-  label: string;
-  title: React.ReactNode;
-  description: string;
-  headingId: string;
-}
-
-export function QuestChapterHeading({
-  className,
-  index,
-  label,
-  title,
-  description,
-  headingId,
-  ...props
-}: QuestChapterHeadingProps) {
-  return (
-    <header {...props} className={cn("pq-chapter-heading", className)} data-motion="section">
-      <QuestLabel>
-        Chapter {index} / {label}
-      </QuestLabel>
-      <h2 id={headingId}>{title}</h2>
-      <p>{description}</p>
-    </header>
-  );
-}
-
 type OperatorSize = "small" | "large";
 
 interface OperatorSpriteProps extends Omit<React.ComponentProps<"span">, "children"> {

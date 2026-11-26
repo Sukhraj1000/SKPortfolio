@@ -190,8 +190,8 @@ export function StoryLogDialog({
             <h2 id={titleId}>Recovered milestones.</h2>
             <p id={descriptionId}>
               {recoveredRecords.length === 0
-                ? "No records recovered yet. Continue the route and cross a glowing story pickup to add the first milestone."
-                : `${recoveredRecords.length} of ${chronicleRecords.length} factual records recovered. Locked positions remain visible so progress is clear without revealing invented content.`}
+                ? "No records recovered yet. Run through a glowing pickup to find the first note."
+                : `${recoveredRecords.length} of ${chronicleRecords.length} notes recovered.`}
             </p>
 
             <div
@@ -228,13 +228,11 @@ export function StoryLogDialog({
                     <div>
                       <p>{`${chapter?.title ?? "Chapter"} // ${recovered ? record.kind : "locked"}`}</p>
                       <h3>{recovered ? record.title : "Undiscovered record"}</h3>
-                      {recovered ? (
+                      {recovered && (
                         <>
                           <strong>{`${record.context} · ${record.period}`}</strong>
                           <p>{record.summary}</p>
                         </>
-                      ) : (
-                        <p>Continue the run to recover this milestone.</p>
                       )}
                     </div>
                   </li>

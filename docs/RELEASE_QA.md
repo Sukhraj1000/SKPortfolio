@@ -171,8 +171,9 @@ browser, preview URL, reviewer, and result.
       the latest checkpoint, and retains recovered story records.
 - [ ] Recover representative Education, Experience, and Project cards; confirm
       the larger halo/pulse reads clearly before collision, catch feedback is brief,
-      and title, organisation/project, period/status, summary, and technologies
-      match the recruiter-facing portfolio.
+      and title, organisation/project, period/status, and technologies match the
+      portfolio. The pickup and its recovered Story Log entry should show the same
+      field note; unrecovered entries should not reveal their text.
 - [ ] Keep each unlock visible through the next route segment and confirm it does
       not hide the player, next hazard, critical HUD, or controls.
 - [ ] Finish Present Day, review score, elapsed time, personal best and records,

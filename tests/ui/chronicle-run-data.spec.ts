@@ -53,6 +53,20 @@ test.describe("Chronicle Run story foundation", () => {
   });
 
   test("adapts experience and project facts from canonical portfolio data", () => {
+    for (const project of portfolioProjects) {
+      for (const field of [
+        project.audience,
+        project.scale,
+        project.problem,
+        project.decision,
+        project.contribution,
+        project.outcome,
+      ]) {
+        expect(field.trim().length).toBeGreaterThan(20);
+        expect(field).not.toMatch(/lorem ipsum|coming soon|tbd|innovative solution/i);
+      }
+    }
+
     for (const record of chronicleRecords) {
       if (record.kind === "experience") {
         const source = experience.find((entry) => entry.id === record.sourceId);
@@ -60,7 +74,6 @@ test.describe("Chronicle Run story foundation", () => {
         expect(record.title).toBe(source?.role);
         expect(record.context).toBe(source?.organisation);
         expect(record.period).toBe(`${source?.start} — ${source?.end}`);
-        expect(record.summary).toBe(source?.summary);
         expect(record.technologies).toEqual(source?.technologies.slice(0, 3));
       }
 
@@ -69,18 +82,14 @@ test.describe("Chronicle Run story foundation", () => {
         expect(source).toBeDefined();
         expect(record.title).toBe(source?.title);
         expect(record.context).toBe(source?.kind);
-        expect(record.summary).toBe(source?.summary);
+        expect(record.period).toBe(
+          source?.grade ? `${source.status} · ${source.grade}` : source?.status,
+        );
         expect(record.technologies).toEqual(source?.technologies.slice(0, 3));
       }
     }
 
     const currentRole = experience.find((entry) => entry.id === "northrop-software-engineer");
-    const skillsOnly = [
-      "RAG Workflows",
-      "Model Context Protocol (MCP)",
-      "Loop & Graph Engineering",
-      "Agent Evaluations",
-    ];
     const roleEvidence = [
       currentRole?.summary,
       ...(currentRole?.highlights ?? []),
@@ -96,10 +105,22 @@ test.describe("Chronicle Run story foundation", () => {
       expect(roleEvidence).not.toMatch(pattern);
     }
 
-    const aiSkills = capabilityGroups
-      .find((group) => group.id === "ai-automation")
-      ?.items.map((item) => item.name);
-    expect(aiSkills).toEqual(expect.arrayContaining(skillsOnly));
+    const aiSkills: readonly unknown[] | undefined = capabilityGroups.find(
+      (group) => group.id === "ai-automation",
+    )?.items;
+    expect(aiSkills?.every((item) => typeof item === "string" && item.trim().length > 0)).toBe(
+      true,
+    );
+    const aiSkillText = aiSkills?.join(" ");
+    for (const pattern of [
+      /Gemini\s*API/i,
+      /multi[ -]agent orchestration/i,
+      /agent memory/i,
+      /evaluat/i,
+      /Daytona.*sandbox/i,
+    ]) {
+      expect(aiSkillText).toMatch(pattern);
+    }
 
     const currentRoleRecord = chronicleRecords.find(
       (record) => record.kind === "experience" && record.sourceId === "northrop-software-engineer",
@@ -115,8 +136,33 @@ test.describe("Chronicle Run story foundation", () => {
       (project) => project.id === "solana-contract-generator",
     );
     expect(education.title).toBe(portfolioProfile.education);
-    expect(education.summary).toBe(finalProject?.summary);
     expect(education.period).toContain(finalProject?.grade);
+  });
+
+  test("gives selected pickups their own short field notes and keeps the other summaries", () => {
+    const noteDetails = new Map<string, RegExp>([
+      ["education:first-class-computer-science", /pretend money/i],
+      ["experience:techfront-led-technician", /LED boards/i],
+      ["project:solana-contract-generator", /compiler/i],
+      ["project:tymaura", /at the door/i],
+      ["project:skaltek", /both screens/i],
+    ]);
+    for (const record of chronicleRecords) {
+      const sources = record.kind === "experience" ? experience : portfolioProjects;
+      const original = sources.find((source) => source.id === record.sourceId)?.summary;
+      expect(original, record.id).toBeTruthy();
+      const detail = noteDetails.get(record.id);
+      if (detail) {
+        expect(record.summary, record.id).toMatch(detail);
+        expect(record.summary, record.id).not.toBe(original);
+        expect(record.summary.length, record.id).toBeLessThanOrEqual(160);
+      } else {
+        expect(record.summary, record.id).toBe(original);
+      }
+    }
+    expect(new Set(chronicleRecords.map((record) => record.summary)).size).toBe(
+      chronicleRecords.length,
+    );
   });
 
   test("filters, deduplicates, and restores current progress in story order", () => {

@@ -148,6 +148,7 @@ function experienceRecord(
   sourceId: string,
   id: ChronicleRecordId,
   chapterId: ChronicleChapterId,
+  fieldNote?: string,
 ): ChronicleRecord {
   const entry = requireExperience(sourceId);
   return {
@@ -157,13 +158,17 @@ function experienceRecord(
     title: entry.role,
     context: entry.organisation,
     period: `${entry.start} — ${entry.end}`,
-    summary: entry.summary,
+    summary: fieldNote ?? entry.summary,
     technologies: entry.technologies.slice(0, 3),
     sourceId,
   };
 }
 
-function projectRecord(sourceId: string, id: ChronicleRecordId): ChronicleRecord {
+function projectRecord(
+  sourceId: string,
+  id: ChronicleRecordId,
+  fieldNote?: string,
+): ChronicleRecord {
   const project = requireProject(sourceId);
   return {
     id,
@@ -172,7 +177,7 @@ function projectRecord(sourceId: string, id: ChronicleRecordId): ChronicleRecord
     title: project.title,
     context: project.kind,
     period: project.grade ? `${project.status} · ${project.grade}` : project.status,
-    summary: project.summary,
+    summary: fieldNote ?? project.summary,
     technologies: project.technologies.slice(0, 3),
     sourceId,
   };
@@ -188,7 +193,8 @@ export const chronicleRecords: readonly ChronicleRecord[] = [
     title: portfolioProfile.education,
     context: "Computer Science",
     period: `${finalYearProject.status} · ${finalYearProject.grade}`,
-    summary: finalYearProject.summary,
+    summary:
+      "Two of my uni projects turn up later in this run. One let you trade with pretend money. The other turned a plain-English request into Rust.",
     technologies: finalYearProject.technologies.slice(0, 3),
     sourceId: finalYearProject.id,
   },
@@ -196,12 +202,25 @@ export const chronicleRecords: readonly ChronicleRecord[] = [
     "techfront-led-technician",
     "experience:techfront-led-technician",
     "live-systems",
+    "We set up the LED boards before the fixture. Once play started, I kept an eye on the screens. The match wasn’t going to stop for us.",
   ),
   experienceRecord("northrop-intern", "experience:northrop-intern", "secure-engineering"),
   projectRecord("crypto-portfolio", "project:crypto-portfolio"),
-  projectRecord("solana-contract-generator", "project:solana-contract-generator"),
-  projectRecord("tymaura", "project:tymaura"),
-  projectRecord("skaltek", "project:skaltek"),
+  projectRecord(
+    "solana-contract-generator",
+    "project:solana-contract-generator",
+    "If the Rust wouldn’t compile, my tool sent the error back to the generator. Each new draft had to get past the compiler and the tests.",
+  ),
+  projectRecord(
+    "tymaura",
+    "project:tymaura",
+    "A guest says yes to an invite. I built Tymaura so the organiser can give them a seat and check them in at the door without starting a second list.",
+  ),
+  projectRecord(
+    "skaltek",
+    "project:skaltek",
+    "When someone copies the same detail into two tools, I want to see both screens. Sometimes the useful thing to build is the bit in between.",
+  ),
   experienceRecord("endeavour-data", "experience:endeavour-data", "present-day"),
   experienceRecord(
     "northrop-software-engineer",
